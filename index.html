@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mentoria Individual</title>
+    <meta name="description" content="Join the Mentoria Individual, a personalized one-on-one mentorship to master trading with tailored strategies and achieve financial freedom.">
+    <meta name="keywords" content="trading, one-on-one mentorship, price action, financial freedom, Mentoria Individual">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Reset básico e fontes */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            line-height: 1.6;
+            color: #fff;
+            background: #000;
+        }
+
+        /* Seção Principal (Header) */
+        .header {
+            background: #000;
+            padding: 50px 20px;
+            text-align: center;
+            background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.pexels.com/photos/6802048/pexels-photo-6802048.jpeg?auto=compress&cs=tinysrgb&w=1200&h=400&fit=crop');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: scroll;
+        }
+
+        .header h1 {
+            font-size: 48px;
+            font-weight: 700;
+            color: #ff6200;
+            margin-bottom: 20px;
+        }
+
+        .header p {
+            font-size: 20px;
+            color: #fff;
+            margin-bottom: 50px;
+        }
+
+        .cta-button {
+            background: #ff6200;
+            color: #fff;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-block;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-button:hover {
+            background: #e05500;
+        }
+
+        .cta-button:after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+
+        .cta-button:hover:after {
+            width: 200px;
+            height: 200px;
+        }
+
+        /* Seções Gerais */
+        .section {
+            padding: 50px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .section h2 {
+            font-size: 36px;
+            font-weight: 700;
+            color: #ff6200;
+            margin-bottom: 20px;
+        }
+
+        .section p {
+            font-size: 18px;
+            color: #fff;
+            margin-bottom: 20px;
+        }
+
+        /* Lista de Benefícios e Como Funciona */
+        .benefits, .how-it-works {
+            background: #000;
+        }
+
+        .benefits ul, .how-it-works ul {
+            list-style: none;
+            margin: 20px 0;
+        }
+
+        .benefits li, .how-it-works li {
+            font-size: 18px;
+            color: #fff;
+            margin: 15px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .benefits li:before, .how-it-works li:before {
+            content: "✔";
+            color: #ff6200;
+            position: absolute;
+            left: 0;
+            font-weight: 700;
+        }
+
+        /* Seção O Que Você Vai Dominar */
+        .learn ul {
+            list-style: none;
+            margin: 20px 0;
+        }
+
+        .learn li {
+            font-size: 18px;
+            color: #fff;
+            margin: 15px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .learn li:before {
+            content: "➔";
+            color: #ff6200;
+            position: absolute;
+            left: 0;
+            font-weight: 700;
+        }
+
+        /* Nova Seção Inscrições Abertas */
+        .open-enrollment {
+            background: #000;
+            padding: 50px 20px;
+            text-align: center;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .open-enrollment h2 {
+            font-size: 36px;
+            font-weight: 700;
+            color: #ff6200;
+            margin-bottom: 20px;
+        }
+
+        .open-enrollment p {
+            font-size: 18px;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .open-enrollment .price {
+            font-size: 24px;
+            color: #ff6200;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .open-enrollment .price del {
+            color: #ff6200;
+            text-decoration: line-through;
+            margin-right: 10px;
+        }
+
+        .open-enrollment .installments {
+            font-size: 18px;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .open-enrollment .payment-options {
+            font-size: 16px;
+            color: #fff;
+            margin-bottom: 20px;
+        }
+
+        .open-enrollment .payment-buttons {
+            margin-top: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .open-enrollment .payment-buttons.highlight {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(255,98,0,0.5);
+        }
+
+        .open-enrollment .payment-button {
+            background: #ff6200;
+            color: #fff;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-block;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            margin: 10px;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .open-enrollment .payment-button:hover {
+            background: #e05500;
+        }
+
+        .open-enrollment .payment-button:after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+
+        .open-enrollment .payment-button:hover:after {
+            width: 200px;
+            height: 200px;
+        }
+
+        /* Contador de Urgência */
+        .countdown {
+            font-size: 18px;
+            color: #ff6200;
+            margin: 20px 0;
+            font-weight: 700;
+        }
+
+        .countdown p {
+            border: 2px solid #ff6200;
+            padding: 10px;
+            display: inline-block;
+            border-radius: 5px;
+        }
+
+        /* Quote */
+        .quote {
+            max-width: 600px;
+            margin: 60px auto 20px;
+            font-style: italic;
+            color: #fff;
+            font-size: 20px;
+            background: #111;
+            padding: 20px;
+            border-left: 4px solid #ff6200;
+            border-radius: 5px;
+        }
+
+        .quote p {
+            margin-bottom: 10px;
+        }
+
+        .quote .author {
+            font-weight: 700;
+            color: #ff6200;
+            text-align: right;
+            font-style: normal;
+        }
+
+        /* Payment Terms */
+        .payment-terms {
+            font-size: 12px;
+            color: #fff;
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        /* CTA Final */
+        .cta-section {
+            background: #ff6200;
+            color: #000;
+            padding: 50px 20px;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .cta-section h2 {
+            color: #000;
+            margin-bottom: 20px;
+        }
+
+        .cta-section p {
+            color: #000;
+            margin-bottom: 20px;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .cta-final-button {
+            background: #000;
+            color: #ff6200;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-block;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            margin: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-final-button:hover {
+            background: #333;
+        }
+
+        .cta-final-button:after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+
+        .cta-final-button:hover:after {
+            width: 200px;
+            height: 200px;
+        }
+
+        .whatsapp-button {
+            background: #25D366;
+            color: #fff;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .whatsapp-button:hover {
+            background: #1da851;
+        }
+
+        .whatsapp-button:after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+
+        .whatsapp-button:hover:after {
+            width: 200px;
+            height: 200px;
+        }
+
+        /* Disclaimer */
+        .disclaimer {
+            font-size: 12px;
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+            background: #000;
+            line-height: 1.4;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        /* Animação de Fade-In */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsividade */
+        @media (max-width: 767px) {
+            .header {
+                padding: 30px 20px;
+            }
+
+            .header h1 {
+                font-size: 32px;
+            }
+
+            .header p, .section p, .benefits li, .how-it-works li, .learn li {
+                font-size: 16px;
+            }
+
+            .section h2 {
+                font-size: 28px;
+            }
+
+            .cta-button, .cta-final-button, .whatsapp-button, .payment-button {
+                padding: 12px 25px;
+                font-size: 16px;
+            }
+
+            .cta-section, .open-enrollment {
+                padding: 30px 20px;
+            }
+
+            .cta-section p {
+                font-size: 18px;
+            }
+
+            .open-enrollment .price {
+                font-size: 20px;
+            }
+
+            .open-enrollment .installments, .open-enrollment .payment-options {
+                font-size: 14px;
+            }
+
+            .disclaimer {
+                font-size: 12px;
+                padding: 15px;
+            }
+
+            .benefits li, .how-it-works li, .learn li {
+                margin: 10px 0;
+            }
+
+            .quote {
+                max-width: 90%;
+                font-size: 18px;
+                padding: 15px;
+                margin-top: 40px;
+            }
+
+            .countdown p {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Seção Principal -->
+    <section class="header" loading="lazy">
+        <h1>Mentoria Individual</h1>
+        <p>Uma mentoria individual para você que busca alcançar resultados consistentes e reduzir ao máximo sua curva de aprendizado</p>
+        <a href="#open-enrollment" class="cta-button" onclick="scrollToPayment()" aria-label="Marque sua reunião para a Mentoria Individual">Garantir Minha Vaga Agora!</a>
+    </section>
+
+    <!-- Por Que Escolher -->
+    <section class="section benefits">
+        <h2>Por Que Escolher a Mentoria Individual?</h2>
+        <ul>
+            <li>Monte seu planejamento de trade de forma completa</li>
+            <li>Tenha setups com Risco/Retorno favorável e crie consistência</li>
+            <li>Acompanhamento 1 a 1: Sessões exclusivas com um mentor experiente para corrigir seus trades</li>
+            <li>Aprenda Price Action e Setups para masterizar a análise gráfica</li>
+            <li>Suporte Contínuo: 4 meses de acompanhamento individual para garantir sua evolução</li>
+        </ul>
+    </section>
+
+    <!-- O Que Você Vai Dominar -->
+    <section class="section learn">
+        <h2>O Que Você Vai Dominar?</h2>
+        <p>Aprenda um operacional único sem a dependência de indicadores</p>
+        <ul>
+            <li>Domine a Multi Timeframe Analysis de uma vez por todas</li>
+            <li>Construa uma mentalidade sólida para ser lucrativo</li>
+            <li>Aprenda a marcar níveis que o mercado respeita e um operacional com alto Risco/Retorno</li>
+            <li>Tenha um plano definido personalizado como trader para escalar ganhos</li>
+        </ul>
+    </section>
+
+    <!-- Como Funciona -->
+    <section class="section how-it-works">
+        <h2>Como Funciona a Mentoria Individual?</h2>
+        <p>Uma experiência 100% personalizada, focada em seus resultados:</p>
+        <ul>
+            <li>12 Sessões Individuais Ao Vivo: 6 semanas de acompanhamento prático, adaptado a você</li>
+            <li>Análise de Trades: Revisão detalhada dos seus trades com feedback detalhado</li>
+            <li>Acesso Prolongado: 12 meses para rever as gravações e consolidar seu aprendizado</li>
+            <li>Acesso aos meus trades realizados para entender o meu racional e acelerar o aprendizado</li>
+            <li>Apenas 2 vagas! Oportunidade única de mudar o jogo no seu trade.</li>
+        </ul>
+        <div class="quote">
+            <p>"O meu objetivo é transformar você em uma máquina de fazer trade e viver a mudança de vida que tive graças ao mercado"</p>
+            <p class="author">– Gustavo Franco</p>
+        </div>
+    </section>
+
+    <!-- Inscrições Abertas -->
+    <section class="open-enrollment" id="open-enrollment">
+        <h2>Inscrições Abertas</h2>
+        <p>Agora é a sua chance de transformar seu trading com a mentoria individual!</p>
+        <p>Para garantir sua vaga, agende uma conversa exclusiva com o Professor Gustavo! Vamos alinhar seus objetivos e traçar o caminho para seu sucesso no trading.</p>
+        <div class="countdown">
+            <p><strong>Atenção:</strong> Pouquíssimas Vagas!</p>
+        </div>
+        <div class="price"><del>U$ 2,497.00</del><br>U$ 1,997.00</div>
+        <div class="installments">em até 12x no cartão em Reais</div>
+        <div class="payment-options">Opções de pagamento em Real ou Dólar<br>+ taxas aplicáveis</div>
+        <div class="payment-terms">
+            <p style="font-size: 12px; color: #fff; margin-top: 15px;">Ao realizar sua compra, você concorda com nossos <a href="https://francotrades.github.io/termos-de-uso/" target="_blank" style="color: #ff6200; text-decoration: underline;">Termos de Uso</a>.</p>
+        </div>
+        <div class="payment-buttons" id="payment-buttons">
+            <a href="https://buy.stripe.com/14AaEWcDg8YW89l5vl77O04" class="payment-button" aria-label="Pagar à vista em Dólar ou Real no cartão">Pagar à vista em Dólar ou Real no cartão</a>
+            <a href="https://mpago.la/1MNsbUG" class="payment-button" aria-label="Pagar no PIX ou parcelar no cartão em reais">Pagar no PIX ou parcelar no cartão em reais</a>
+        </div>
+    </section>
+
+    <!-- CTA Final -->
+    <section class="section cta-section">
+        <h2>Vagas Limitadas – Transforme Seu Trading Agora!</h2>
+        <p>A Mentoria Individual é feita para elevar seu operacional ao próximo nível. As vagas são limitadas – não perca essa oportunidade!</p>
+        <a href="#open-enrollment" class="cta-final-button" onclick="scrollToPayment()" aria-label="Marque sua reunião para a Mentoria Individual">Garantir Minha Vaga!</a>
+        <a href="https://wa.me/5522981448874?text=Tenho%20dúvidas%20sobre%20a%20Mentoria%20Individual,%20pode%20me%20ajudar?" class="whatsapp-button" aria-label="Entrar em contato via WhatsApp">Dúvidas? Chame no WhatsApp</a>
+    </section>
+
+    <!-- Disclaimer -->
+    <section class="disclaimer">
+        A Mentoria Individual tem caráter educacional e informativo, e não se trata de uma recomendação de investimentos. As estratégias ensinadas são baseadas na experiência do Professor Gustavo Franco e nos resultados obtidos ao longo do tempo, mas não garantem lucros futuros. O mercado financeiro envolve riscos significativos e cada aluno é totalmente responsável por suas decisões de investimento. Nem o Professor Gustavo, nem a equipe da mentoria, nem qualquer pessoa ou empresa associada se responsabilizam por perdas financeiras, resultados individuais ou decisões de trade tomadas pelos participantes. Ao se inscrever na mentoria, você reconhece que qualquer operação no mercado é de sua inteira responsabilidade.
+    </section>
+
+    <!-- Script para rolar até os botões de pagamento -->
+    <script type="text/javascript">
+        // Função para rolar até os botões de pagamento
+        function scrollToPayment() {
+            const paymentButtons = document.getElementById('payment-buttons');
+            paymentButtons.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            paymentButtons.classList.add('highlight');
+            setTimeout(() => {
+                paymentButtons.classList.remove('highlight');
+            }, 2000); // Remove o destaque após 2 segundos
+        }
+    </script>
+</body>
+</html>
