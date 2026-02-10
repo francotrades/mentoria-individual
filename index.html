@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mentoria Individual 1:1 – Exclusiva | Gustavo Franco</title>
+    <meta name="description" content="Mentoria Individual 1:1 exclusiva: transforme setups bons em consistência real com gameplan sólido, mentalidade blindada e lucros consistentes. Vagas limitadas!">
+    <meta name="keywords" content="mentoria trading, price action scalping, consistência trading, mentoria Gustavo Franco, prop firms">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: #fff;
+            background: #000;
+        }
+        /* Navbar Fixa */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(0,0,0,0.9);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            padding: 15px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #ff620022;
+        }
+        .navbar .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ff6200;
+        }
+        .navbar .logo span { color: #fff; }
+        .navbar ul {
+            list-style: none;
+            display: flex;
+            gap: 30px;
+        }
+        .navbar a {
+            color: #ddd;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        .navbar a:hover { color: #ff6200; }
+        /* Header */
+        .header {
+            padding: 180px 20px 100px;
+            text-align: center;
+            background: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)), url('https://images.pexels.com/photos/6802048/pexels-photo-6802048.jpeg?auto=compress&cs=tinysrgb&w=1200&h=400&fit=crop');
+            background-size: cover;
+            background-position: center;
+        }
+        .header h1 {
+            font-size: 52px;
+            font-weight: 700;
+            color: #ff6200;
+            margin-bottom: 20px;
+        }
+        .header p {
+            font-size: 22px;
+            max-width: 800px;
+            margin: 0 auto 30px;
+        }
+        .exclusive-badge {
+            background: #ff6200;
+            color: #000;
+            font-weight: 700;
+            padding: 12px 24px;
+            border-radius: 8px;
+            display: inline-block;
+            margin: 20px auto;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .exclusive-badge:hover {
+            background: #e05500;
+            transform: translateY(-2px);
+        }
+        /* Botão CTA padrão */
+        .cta-button, .payment-button, .payment-4x {
+            color: white;
+            padding: 16px 32px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 700;
+            text-decoration: none;
+            display: block;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            margin: 15px auto;
+            max-width: 320px;
+            text-align: center;
+        }
+        .cta-button:hover, .payment-button:hover, .payment-4x:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+        }
+        .cta-button.cta-header {
+            display: block;
+            margin: 40px auto 0;
+            max-width: 320px;
+        }
+        /* Cor branca específica para o botão Garantir Minha Vaga Agora */
+        .cta-button.cta-header-white {
+            color: #fff !important;
+        }
+        /* Urgência no botão principal */
+        .cta-button.urgency-pulse {
+            animation: pulse 2s infinite;
+            border: 2px solid #ff6200;
+            font-weight: 700;
+        }
+        /* Cores específicas */
+        .cta-button, .payment-button, .payment-4x {
+            background: #ff6200;
+        }
+        .payment-4x:hover {
+            background: #e05500;
+        }
+        /* Ripple effect */
+        .cta-button:after, .payment-button:after, .payment-4x:after {
+            content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0;
+            background: rgba(255,255,255,0.25); border-radius: 50%; transform: translate(-50%,-50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        .cta-button:hover:after, .payment-button:hover:after, .payment-4x:hover:after { width: 300px; height: 300px; }
+        /* Seções */
+        .section {
+            padding: 80px 20px;
+            max-width: 1100px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .section h2 {
+            font-size: 40px;
+            color: #ff6200;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+        /* Listas com bolinha laranja */
+        ul.check-list {
+            list-style: none;
+            text-align: left;
+            max-width: 800px;
+            margin: 40px auto;
+        }
+        ul.check-list li {
+            font-size: 18px;
+            margin: 18px 0;
+            padding-left: 35px;
+            position: relative;
+            min-height: 28px;
+        }
+        ul.check-list li:before {
+            content: "•";
+            color: #ff6200;
+            position: absolute;
+            left: 0;
+            font-size: 40px;
+            line-height: 1;
+            top: -6px;
+        }
+        /* Depoimentos */
+        .testimonials .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+            margin: 50px 0;
+        }
+        .testimonial {
+            background: #111;
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid #ff620022;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+            text-align: left;
+        }
+        .testimonial p { font-style: italic; margin-bottom: 15px; }
+        .testimonial .author {
+            color: #ff6200;
+            font-weight: 700;
+            text-align: right;
+        }
+        /* Preço e Urgência */
+        .price-box {
+            background: #111;
+            padding: 40px;
+            border-radius: 12px;
+            max-width: 500px;
+            margin: 40px auto;
+            border: 2px solid #ff6200;
+        }
+        .price del { color: #aaa; font-size: 28px; }
+        .price .current { font-size: 48px; font-weight: 800; color: #ff6200; }
+        .urgency-pulse {
+            animation: pulse 2s infinite;
+            border: 2px solid #ff6200;
+            border-radius: 8px;
+            padding: 12px 25px;
+            display: inline-block;
+            margin: 20px 0;
+            font-weight: 700;
+            color: #ff6200;
+        }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255,98,0,0.7); } 70% { box-shadow: 0 0 0 15px rgba(255,98,0,0); } 100% { box-shadow: 0 0 0 0 rgba(255,98,0,0); } }
+        /* WhatsApp Floating */
+        .whatsapp-float {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            background: #25D366;
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            text-align: center;
+            font-size: 40px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white !important;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        .whatsapp-float:hover { transform: scale(1.1); background: #20b358; }
+        .whatsapp-float i { line-height: 1; }
+        /* CTA Final */
+        .cta-section {
+            background: linear-gradient(135deg, #ff6200, #e05500);
+            color: #000;
+            padding: 100px 20px;
+        }
+        .cta-section h2 {
+            color: #000;
+            text-align: center;
+        }
+        .cta-section .cta-final-button {
+            background: #000;
+            color: #ff6200;
+        }
+        .cta-section .cta-final-button:hover { background: #222; }
+        .cta-section p {
+            font-size: 22px;
+            max-width: 800px;
+            margin: 0 auto 40px;
+            text-align: center;
+        }
+        /* Disclaimer */
+        .disclaimer {
+            font-size: 13px;
+            color: #aaa;
+            text-align: center;
+            padding: 40px 20px;
+            background: #000;
+        }
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .header { padding: 140px 15px 80px; }
+            .header h1 { font-size: 38px; }
+            .header p { font-size: 18px; }
+            .navbar ul { gap: 15px; font-size: 14px; flex-wrap: wrap; justify-content: center; }
+            .section h2 { font-size: 32px; }
+            .price .current { font-size: 38px; }
+            .whatsapp-float { width: 55px; height: 55px; font-size: 35px; bottom: 15px; right: 15px; }
+            .cta-button, .payment-button, .payment-4x { max-width: 280px; padding: 14px 24px; font-size: 16px; }
+            ul.check-list li { font-size: 16px; padding-left: 30px; }
+            ul.check-list li:before { font-size: 36px; top: -8px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar Fixa -->
+    <nav class="navbar">
+        <div class="logo">Franco<span>Trades</span></div>
+        <ul>
+            <li><a href="#benefits">Benefícios</a></li>
+            <li><a href="#learn">O que domina</a></li>
+            <li><a href="#how">Como funciona</a></li>
+            <li><a href="#testimonials">Depoimentos</a></li>
+            <li><a href="#open-enrollment">Inscreva-se</a></li>
+        </ul>
+    </nav>
+    <!-- Header -->
+    <section class="header">
+        <h1>Mentoria Individual 1:1 – Exclusiva</h1>
+        <p>Transforme setups bons em consistência real: 12 aulas e 4 meses de acompanhamento direto comigo para ter um gameplan sólido, mentalidade blindada e lucros consistentes</p>
+        <a href="https://wa.me/5522981448874?text=Ol%C3%A1%2C%20gostaria%20de%20fazer%20o%20pagamento%20da%20Mentoria%20Individual%20em%204x%20sem%20juros!" class="exclusive-badge"><i class="fas fa-lock"></i> Bônus Exclusivo para membros Platinum – Vagas limitadíssimas</a>
+        <a href="#open-enrollment" class="cta-button cta-header urgency-pulse cta-header-white">Garantir Minha Vaga Agora</a>
+    </section>
+    <!-- Por Que Escolher -->
+    <section class="section" id="benefits">
+        <h2>Por Que Escolher Minha Mentoria Individual?</h2>
+        <ul class="check-list">
+            <li>Planejamento de trade 100% personalizado para o seu perfil e estilo de scalping</li>
+            <li>Setups com Risco x Retorno favorável e alta probabilidade real</li>
+            <li>Acompanhamento 1 a 1: correção dos seus trades e dúvidas diárias</li>
+            <li>Domínio completo de Price Action avançado sem indicadores</li>
+            <li>4 meses de suporte + 12 meses de acesso às gravações</li>
+        </ul>
+    </section>
+    <!-- O Que Você Vai Dominar -->
+    <section class="section" id="learn">
+        <h2>O Que Você Vai Dominar de Verdade?</h2>
+        <p>Operacional limpo, claro e focado em consistência no daytrade</p>
+        <ul class="check-list">
+            <li>Multi Timeframe Analysis na prática para decisões confiantes</li>
+            <li>Mentalidade blindada: evolução na sua execução e resultados</li>
+            <li>Marcação precisa de níveis que o Smart Money respeita</li>
+            <li>Gameplan diário que se adapta ao contexto do pregão</li>
+            <li>Crescimento de contas em Prop firms e contas próprias</li>
+        </ul>
+    </section>
+    <!-- Como Funciona -->
+    <section class="section" id="how">
+        <h2>Como Funciona a Mentoria?</h2>
+        <p>12 sessões individuais ao vivo + 4 meses intensivos focados nos seus resultados:</p>
+        <ul class="check-list">
+            <li>Meu operacional completo: macro → micro → setups reais → multi-timeframe no scalping</li>
+            <li>Níveis que o mercado respeita de verdade</li>
+            <li>Gameplan diário adaptado ao pregão + gerenciamento de risco pro (sizing, trailing, corte emocional)</li>
+            <li>Leitura avançada de price action + contexto para consistência</li>
+            <li>Acesso aos meus trades reais + revisão dos seus para acelerar evolução</li>
+        </ul>
+        <div style="max-width:700px; margin:50px auto; font-style:italic; font-size:20px; color:#ddd; background:#111; padding:30px; border-left:5px solid #ff6200; border-radius:8px;">
+            “Meu objetivo é te transformar em uma máquina de trades e te entregar a mesma mudança de vida que o mercado me deu.”
+            <div style="text-align:right; font-weight:700; color:#ff6200; margin-top:15px;">– Gustavo Franco</div>
+        </div>
+    </section>
+    <!-- Depoimentos -->
+    <section class="section testimonials" id="testimonials">
+        <h2>O Que Meus Mentorados Estão Dizendo</h2>
+        <div class="grid">
+            <div class="testimonial">
+                <p>“Em poucas sessões, o conhecimento que recebi mudou completamente minha visão do mercado. Recomendo fortemente!”</p>
+                <div class="author">— Matheus Machado</div>
+            </div>
+            <div class="testimonial">
+                <p>“Investi em várias mentorias, mas o retorno aqui foi surreal. Acelerei meu aprendizado em meses o que levaria anos.”</p>
+                <div class="author">— Pedro Almeida</div>
+            </div>
+            <div class="testimonial">
+                <p>“A mentoria me deu ferramentas para operar com consistência e multiplicar minha conta. Melhor investimento que fiz.”</p>
+                <div class="author">— Igor Castro</div>
+            </div>
+        </div>
+    </section>
+    <!-- Inscrições Abertas -->
+    <section class="section" id="open-enrollment">
+        <h2>Inscrições Abertas</h2>
+        <p style="font-size:20px; margin-bottom:30px; color:#ff6200; font-weight:700;">
+            Oferta especial só para a sala: parcelamento em 4x sem juros direto comigo!
+        </p>
+       
+        <div class="urgency-pulse"><i class="fas fa-fire"></i> Atenção: Pouquíssimas Vagas Restantes!</div>
+       
+        <div class="price-box">
+            <div style="font-size:24px; margin-bottom:15px;">De <del>U$ 2.497,00</del></div>
+            <div class="current">Por Apenas U$ 1.997,00</div>
+            <div style="margin:20px 0; font-size:20px;">ou até <strong>21x</strong> no cartão (R$)</div>
+            <div style="font-size:16px; color:#aaa;">+ taxas aplicáveis</div>
+           
+            <div style="margin:30px 0; font-size:18px;">
+                <i class="fas fa-lock" style="color:#ff6200; margin-right:8px;"></i> Pagamento 100% Seguro
+                <br><i class="fas fa-shield-alt" style="color:#ff6200; margin-right:8px; margin-top:10px;"></i> Processo Confiável via Stripe / Parcelow
+            </div>
+           
+            <div style="margin-top:40px;">
+                <a href="https://wa.me/5522981448874?text=Ol%C3%A1%2C%20gostaria%20de%20fazer%20o%20pagamento%20da%20Mentoria%20Individual%20em%204x%20sem%20juros!" class="payment-4x">Pagar em 4x sem Juros em Dólar ou Real</a>
+                <a href="https://buy.stripe.com/14AaEWcDg8YW89l5vl77O04" class="payment-button">Pagar à Vista ou Parcelado (Cartão – Real ou Dólar)</a>
+                <a href="https://app.parcelow.com/payment-link/pay/DNA6ryeAj9" class="payment-button">PIX ou Parcelado no Cartão (Reais)</a>
+            </div>
+           
+            <div style="margin-top:20px; font-size:18px; color:#ff6200; font-weight:700;">
+                <i class="fas fa-exclamation-triangle"></i> 2026 é o ano de sair do “quase lá” – não perca!
+            </div>
+        </div>
+       
+        <p style="font-size:14px; color:#aaa; margin-top:20px;">
+            Ao prosseguir, você concorda com os <a href="https://francotrades.github.io/termos-de-uso/" target="_blank" style="color:#ff6200;">Termos de Uso</a>.
+        </p>
+    </section>
+    <!-- CTA Final -->
+    <section class="cta-section">
+        <h2>Transforme Seu Trading em 2026</h2>
+        <p>Saia do “quase lá” e comece a viver de verdade do mercado com consistência real. Clique e garanta sua vaga exclusiva!</p>
+        <a href="#open-enrollment" class="cta-button cta-final-button">Garantir Minha Vaga Agora</a>
+    </section>
+    <!-- Disclaimer -->
+    <section class="disclaimer">
+        A Mentoria Individual tem caráter educacional e informativo, não constitui recomendação de investimentos. Resultados passados não garantem lucros futuros. O mercado financeiro envolve riscos elevados. Você é o único responsável pelas suas decisões e operações. Nem Gustavo Franco nem qualquer associado se responsabilizam por perdas financeiras.
+    </section>
+    <!-- WhatsApp Floating -->
+    <a href="https://wa.me/5522981448874?text=Ol%C3%A1%20Gustavo!%20Tenho%20interesse%20na%20Mentoria%20Individual.%20Pode%20me%20ajudar?" class="whatsapp-float" target="_blank">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+    <script>
+        // Scroll suave para seções
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
