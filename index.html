@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mentoria 1:1 com Gustavo Franco | Price Action Real, Consistência Real</title>
+    <meta name="description" content="12 sessões individuais + 4 meses de acompanhamento direto com Gustavo Franco. Pare de operar no lugar errado e comece a lucrar com consistência real no daytrade.">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        :root {
+            --bg-deep:    #06080d;
+            --bg-card:    #0b1020;
+            --bg-mid:     #0e1428;
+            --cyan:       #3af0ff;
+            --blue:       #5b9fff;
+            --blue-dark:  #2b6fd4;
+            --white:      #eaf4ff;
+            --muted:      #5a7aa0;
+            --border:     rgba(58,240,255,0.15);
+            --glow-cyan:  0 0 28px rgba(58,240,255,0.55);
+            --glow-blue:  0 0 28px rgba(91,159,255,0.55);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--bg-deep);
+            color: var(--white);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* ─── NAVBAR ─────────────────────────────── */
+        .navbar {
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            background: rgba(6,8,13,0.94);
+            backdrop-filter: blur(16px);
+            z-index: 1000;
+            padding: 14px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+        .navbar .logo {
+            font-family: 'Orbitron', monospace;
+            font-size: 19px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: var(--white);
+        }
+        .navbar .logo span { color: var(--cyan); }
+        .navbar ul { list-style: none; display: flex; gap: 28px; align-items: center; }
+        .navbar a {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: color 0.3s;
+        }
+        .navbar a:hover { color: var(--white); }
+        .navbar .nav-cta {
+            background: var(--blue);
+            color: var(--white) !important;
+            padding: 8px 18px;
+            border-radius: 5px;
+            font-weight: 700;
+            transition: background 0.3s, box-shadow 0.3s !important;
+        }
+        .navbar .nav-cta:hover { background: var(--cyan); color: #06080d !important; box-shadow: var(--glow-cyan); }
+
+        /* ─── HERO ───────────────────────────────── */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 160px 20px 100px;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-bg-canvas { position: absolute; inset: 0; z-index: 0; opacity: 0.12; pointer-events: none; }
+        .hero::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.012) 2px, rgba(255,255,255,0.012) 4px);
+            z-index: 1; pointer-events: none;
+        }
+        .hero-content { position: relative; z-index: 2; max-width: 860px; }
+
+        .hero-eyebrow {
+            font-family: 'Orbitron', monospace;
+            font-size: 11px;
+            letter-spacing: 5px;
+            color: var(--cyan);
+            text-transform: uppercase;
+            margin-bottom: 24px;
+            opacity: 0.85;
+        }
+        .hero h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(38px, 7vw, 82px);
+            font-weight: 900;
+            line-height: 1.05;
+            letter-spacing: -1px;
+            margin-bottom: 12px;
+        }
+        .hero h1 .line1 { display: block; color: var(--white); animation: glowWhite 3s ease-in-out infinite alternate; }
+        .hero h1 .line2 { display: block; color: var(--cyan); animation: glowCyan 3s ease-in-out infinite alternate; }
+        @keyframes glowWhite {
+            from { text-shadow: 0 0 30px rgba(255,255,255,0.08); }
+            to   { text-shadow: 0 0 60px rgba(255,255,255,0.22); }
+        }
+        @keyframes glowCyan {
+            from { text-shadow: 0 0 20px rgba(58,240,255,0.35); }
+            to   { text-shadow: 0 0 60px rgba(58,240,255,0.85); }
+        }
+        .hero-sub {
+            font-size: clamp(16px, 2.2vw, 19px);
+            color: var(--muted);
+            max-width: 700px;
+            margin: 24px auto 16px;
+            font-weight: 300;
+            line-height: 1.7;
+        }
+        .hero-sub strong { color: var(--white); font-weight: 700; }
+
+        /* Pill de prova social no hero */
+        .hero-proof {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(58,240,255,0.06);
+            border: 1px solid rgba(58,240,255,0.2);
+            border-radius: 100px;
+            padding: 8px 20px;
+            font-size: 13px;
+            color: var(--muted);
+            margin: 20px 0 32px;
+        }
+        .hero-proof strong { color: var(--cyan); }
+
+        .badge-bonus {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(91,159,255,0.1);
+            border: 1px solid rgba(91,159,255,0.3);
+            color: var(--blue);
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            padding: 10px 22px;
+            border-radius: 100px;
+            margin-bottom: 28px;
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .badge-bonus:hover { background: rgba(91,159,255,0.2); box-shadow: var(--glow-blue); }
+
+        /* Botões */
+        .btn {
+            display: inline-block;
+            padding: 17px 44px;
+            border-radius: 6px;
+            font-family: 'Orbitron', monospace;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-decoration: none;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--cyan), var(--blue));
+            color: #06080d;
+            box-shadow: 0 4px 24px rgba(58,240,255,0.35);
+        }
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 40px rgba(58,240,255,0.65);
+        }
+        .btn-pulse { animation: btnPulse 2.2s infinite; }
+        @keyframes btnPulse {
+            0%,100% { box-shadow: 0 4px 24px rgba(58,240,255,0.35); }
+            50%      { box-shadow: 0 4px 50px rgba(58,240,255,0.8); }
+        }
+
+        /* ─── STATS BAR ──────────────────────────── */
+        .stats-bar {
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            padding: 36px 20px;
+        }
+        .stats-inner {
+            max-width: 900px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            text-align: center;
+        }
+        .stat-item { padding: 10px; }
+        .stat-num {
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(28px, 4vw, 42px);
+            font-weight: 900;
+            color: var(--cyan);
+            text-shadow: var(--glow-cyan);
+            display: block;
+        }
+        .stat-label {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Decorative line */
+        .neon-line {
+            width: 50px; height: 1px;
+            background: linear-gradient(90deg, var(--cyan), var(--blue));
+            margin: 0 auto 20px;
+            box-shadow: var(--glow-cyan);
+        }
+
+        /* ─── SECTION BASE ───────────────────────── */
+        .section { padding: 100px 20px; max-width: 1100px; margin: 0 auto; }
+        .section-inner { text-align: center; }
+        .section-label {
+            font-family: 'Orbitron', monospace;
+            font-size: 10px;
+            letter-spacing: 5px;
+            color: var(--cyan);
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            opacity: 0.8;
+        }
+        .section h2 {
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(22px, 3.5vw, 38px);
+            font-weight: 900;
+            color: var(--white);
+            margin-bottom: 14px;
+            line-height: 1.2;
+        }
+        .section h2 span { color: var(--cyan); }
+        .section-desc { color: var(--muted); font-size: 17px; max-width: 640px; margin: 0 auto 60px; }
+
+        /* ─── PARA QUEM É ────────────────────────── */
+        .forwhom-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .forwhom-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 32px 28px;
+            text-align: left;
+        }
+        .forwhom-card.yes { border-top: 3px solid var(--cyan); }
+        .forwhom-card.no  { border-top: 3px solid rgba(255,80,80,0.6); }
+        .forwhom-card h3 {
+            font-family: 'Orbitron', monospace;
+            font-size: 12px;
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+        }
+        .forwhom-card.yes h3 { color: var(--cyan); }
+        .forwhom-card.no  h3 { color: rgba(255,120,120,0.8); }
+        .forwhom-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+        .forwhom-list li { display: flex; align-items: flex-start; gap: 12px; font-size: 15px; color: var(--muted); }
+        .forwhom-list li i { margin-top: 3px; flex-shrink: 0; }
+        .forwhom-card.yes .forwhom-list li i { color: var(--cyan); }
+        .forwhom-card.no  .forwhom-list li i { color: rgba(255,100,100,0.7); }
+
+        /* ─── CHECK LIST ─────────────────────────── */
+        .check-list {
+            list-style: none;
+            text-align: left;
+            max-width: 780px;
+            margin: 0 auto;
+            display: grid;
+            gap: 12px;
+        }
+        .check-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--cyan);
+            border-radius: 6px;
+            padding: 18px 22px;
+            font-size: 16px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .check-list li:hover { border-color: var(--cyan); box-shadow: 0 0 16px rgba(58,240,255,0.08); }
+        .check-list li .icon { color: var(--cyan); font-size: 15px; flex-shrink: 0; margin-top: 3px; }
+
+        /* ─── STEPS GRID ─────────────────────────── */
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 18px;
+        }
+        .step-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 28px 24px;
+            text-align: left;
+            transition: border-color 0.3s, transform 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .step-card::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 2px;
+            background: linear-gradient(90deg, var(--cyan), var(--blue));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .step-card:hover { border-color: rgba(58,240,255,0.3); transform: translateY(-4px); }
+        .step-card:hover::after { opacity: 1; }
+        .step-num { font-family: 'Orbitron', monospace; font-size: 10px; color: var(--cyan); letter-spacing: 3px; margin-bottom: 12px; }
+        .step-card h3 { font-size: 16px; font-weight: 700; color: var(--white); margin-bottom: 8px; }
+        .step-card p { font-size: 14px; color: var(--muted); line-height: 1.6; }
+
+        /* ─── QUOTE ──────────────────────────────── */
+        .quote-block {
+            max-width: 760px;
+            margin: 60px auto 0;
+            background: rgba(58,240,255,0.04);
+            border: 1px solid rgba(58,240,255,0.18);
+            border-left: 4px solid var(--cyan);
+            border-radius: 8px;
+            padding: 36px 40px;
+            text-align: left;
+        }
+        .quote-block p { font-size: 19px; font-style: italic; color: var(--white); line-height: 1.7; margin-bottom: 18px; }
+        .quote-author { font-family: 'Orbitron', monospace; font-size: 10px; color: var(--cyan); letter-spacing: 3px; }
+
+        /* ─── TESTIMONIALS ───────────────────────── */
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .testimonial {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 28px 26px;
+            text-align: left;
+            transition: border-color 0.3s;
+        }
+        .testimonial:hover { border-color: rgba(58,240,255,0.3); }
+        .testimonial .quote-mark { font-size: 36px; color: var(--cyan); line-height: 1; margin-bottom: 10px; opacity: 0.5; }
+        .testimonial p { font-size: 15px; color: var(--muted); line-height: 1.7; margin-bottom: 16px; }
+        .testimonial .author { font-family: 'Orbitron', monospace; font-size: 10px; color: var(--white); letter-spacing: 2px; }
+        .testimonial .result-tag {
+            display: inline-block;
+            background: rgba(58,240,255,0.08);
+            border: 1px solid rgba(58,240,255,0.2);
+            color: var(--cyan);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            letter-spacing: 1px;
+        }
+
+        /* ─── SEPARATOR ──────────────────────────── */
+        .section-sep {
+            border: none; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+            margin: 0 5%;
+        }
+
+        /* ─── FAQ ────────────────────────────────── */
+        .faq-list { max-width: 740px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+        .faq-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .faq-q {
+            width: 100%;
+            background: none;
+            border: none;
+            text-align: left;
+            padding: 20px 24px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--white);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            transition: color 0.3s;
+        }
+        .faq-q:hover { color: var(--cyan); }
+        .faq-q i { color: var(--cyan); font-size: 14px; transition: transform 0.3s; flex-shrink: 0; }
+        .faq-q.open i { transform: rotate(45deg); }
+        .faq-a {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease, padding 0.3s;
+            font-size: 15px;
+            color: var(--muted);
+            line-height: 1.7;
+            padding: 0 24px;
+        }
+        .faq-a.open { max-height: 200px; padding: 0 24px 20px; }
+
+        /* ─── PRICE SECTION ──────────────────────── */
+        .pricing-wrap { background: var(--bg-mid); padding: 100px 20px; }
+        .pricing-inner { max-width: 560px; margin: 0 auto; text-align: center; }
+        .pricing-inner h2 {
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(20px, 3.5vw, 34px);
+            font-weight: 900;
+            color: var(--white);
+            margin-bottom: 8px;
+        }
+        .pricing-inner h2 span { color: var(--cyan); }
+        .price-box {
+            background: var(--bg-card);
+            border: 1px solid rgba(58,240,255,0.25);
+            border-radius: 12px;
+            padding: 44px 36px;
+            margin: 36px auto 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .price-box::after {
+            content: ''; position: absolute;
+            top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, var(--cyan), var(--blue));
+            box-shadow: var(--glow-cyan);
+        }
+        .price-old { font-size: 18px; color: var(--muted); text-decoration: line-through; margin-bottom: 6px; }
+        .price-current {
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(34px, 6vw, 52px);
+            font-weight: 900;
+            color: var(--white);
+            text-shadow: 0 0 30px rgba(58,240,255,0.2);
+            margin-bottom: 8px;
+        }
+        .price-installment { font-size: 15px; color: var(--muted); margin-bottom: 6px; }
+        .price-installment strong { color: var(--white); }
+        .price-value-note {
+            font-size: 13px;
+            color: var(--cyan);
+            font-weight: 600;
+            margin-bottom: 20px;
+            opacity: 0.85;
+        }
+        .urgency-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(58,240,255,0.07);
+            border: 1px solid rgba(58,240,255,0.25);
+            border-radius: 4px;
+            padding: 10px 18px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--cyan);
+            margin: 16px 0 28px;
+            letter-spacing: 1px;
+            animation: urgencyGlow 2s infinite;
+        }
+        @keyframes urgencyGlow {
+            0%,100% { box-shadow: 0 0 8px rgba(58,240,255,0.15); }
+            50%      { box-shadow: 0 0 22px rgba(58,240,255,0.45); }
+        }
+        .security-row {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            font-size: 12px;
+            color: var(--muted);
+            margin: 0 0 28px;
+        }
+        .security-row span { display: flex; align-items: center; gap: 6px; }
+        .security-row i { color: var(--cyan); }
+        .payment-buttons { display: flex; flex-direction: column; gap: 12px; }
+        .payment-btn {
+            display: block;
+            padding: 16px 22px;
+            border-radius: 6px;
+            font-family: 'Orbitron', monospace;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-decoration: none;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+        .payment-btn-main {
+            background: linear-gradient(135deg, var(--cyan), var(--blue));
+            color: #06080d;
+            box-shadow: 0 4px 24px rgba(58,240,255,0.35);
+        }
+        .payment-btn-main:hover { transform: translateY(-2px); box-shadow: 0 8px 36px rgba(58,240,255,0.6); }
+        .payment-btn-sec {
+            background: transparent;
+            border: 1px solid rgba(58,240,255,0.2);
+            color: var(--muted);
+        }
+        .payment-btn-sec:hover { border-color: var(--cyan); color: var(--white); background: rgba(58,240,255,0.06); }
+        .terms-note { font-size: 12px; color: var(--muted); margin-top: 18px; }
+        .terms-note a { color: var(--cyan); }
+
+        /* ─── CTA FINAL ──────────────────────────── */
+        .cta-section {
+            padding: 120px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .cta-section::before {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(58,240,255,0.06) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .cta-section h2 {
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(24px, 4.5vw, 46px);
+            font-weight: 900;
+            color: var(--white);
+            margin-bottom: 18px;
+            position: relative;
+        }
+        .cta-section p { font-size: 17px; color: var(--muted); max-width: 600px; margin: 0 auto 40px; position: relative; }
+
+        /* ─── DISCLAIMER ─────────────────────────── */
+        .disclaimer {
+            font-size: 12px; color: #2a3a50;
+            text-align: center; padding: 36px 20px;
+            background: #050709;
+            border-top: 1px solid var(--border);
+            max-width: 900px; margin: 0 auto;
+        }
+
+        /* ─── WHATSAPP FLOAT ─────────────────────── */
+        .whatsapp-float {
+            position: fixed; bottom: 28px; right: 28px;
+            background: #25D366; width: 62px; height: 62px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 32px; color: white !important; text-decoration: none;
+            box-shadow: 0 4px 20px rgba(37,211,102,0.4);
+            z-index: 9999;
+            pointer-events: auto;
+            transition: all 0.3s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .whatsapp-float:hover { transform: scale(1.1); background: #20b358; }
+
+        /* Touch fixes for mobile */
+        .btn, .payment-btn, .badge-bonus, .nav-cta, .hamburger {
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            cursor: pointer;
+        }
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            gap: 5px;
+            width: 36px; height: 36px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 4px;
+            z-index: 1100;
+        }
+        .hamburger span {
+            display: block;
+            width: 100%; height: 2px;
+            background: var(--cyan);
+            border-radius: 2px;
+            transition: all 0.3s;
+            box-shadow: 0 0 8px rgba(58,240,255,0.8);
+        }
+        .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+        .hamburger.open span:nth-child(2) { opacity: 0; }
+        .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+        /* Mobile drawer */
+        .nav-drawer {
+            position: fixed;
+            top: 0; right: 0;
+            width: 75vw; max-width: 300px;
+            height: 100vh;
+            background: rgba(6,8,20,0.98);
+            backdrop-filter: blur(20px);
+            border-left: 1px solid var(--border);
+            z-index: 1050;
+            display: flex;
+            flex-direction: column;
+            padding: 80px 28px 40px;
+            gap: 8px;
+            transform: translateX(100%);
+            pointer-events: none;
+            transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+        }
+        .nav-drawer.open { transform: translateX(0); pointer-events: auto; }
+        .nav-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1040;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .nav-overlay.open { opacity: 1; pointer-events: auto; }
+        .nav-drawer a {
+            display: block;
+            color: var(--muted);
+            text-decoration: none;
+            font-family: 'Orbitron', monospace;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(58,240,255,0.08);
+            transition: color 0.2s;
+        }
+        .nav-drawer a:hover { color: var(--cyan); }
+        .nav-drawer .drawer-cta {
+            margin-top: 24px;
+            display: block;
+            text-align: center;
+            background: linear-gradient(135deg, var(--cyan), var(--blue));
+            color: #06080d !important;
+            border: none;
+            border-radius: 6px;
+            padding: 16px;
+            font-size: 12px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            /* force glow even on mobile */
+            box-shadow: 0 0 24px rgba(58,240,255,0.6), 0 0 48px rgba(58,240,255,0.3) !important;
+            -webkit-box-shadow: 0 0 24px rgba(58,240,255,0.6), 0 0 48px rgba(58,240,255,0.3) !important;
+        }
+
+        /* ─── RESPONSIVE ─────────────────────────── */
+        @media (max-width: 768px) {
+            /* Hide desktop nav, show hamburger */
+            .navbar ul { display: none; }
+            .navbar .nav-cta { display: none; }
+            .hamburger { display: flex; }
+            .nav-drawer { display: flex; }
+            .nav-overlay { display: block; }
+
+            .hero { padding: 110px 18px 70px; }
+            .forwhom-grid { grid-template-columns: 1fr; }
+            .quote-block { padding: 26px 20px; }
+            .quote-block p { font-size: 16px; }
+            .price-box { padding: 30px 18px; }
+            .section { padding: 60px 18px; }
+            .check-list li { padding: 14px 16px; font-size: 15px; }
+            .stats-inner { grid-template-columns: repeat(2, 1fr); }
+
+            /* Force glow on mobile for all primary buttons */
+            .btn-primary, .btn-pulse {
+                box-shadow: 0 0 22px rgba(58,240,255,0.55), 0 0 44px rgba(58,240,255,0.25) !important;
+                -webkit-box-shadow: 0 0 22px rgba(58,240,255,0.55), 0 0 44px rgba(58,240,255,0.25) !important;
+            }
+            .payment-btn-main {
+                box-shadow: 0 0 20px rgba(58,240,255,0.5), 0 0 40px rgba(58,240,255,0.2) !important;
+                -webkit-box-shadow: 0 0 20px rgba(58,240,255,0.5), 0 0 40px rgba(58,240,255,0.2) !important;
+            }
+            .urgency-tag {
+                box-shadow: 0 0 16px rgba(58,240,255,0.35) !important;
+                -webkit-box-shadow: 0 0 16px rgba(58,240,255,0.35) !important;
+            }
+            /* Glow text on headlines */
+            .hero h1 .line2 {
+                text-shadow: 0 0 30px rgba(58,240,255,0.8), 0 0 60px rgba(58,240,255,0.4) !important;
+            }
+            .stat-num {
+                text-shadow: 0 0 20px rgba(58,240,255,0.7) !important;
+            }
+            /* Badge bonus wrapping fix */
+            .badge-bonus { font-size: 12px; padding: 10px 16px; text-align: center; }
+            .hero-proof { font-size: 13px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAV OVERLAY -->
+<div class="nav-overlay" id="navOverlay"></div>
+
+<!-- MOBILE DRAWER -->
+<nav class="nav-drawer" id="navDrawer">
+    <a href="#forwhom"        onclick="closeMenu()">Para Quem É</a>
+    <a href="#learn"          onclick="closeMenu()">O Que Você Aprende</a>
+    <a href="#how"            onclick="closeMenu()">Como Funciona</a>
+    <a href="#testimonials"   onclick="closeMenu()">Resultados</a>
+    <a href="#faq"            onclick="closeMenu()">Dúvidas</a>
+    <a href="#open-enrollment" class="drawer-cta" onclick="closeMenu()">Quero Minha Vaga</a>
+</nav>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <div class="logo">Franco<span>Trades</span></div>
+    <ul>
+        <li><a href="#forwhom">Para Quem É</a></li>
+        <li><a href="#learn">O Que Você Aprende</a></li>
+        <li><a href="#how">Como Funciona</a></li>
+        <li><a href="#testimonials">Resultados</a></li>
+        <li><a href="#faq">Dúvidas</a></li>
+        <li><a href="#open-enrollment" class="nav-cta">Quero Minha Vaga</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Menu">
+        <span></span><span></span><span></span>
+    </button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <canvas class="hero-bg-canvas" id="candleCanvas"></canvas>
+    <div class="hero-content">
+        <div class="hero-eyebrow">● Mentoria Individual 1:1 — Vagas Limitadas</div>
+        <h1>
+            <span class="line1">UM OPERACIONAL</span>
+            <span class="line2">PARA A VIDA</span>
+        </h1>
+        <p class="hero-sub">
+            Não é mais um curso. Não é mais um setup solto. Aqui você sai com um <strong>operacional completo, testado e adaptado ao seu perfil</strong> — construído ao seu lado em 12 sessões e 4 meses de acompanhamento direto comigo.
+        </p>
+        <div class="hero-proof">
+            <i class="fas fa-users" style="color:var(--cyan)"></i>
+            Traders de <strong>contas próprias e prop firms</strong> já passaram pela mentoria
+        </div>
+        <a href="https://wa.me/5522981448874?text=Ol%C3%A1%2C%20gostaria%20de%20fazer%20o%20pagamento%20da%20Mentoria%20Individual%20em%204x%20sem%20juros!" class="badge-bonus">
+            <i class="fas fa-star"></i> Bônus Exclusivo para membros Platinum da Sala
+        </a>
+        <br>
+        <a href="#open-enrollment" class="btn btn-primary btn-pulse">Quero Garantir Minha Vaga</a>
+    </div>
+</section>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+    <div class="stats-inner">
+        <div class="stat-item">
+            <span class="stat-num">12</span>
+            <div class="stat-label">Sessões individuais ao vivo</div>
+        </div>
+        <div class="stat-item">
+            <span class="stat-num">4</span>
+            <div class="stat-label">Meses de acompanhamento direto</div>
+        </div>
+        <div class="stat-item">
+            <span class="stat-num">12</span>
+            <div class="stat-label">Meses de acesso às gravações</div>
+        </div>
+        <div class="stat-item">
+            <span class="stat-num">1:1</span>
+            <div class="stat-label">Atenção 100% no seu operacional</div>
+        </div>
+    </div>
+</div>
+
+<hr class="section-sep">
+
+<!-- PARA QUEM É -->
+<div class="section" id="forwhom">
+    <div class="section-inner">
+        <div class="section-label">● Filtro honesto</div>
+        <div class="neon-line"></div>
+        <h2>Essa Mentoria É <span>Para Você?</span></h2>
+        <p class="section-desc">Antes de decidir, seja honesto com você mesmo.</p>
+        <div class="forwhom-grid">
+            <div class="forwhom-card yes">
+                <h3>✦ Sim, é para você se</h3>
+                <ul class="forwhom-list">
+                    <li><i class="fas fa-check-circle"></i> Você já opera mas os resultados são inconsistentes — bom em alguns meses, ruim em outros</li>
+                    <li><i class="fas fa-check-circle"></i> Você sente que entende o mercado mas trava na execução ou no emocional</li>
+                    <li><i class="fas fa-check-circle"></i> Você quer entrar em prop firms ou já está e não consegue passar a fase de funded</li>
+                    <li><i class="fas fa-check-circle"></i> Você quer um gameplan real — não mais teoria, mas um plano para amanhã</li>
+                    <li><i class="fas fa-check-circle"></i> Você está disposto a ser corrigido e mudar o que não está funcionando</li>
+                    <li><i class="fas fa-check-circle"></i> Você opera ou quer operar ações, opções ou futuros e quer um método que funcione nos três</li>
+                    <li><i class="fas fa-check-circle"></i> Você ainda não opera mas quer começar com um operacional sólido, testado e que te dê segurança desde o primeiro trade</li>
+                </ul>
+            </div>
+            <div class="forwhom-card no">
+                <h3>✕ Não é para você se</h3>
+                <ul class="forwhom-list">
+                    <li><i class="fas fa-times-circle"></i> Você está buscando um robô, indicador mágico ou resultado garantido</li>
+                    <li><i class="fas fa-times-circle"></i> Você nunca teve contato com o mercado e não entende conceitos básicos como o que é um ativo, uma ordem ou um stop</li>
+                    <li><i class="fas fa-times-circle"></i> Você espera resultados sem colocar em prática o que aprende entre as sessões</li>
+                    <li><i class="fas fa-times-circle"></i> Você quer apenas teoria — sem compromisso com a prática real</li>
+                    <li><i class="fas fa-times-circle"></i> Você não está disposto a questionar o que faz hoje e mudar o que não está funcionando</li>
+                    <li><i class="fas fa-times-circle"></i> Você busca atalhos — aqui o trabalho é real e os resultados vêm de consistência, não de sorte</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<hr class="section-sep">
+
+<!-- O QUE VAI DOMINAR -->
+<div class="section" id="learn">
+    <div class="section-inner">
+        <div class="section-label">● O que você leva</div>
+        <div class="neon-line"></div>
+        <h2>O Que Você Vai <span>Construir de Verdade</span></h2>
+        <p class="section-desc">Não é lista de conteúdo. É o que você vai ter no final da mentoria — na prática, no seu operacional, todo dia.</p>
+        <ul class="check-list">
+            <li><i class="fas fa-crosshairs icon"></i> <strong style="color:var(--white);margin-right:6px;">Leitura de mercado precisa:</strong> você para de operar no lugar errado e começa a ver o que o Smart Money vê</li>
+            <li><i class="fas fa-layer-group icon"></i> <strong style="color:var(--white);margin-right:6px;">Multi Timeframe aplicado:</strong> macro contextualiza, micro executa — decisões confiantes sem paralisia</li>
+            <li><i class="fas fa-calendar-day icon"></i> <strong style="color:var(--white);margin-right:6px;">Gameplan diário real:</strong> você chega no pregão sabendo o que fazer, em qual preço e com qual risco</li>
+            <li><i class="fas fa-brain icon"></i> <strong style="color:var(--white);margin-right:6px;">Mentalidade de execução:</strong> chega no fim do trade que você planejou — sem mudar de ideia no meio</li>
+            <li><i class="fas fa-shield-alt icon"></i> <strong style="color:var(--white);margin-right:6px;">Gestão de risco profissional:</strong> sizing correto, trailing e condução do trade sem achismo</li>
+            <li><i class="fas fa-rocket icon"></i> <strong style="color:var(--white);margin-right:6px;">Base sólida para prop firms:</strong> operacional que passa a avaliação e mantém a conta para realizar saques com consistência</li>
+        </ul>
+    </div>
+</div>
+
+<hr class="section-sep">
+
+<!-- COMO FUNCIONA -->
+<div class="section" id="how">
+    <div class="section-inner">
+        <div class="section-label">● Estrutura da mentoria</div>
+        <div class="neon-line"></div>
+        <h2>Como Funciona <span>Na Prática</span></h2>
+        <p class="section-desc">12 sessões individuais ao vivo + 4 meses de acompanhamento — cada etapa tem um objetivo claro.</p>
+        <div class="steps-grid">
+            <div class="step-card">
+                <div class="step-num">01 · DIAGNÓSTICO</div>
+                <h3>Entendendo Onde Você Está</h3>
+                <p>Revisão do seu operacional atual, seus erros recorrentes e o que precisa mudar primeiro para parar de perder dinheiro.</p>
+            </div>
+            <div class="step-card">
+                <div class="step-num">02 · ESTRUTURA</div>
+                <h3>Macro → Micro → Execução</h3>
+                <p>Meu operacional completo do zero: como leio o mercado no timeframe maior antes de entrar no menor. Sem pular etapas.</p>
+            </div>
+            <div class="step-card">
+                <div class="step-num">03 · NÍVEIS</div>
+                <h3>Onde o Mercado Realmente Para</h3>
+                <p>Marcação de estruturas que o Smart Money usa. Você para de comprar no topo e vender no fundo.</p>
+            </div>
+            <div class="step-card">
+                <div class="step-num">04 · GAMEPLAN</div>
+                <h3>Plano para Amanhã, Sempre</h3>
+                <p>Como montar o seu gameplan diário adaptado ao contexto do pregão — com gatilhos claros e risco definido antes de abrir a plataforma.</p>
+            </div>
+            <div class="step-card">
+                <div class="step-num">05 · REVISÃO</div>
+                <h3>Seus Trades na Prática</h3>
+                <p>Você manda, eu reviso. Acesso aos meus trades reais para comparar. Aqui é onde a evolução acelera de verdade.</p>
+            </div>
+        </div>
+
+        <div class="quote-block">
+            <p>"A maioria dos traders não precisa de mais indicadores — precisa de alguém que os apresente um operacional completo e que enxergue os detalhes que eles não conseguem ver sozinhos. É exatamente para isso que essa mentoria existe."</p>
+            <div class="quote-author">— GUSTAVO FRANCO · FRANCOTRADES</div>
+        </div>
+    </div>
+</div>
+
+<hr class="section-sep">
+
+<!-- DEPOIMENTOS -->
+<div class="section" id="testimonials">
+    <div class="section-inner">
+        <div class="section-label">● Quem já passou pela mentoria</div>
+        <div class="neon-line"></div>
+        <h2>Resultados de <span>Quem Aplicou</span></h2>
+        <p class="section-desc">Sem promessa de enriquecimento. Resultados reais de quem chegou comprometido e implementou o que aprendeu.</p>
+        <div class="testimonials-grid">
+            <div class="testimonial">
+                <div class="quote-mark">"</div>
+                <p>Eu operava há 2 anos e achava que entendia price action. Nas primeiras sessões percebi que estava marcando nível errado em todo trade. Depois da mentoria, minha taxa de acerto mudou completamente.</p>
+                <div class="author">— MATHEUS MACHADO</div>
+                <div class="result-tag">Marcação de níveis · Consistência</div>
+            </div>
+            <div class="testimonial">
+                <div class="quote-mark">"</div>
+                <p>Passei por outras mentorias coletivas antes. A diferença do 1:1 e do acompanhamento é absurda — o Gustavo viu exatamente onde eu estava errando nos meus trades e corrigiu o que precisava. Em meses evolui o que levaria anos.</p>
+                <div class="author">— PEDRO ALMEIDA</div>
+                <div class="result-tag">Operacional · Prop Firms</div>
+            </div>
+            <div class="testimonial">
+                <div class="quote-mark">"</div>
+                <p>Meu problema não era o setup — era o emocional na execução. A mentoria me deu um gameplan tão claro que o "achismo" simplesmente saiu da equação. Hoje opero com muito mais frieza.</p>
+                <div class="author">— IGOR CASTRO</div>
+                <div class="result-tag">Execução · Gestão emocional</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<hr class="section-sep">
+
+<!-- FAQ -->
+<div class="section" id="faq">
+    <div class="section-inner">
+        <div class="section-label">● Dúvidas frequentes</div>
+        <div class="neon-line"></div>
+        <h2>Perguntas <span>Antes de Decidir</span></h2>
+        <p class="section-desc">As dúvidas mais comuns de quem está considerando entrar.</p>
+        <div class="faq-list">
+            <div class="faq-item">
+                <button class="faq-q"><span>Preciso ter quanto tempo de mercado para entrar?</span><i class="fas fa-plus"></i></button>
+                <div class="faq-a">Você não precisa ter operado antes, mas entender o básico do mercado. A mentoria não é para quem está começando do zero — é para quem quer operar ou já opera, mas quer dar o próximo nível com acompanhamento individualizado.</div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-q"><span>As sessões são gravadas?</span><i class="fas fa-plus"></i></button>
+                <div class="faq-a">Sim. Todas as 12 sessões individuais ficam gravadas e você tem acesso por 12 meses. Nada se perde — você revisa quantas vezes quiser.</div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-q"><span>Como funciona o acompanhamento de 4 meses?</span><i class="fas fa-plus"></i></button>
+                <div class="faq-a">Após a oitava sessão, o acompanhamento começa e durante esses 4 meses você tem acesso direto a mim para tirar dúvidas sobre trades, manda suas operações para revisão e recebe feedback real sobre o que está funcionando e o que precisa ajustar. Além disso, recebe a revisão de todos os meus trades explicando a lógica por trás e a imagem da operação — para ter uma imersão ainda maior no conteúdo.</div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-q"><span>Funciona para quem quer entrar em prop firms?</span><i class="fas fa-plus"></i></button>
+                <div class="faq-a">Sim, e é um dos focos da mentoria. Trabalhamos operacional que respeita as regras de drawdown e consistência das principais prop firms americanas — tanto na fase de avaliação quanto na conta funded.</div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-q"><span>Posso pagar em reais?</span><i class="fas fa-plus"></i></button>
+                <div class="faq-a">Sim. Você pode pagar à vista em reais ou em dólar via Stripe (cartão ou PIX). Também está disponível o parcelamento em 4x sem juros direto comigo — basta entrar em contato pelo WhatsApp.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PREÇO -->
+<div class="pricing-wrap" id="open-enrollment">
+    <div class="pricing-inner">
+        <div class="section-label" style="text-align:center">● Inscrições abertas · Vagas limitadas</div>
+        <div class="neon-line"></div>
+        <h2>Invista na Sua <span>Consistência</span></h2>
+        <p style="color:var(--muted);font-size:14px;margin-top:8px;">Parcelamento especial em 4x sem juros disponível para membros da sala</p>
+
+        <div class="price-box">
+            <div class="price-old">Valor original: U$ 2.497,00</div>
+            <div class="price-current">U$ 1.997,00</div>
+            <div class="price-installment">ou em <strong>4x sem juros</strong> direto comigo via WhatsApp</div>
+            <div class="price-value-note">12 sessões + 4 meses de acompanhamento + 12 meses de gravações</div>
+
+            <div class="urgency-tag">
+                <i class="fas fa-fire"></i> Poucas vagas disponíveis — inscrições encerradas quando atingir o limite
+            </div>
+
+            <div class="security-row">
+                <span><i class="fas fa-lock"></i> Pagamento 100% seguro</span>
+                <span><i class="fas fa-shield-alt"></i> Stripe</span>
+                <span><i class="fas fa-globe"></i> R$ ou U$</span>
+            </div>
+
+            <div class="payment-buttons">
+                <a href="https://wa.me/5522981448874?text=Ol%C3%A1%2C%20gostaria%20de%20fazer%20o%20pagamento%20da%20Mentoria%20Individual%20em%204x%20sem%20juros!" class="payment-btn payment-btn-main">
+                    <i class="fas fa-bolt"></i> &nbsp;4x Sem Juros — Falar no WhatsApp
+                </a>
+                <a href="https://buy.stripe.com/14AaEWcDg8YW89l5vl77O04" class="payment-btn payment-btn-sec">Pagar à Vista · PIX / Cartão (R$ ou $)</a>
+            </div>
+
+            <p style="margin-top:18px;font-size:13px;color:var(--muted);line-height:1.6;">
+                Dúvidas antes de comprar? <a href="https://wa.me/5522981448874?text=Ol%C3%A1%20Gustavo!%20Tenho%20interesse%20na%20Mentoria%20Individual.%20Pode%20me%20ajudar?" style="color:var(--cyan);font-weight:600;">Fale comigo no WhatsApp</a> antes de decidir.
+            </p>
+        </div>
+
+        <p class="terms-note">Ao prosseguir, você concorda com os <a href="https://francotrades.github.io/termos-de-uso/" target="_blank">Termos de Uso</a>.</p>
+    </div>
+</div>
+
+<!-- CTA FINAL -->
+<section class="cta-section">
+    <h2>2026 Ainda Dá Tempo de Virar o Jogo</h2>
+    <p>Mas não com os mesmos hábitos, os mesmos erros e sem ninguém do seu lado corrigindo. Essa é a diferença que a mentoria faz.</p>
+    <a href="#open-enrollment" class="btn btn-primary btn-pulse">Quero Garantir Minha Vaga Agora</a>
+</section>
+
+<!-- DISCLAIMER -->
+<footer>
+    <p class="disclaimer">
+        A Mentoria Individual tem caráter educacional e informativo, não constitui recomendação de investimentos. Resultados passados não garantem lucros futuros. O mercado financeiro envolve riscos elevados. Você é o único responsável pelas suas decisões e operações. Nem Gustavo Franco nem qualquer associado se responsabilizam por perdas financeiras.
+    </p>
+</footer>
+
+<!-- WHATSAPP FLOAT -->
+<a href="https://wa.me/5522981448874?text=Ol%C3%A1%20Gustavo!%20Tenho%20interesse%20na%20Mentoria%20Individual.%20Pode%20me%20ajudar?" class="whatsapp-float" target="_blank">
+    <i class="fab fa-whatsapp"></i>
+</a>
+
+<script>
+// Hamburger menu
+function toggleMenu() {
+    const drawer = document.getElementById('navDrawer');
+    const overlay = document.getElementById('navOverlay');
+    const btn = document.getElementById('hamburger');
+    const isOpen = drawer.classList.contains('open');
+    if (isOpen) {
+        closeMenu();
+    } else {
+        drawer.classList.add('open');
+        overlay.classList.add('open');
+        btn.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+}
+function closeMenu() {
+    document.getElementById('navDrawer').classList.remove('open');
+    document.getElementById('navOverlay').classList.remove('open');
+    document.getElementById('hamburger').classList.remove('open');
+    document.body.style.overflow = '';
+}
+document.getElementById('navOverlay').addEventListener('click', closeMenu);
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); }
+    });
+});
+
+// FAQ accordion
+document.querySelectorAll('.faq-q').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const answer = btn.nextElementSibling;
+        const isOpen = answer.classList.contains('open');
+        document.querySelectorAll('.faq-a').forEach(a => a.classList.remove('open'));
+        document.querySelectorAll('.faq-q').forEach(b => b.classList.remove('open'));
+        if (!isOpen) { answer.classList.add('open'); btn.classList.add('open'); }
+    });
+});
+
+// Candlestick background
+const canvas = document.getElementById('candleCanvas');
+const ctx = canvas.getContext('2d');
+function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+resize();
+window.addEventListener('resize', resize);
+
+const CANDLES = 40;
+let candles = [];
+function randBetween(a, b) { return a + Math.random() * (b - a); }
+function initCandles() {
+    candles = [];
+    const spacing = canvas.width / CANDLES;
+    let price = 300;
+    for (let i = 0; i < CANDLES; i++) {
+        const open = price;
+        const change = randBetween(-18, 18);
+        const close = open + change;
+        const high = Math.max(open, close) + randBetween(4, 16);
+        const low  = Math.min(open, close) - randBetween(4, 16);
+        price = close;
+        candles.push({ x: spacing * i + spacing / 2, open, close, high, low });
+    }
+}
+initCandles();
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const h = canvas.height;
+    const prices = candles.flatMap(c => [c.high, c.low]);
+    const minP = Math.min(...prices);
+    const maxP = Math.max(...prices);
+    const scale = (h * 0.55) / ((maxP - minP) || 1);
+    const baseY = h * 0.72;
+    const cw = canvas.width / CANDLES * 0.45;
+    candles.forEach(c => {
+        const bull = c.close >= c.open;
+        ctx.strokeStyle = bull ? 'rgba(58,240,255,0.75)' : 'rgba(91,159,255,0.75)';
+        ctx.fillStyle   = bull ? 'rgba(58,240,255,0.75)' : 'rgba(91,159,255,0.75)';
+        ctx.lineWidth = 1.5;
+        const x  = c.x;
+        const oY = baseY - (c.open  - minP) * scale;
+        const cY = baseY - (c.close - minP) * scale;
+        const hY = baseY - (c.high  - minP) * scale;
+        const lY = baseY - (c.low   - minP) * scale;
+        ctx.beginPath(); ctx.moveTo(x, hY); ctx.lineTo(x, lY); ctx.stroke();
+        ctx.fillRect(x - cw/2, Math.min(oY,cY), cw, Math.abs(cY-oY) || 1);
+    });
+    requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>
