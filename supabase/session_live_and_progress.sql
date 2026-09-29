@@ -23,3 +23,8 @@ create unique index if not exists student_progress_student_session_unique
 
 alter table public.student_sessions
   add column if not exists teams_url text;
+
+
+-- Horário previsto da sessão (horário de Brasília).
+alter table public.student_sessions
+  add column if not exists session_time time;
