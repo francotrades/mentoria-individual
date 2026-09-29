@@ -1535,7 +1535,16 @@
               class="copy-pix-button"
               type="button"
             >
-              Copiar chave PIX
+              Copiar PIX Copia e Cola
+            </button>
+
+            <button
+              id="copyPixKeyButton"
+              class="copy-pix-button"
+              type="button"
+              style="background:transparent;color:var(--green);border:1px solid var(--border-green);"
+            >
+              Copiar chave
             </button>
 
           </div>
@@ -1555,8 +1564,8 @@
 
 
           <div class="qr-note">
-            QR da chave PIX. Se o aplicativo do seu banco não reconhecer automaticamente,
-            use o botão “Copiar chave PIX”.
+            QR Code PIX no padrão bancário. Em parcelas em BRL, o valor já vai preenchido.
+            Em parcelas em USD, o QR é gerado sem valor e o pagamento deve ser combinado em BRL.
           </div>
 
         </div>
@@ -1801,6 +1810,9 @@ const pixKey =
 const copyPixButton =
   $("copyPixButton");
 
+const copyPixKeyButton =
+  $("copyPixKeyButton");
+
 const pixQrCanvas =
   $("pixQrCanvas");
 
@@ -1864,6 +1876,228 @@ function formatMoney(
     Number(
       value ||
       0
+    )
+  );
+
+}
+
+
+function normalizePixText(
+  value,
+  maxLength
+) {
+
+  return String(
+    value ||
+    ""
+  )
+    .normalize(
+      "NFD"
+    )
+    .replace(
+      /[\u0300-\u036f]/g,
+      ""
+    )
+    .replace(
+      /[^A-Za-z0-9 .-]/g,
+      ""
+    )
+    .toUpperCase()
+    .slice(
+      0,
+      maxLength
+    );
+
+}
+
+
+function pixField(
+  id,
+  value
+) {
+
+  const text =
+    String(
+      value ??
+      ""
+    );
+
+
+  return (
+    id +
+    String(
+      text.length
+    ).padStart(
+      2,
+      "0"
+    ) +
+    text
+  );
+
+}
+
+
+function crc16Pix(
+  payload
+) {
+
+  let crc =
+    0xFFFF;
+
+
+  for (
+    let index = 0;
+    index < payload.length;
+    index++
+  ) {
+
+    crc ^=
+      payload.charCodeAt(
+        index
+      ) << 8;
+
+
+    for (
+      let bit = 0;
+      bit < 8;
+      bit++
+    ) {
+
+      crc =
+        (
+          crc &
+          0x8000
+        )
+          ?
+          (
+            (
+              crc << 1
+            ) ^
+            0x1021
+          ) &
+          0xFFFF
+          :
+          (
+            crc << 1
+          ) &
+          0xFFFF;
+
+    }
+
+  }
+
+
+  return crc
+    .toString(
+      16
+    )
+    .toUpperCase()
+    .padStart(
+      4,
+      "0"
+    );
+
+}
+
+
+function buildPixPayload({
+  key,
+  name,
+  city,
+  amount = null
+}) {
+
+  const merchantAccount =
+    pixField(
+      "00",
+      "BR.GOV.BCB.PIX"
+    ) +
+    pixField(
+      "01",
+      key
+    );
+
+
+  let payload =
+    pixField(
+      "00",
+      "01"
+    ) +
+    pixField(
+      "26",
+      merchantAccount
+    ) +
+    pixField(
+      "52",
+      "0000"
+    ) +
+    pixField(
+      "53",
+      "986"
+    );
+
+
+  if (
+    Number.isFinite(
+      Number(
+        amount
+      )
+    ) &&
+    Number(
+      amount
+    ) > 0
+  ) {
+
+    payload +=
+      pixField(
+        "54",
+        Number(
+          amount
+        ).toFixed(
+          2
+        )
+      );
+
+  }
+
+
+  payload +=
+    pixField(
+      "58",
+      "BR"
+    ) +
+    pixField(
+      "59",
+      normalizePixText(
+        name,
+        25
+      )
+    ) +
+    pixField(
+      "60",
+      normalizePixText(
+        city,
+        15
+      )
+    ) +
+    pixField(
+      "62",
+      pixField(
+        "05",
+        "***"
+      )
+    );
+
+
+  const payloadForCrc =
+    payload +
+    "6304";
+
+
+  return (
+    payloadForCrc +
+    crc16Pix(
+      payloadForCrc
     )
   );
 
@@ -2077,14 +2311,43 @@ async function loadPaymentArea() {
       "0b3aead6-081c-4c89-88d5-ad5bd784163b";
 
 
-    copyPixButton.dataset.pixKey =
+    const currentPixKey =
       settings?.pix_key ||
       "0b3aead6-081c-4c89-88d5-ad5bd784163b";
 
 
+    const pixPayload =
+      buildPixPayload({
+        key:
+          currentPixKey,
+        name:
+          settings?.pix_name ||
+          "Franco Trades",
+        city:
+          "RIO DE JANEIRO",
+        amount:
+          financial.moeda ===
+          "BRL"
+            ?
+            Number(
+              pending.valor
+            )
+            :
+            null
+      });
+
+
+    copyPixButton.dataset.pixPayload =
+      pixPayload;
+
+
+    copyPixKeyButton.dataset.pixKey =
+      currentPixKey;
+
+
     await QRCode.toCanvas(
       pixQrCanvas,
-      copyPixButton.dataset.pixKey,
+      pixPayload,
       {
         width:
           156,
@@ -3139,8 +3402,48 @@ copyPixButton.addEventListener(
   "click",
   async () => {
 
+    const payload =
+      copyPixButton.dataset.pixPayload;
+
+
+    if (!payload) {
+      return;
+    }
+
+
+    try {
+
+      await navigator.clipboard
+        .writeText(
+          payload
+        );
+
+
+      showMessage(
+        "PIX Copia e Cola copiado."
+      );
+
+    }
+
+    catch {
+
+      showMessage(
+        "Não foi possível copiar automaticamente.",
+        "error"
+      );
+
+    }
+
+  }
+);
+
+
+copyPixKeyButton.addEventListener(
+  "click",
+  async () => {
+
     const key =
-      copyPixButton.dataset.pixKey;
+      copyPixKeyButton.dataset.pixKey;
 
 
     if (!key) {
@@ -3165,7 +3468,7 @@ copyPixButton.addEventListener(
     catch {
 
       showMessage(
-        "Não foi possível copiar automaticamente. Selecione a chave PIX manualmente.",
+        "Não foi possível copiar automaticamente.",
         "error"
       );
 
