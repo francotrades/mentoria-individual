@@ -467,6 +467,7 @@ Deno.serve(async (request) => {
   let sent = 0;
   let skipped = 0;
   const errors: Array<Record<string, unknown>> = [];
+  const warnings: Array<Record<string, unknown>> = [];
 
   for (const payment of payments ?? []) {
     const financial =
@@ -563,10 +564,10 @@ Deno.serve(async (request) => {
             logError,
           );
 
-          errors.push({
+          warnings.push({
             payment_id: payment.id,
             email: financial.email,
-            error:
+            warning:
               `Email sent, but log failed: ${logError.message}`,
           });
         }
@@ -595,6 +596,7 @@ Deno.serve(async (request) => {
       skipped,
       preview: previewMode,
       manual: manualMode,
+      warnings,
       errors,
     }),
     {
