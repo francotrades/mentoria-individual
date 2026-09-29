@@ -1247,6 +1247,69 @@
       }
     }
 
+  
+    /* ==========================================
+       FINANCEIRO NOS CARDS — ADMIN V6
+    ========================================== */
+
+    .student-card-financial {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 12px;
+      padding-top: 11px;
+      border-top: 1px solid var(--ft-border);
+    }
+
+    .student-card-financial-item {
+      min-width: 0;
+    }
+
+    .student-card-financial-label {
+      display: block;
+      color: var(--ft-muted-2);
+      font-size: 8px;
+      font-weight: 900;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+
+    .student-card-financial-value {
+      display: block;
+      font-size: 11px;
+      font-weight: 900;
+      overflow-wrap: anywhere;
+    }
+
+    .student-card-financial-value.received {
+      color: #70e9aa;
+    }
+
+    .student-card-financial-value.pending {
+      color: #f6c75b;
+    }
+
+    .student-card-no-financial {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid var(--ft-border);
+      color: var(--ft-muted-2);
+      font-size: 9px;
+    }
+
+    .student-card-financial-link {
+      color: var(--ft-green);
+      text-decoration: none;
+      font-weight: 800;
+    }
+
+    @media (max-width: 520px) {
+      .student-card-financial {
+        grid-template-columns: 1fr;
+      }
+    }
+
   </style>
 </head>
 
@@ -1693,6 +1756,13 @@
           </div>
 
         </div>
+
+
+        <div
+          id="studentFinancialQuick"
+          class="student-card-financial hidden"
+          style="margin-top:18px;padding:16px;border:1px solid var(--ft-border);border-radius:12px;background:#090e0b;"
+        ></div>
 
 
         <div class="student-progress">
@@ -2233,6 +2303,9 @@ const studentRecordingCount =
 const expirationWarning =
   $("expirationWarning");
 
+const studentFinancialQuick =
+  $("studentFinancialQuick");
+
 
 const sessionsPanel =
   $("sessionsPanel");
@@ -2297,6 +2370,8 @@ let profiles = [];
 let allSessions = [];
 let allStudentSessions = [];
 let allProgress = [];
+let allFinancials = [];
+let allPayments = [];
 
 let selectedStudent = null;
 let studentSessions = [];
@@ -2357,6 +2432,121 @@ function formatDate(
   ).toLocaleDateString(
     "pt-BR"
   );
+
+}
+
+
+function formatMoney(
+  value,
+  currency = "BRL"
+) {
+
+  return new Intl.NumberFormat(
+    currency === "USD"
+      ?
+      "en-US"
+      :
+      "pt-BR",
+    {
+      style:
+        "currency",
+      currency:
+        currency
+    }
+  ).format(
+    Number(
+      value ||
+      0
+    )
+  );
+
+}
+
+
+function getStudentFinancial(
+  profile
+) {
+
+  const email =
+    (
+      profile.email ||
+      ""
+    )
+      .trim()
+      .toLowerCase();
+
+
+  const financial =
+    allFinancials.find(
+      item =>
+        (
+          item.profile_id &&
+          item.profile_id ===
+          profile.id
+        ) ||
+        (
+          email &&
+          (
+            item.email ||
+            ""
+          )
+            .trim()
+            .toLowerCase() ===
+          email
+        )
+    );
+
+
+  if (!financial) {
+    return null;
+  }
+
+
+  const payments =
+    allPayments.filter(
+      item =>
+        item.mentorship_id ===
+        financial.id
+    );
+
+
+  const received =
+    payments
+      .filter(
+        item =>
+          item.paga === true
+      )
+      .reduce(
+        (
+          total,
+          item
+        ) =>
+          total +
+          Number(
+            item.valor ||
+            0
+          ),
+        0
+      );
+
+
+  const total =
+    Number(
+      financial.valor_total ||
+      0
+    );
+
+
+  return {
+    financial,
+    received,
+    outstanding:
+      Math.max(
+        0,
+        total -
+        received
+      )
+  };
 
 }
 
@@ -2845,7 +3035,9 @@ async function loadBaseData() {
     profilesResult,
     sessionsResult,
     studentSessionsResult,
-    progressResult
+    progressResult,
+    financialsResult,
+    paymentsResult
   ] =
     await Promise.all([
 
@@ -2901,6 +3093,26 @@ async function loadBaseData() {
           student_id,
           session_id,
           concluida
+        `),
+
+      supabase
+        .from("mentorship_financials")
+        .select(`
+          id,
+          profile_id,
+          nome,
+          email,
+          valor_total,
+          moeda
+        `),
+
+      supabase
+        .from("mentorship_payments")
+        .select(`
+          id,
+          mentorship_id,
+          valor,
+          paga
         `)
 
     ]);
@@ -2910,14 +3122,18 @@ async function loadBaseData() {
     profilesResult.error ||
     sessionsResult.error ||
     studentSessionsResult.error ||
-    progressResult.error
+    progressResult.error ||
+    financialsResult.error ||
+    paymentsResult.error
   ) {
 
     console.error(
       profilesResult.error,
       sessionsResult.error,
       studentSessionsResult.error,
-      progressResult.error
+      progressResult.error,
+      financialsResult.error,
+      paymentsResult.error
     );
 
 
@@ -2945,6 +3161,14 @@ async function loadBaseData() {
 
   allProgress =
     progressResult.data || [];
+
+
+  allFinancials =
+    financialsResult.data || [];
+
+
+  allPayments =
+    paymentsResult.data || [];
 
 
   renderGlobalStats();
@@ -3657,6 +3881,12 @@ function renderStudentSelect() {
       );
 
 
+    const financialData =
+      getStudentFinancial(
+        profile
+      );
+
+
     const card =
       document.createElement(
         "button"
@@ -3754,6 +3984,59 @@ function renderStudentSelect() {
           <span>${accessText}</span>
           <span>${metrics.recordings} gravaç${metrics.recordings === 1 ? "ão" : "ões"}</span>
         </div>
+
+
+        ${
+          financialData
+            ?
+            `
+              <div class="student-card-financial">
+
+                <div class="student-card-financial-item">
+                  <span class="student-card-financial-label">
+                    Contrato
+                  </span>
+                  <span class="student-card-financial-value">
+                    ${formatMoney(
+                      financialData.financial.valor_total,
+                      financialData.financial.moeda
+                    )}
+                  </span>
+                </div>
+
+                <div class="student-card-financial-item">
+                  <span class="student-card-financial-label">
+                    Recebido
+                  </span>
+                  <span class="student-card-financial-value received">
+                    ${formatMoney(
+                      financialData.received,
+                      financialData.financial.moeda
+                    )}
+                  </span>
+                </div>
+
+                <div class="student-card-financial-item">
+                  <span class="student-card-financial-label">
+                    Saldo
+                  </span>
+                  <span class="student-card-financial-value ${financialData.outstanding > 0 ? "pending" : "received"}">
+                    ${formatMoney(
+                      financialData.outstanding,
+                      financialData.financial.moeda
+                    )}
+                  </span>
+                </div>
+
+              </div>
+            `
+            :
+            `
+              <div class="student-card-no-financial">
+                Financeiro ainda não vinculado a este mentorado.
+              </div>
+            `
+        }
       `;
 
 
@@ -4006,6 +4289,75 @@ function renderStudentData() {
 
   studentStatusSelect.value =
     selectedStudent.status;
+
+
+  const financialData =
+    getStudentFinancial(
+      selectedStudent
+    );
+
+
+  if (financialData) {
+
+    studentFinancialQuick.innerHTML =
+      `
+        <div class="student-card-financial-item">
+          <span class="student-card-financial-label">
+            Contrato
+          </span>
+          <span class="student-card-financial-value">
+            ${formatMoney(
+              financialData.financial.valor_total,
+              financialData.financial.moeda
+            )}
+          </span>
+        </div>
+
+        <div class="student-card-financial-item">
+          <span class="student-card-financial-label">
+            Recebido
+          </span>
+          <span class="student-card-financial-value received">
+            ${formatMoney(
+              financialData.received,
+              financialData.financial.moeda
+            )}
+          </span>
+        </div>
+
+        <div class="student-card-financial-item">
+          <span class="student-card-financial-label">
+            Saldo
+          </span>
+          <span class="student-card-financial-value ${financialData.outstanding > 0 ? "pending" : "received"}">
+            ${formatMoney(
+              financialData.outstanding,
+              financialData.financial.moeda
+            )}
+          </span>
+        </div>
+      `;
+
+
+    studentFinancialQuick.classList
+      .remove(
+        "hidden"
+      );
+
+  }
+
+  else {
+
+    studentFinancialQuick.innerHTML =
+      "";
+
+
+    studentFinancialQuick.classList
+      .add(
+        "hidden"
+      );
+
+  }
 
 }
 
