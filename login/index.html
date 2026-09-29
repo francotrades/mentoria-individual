@@ -490,6 +490,41 @@ function hideMessage() {
 }
 
 
+function showAccessReason() {
+
+  const reason =
+    new URLSearchParams(
+      window.location.search
+    ).get(
+      "reason"
+    );
+
+
+  const messages = {
+    inactive:
+      "Seu acesso à mentoria está temporariamente inativo.",
+    expired:
+      "O período de acesso à sua mentoria expirou. Entre em contato com a FrancoTrades.",
+    profile:
+      "Não foi possível localizar seu cadastro. Entre em contato com a FrancoTrades."
+  };
+
+
+  if (
+    reason &&
+    messages[reason]
+  ) {
+
+    showMessage(
+      messages[reason],
+      "error"
+    );
+
+  }
+
+}
+
+
 function dateExpired(
   expirationDate
 ) {
@@ -980,6 +1015,7 @@ async function checkExistingSession() {
 }
 
 
+showAccessReason();
 checkExistingSession();
 
 </script>
