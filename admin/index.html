@@ -5379,6 +5379,15 @@ function renderStudentData() {
             )}
           </span>
         </div>
+
+        <div class="student-card-financial-item">
+          <span class="student-card-financial-label">
+            Área do aluno
+          </span>
+          <span class="student-card-financial-value ${financialData.financial.profile_id === selectedStudent.id ? "received" : "pending"}">
+            ${financialData.financial.profile_id === selectedStudent.id ? "Conta vinculada" : "Conta não vinculada"}
+          </span>
+        </div>
       `;
 
 
