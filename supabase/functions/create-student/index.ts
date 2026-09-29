@@ -391,18 +391,25 @@ Deno.serve(
         linkData.properties ||
         {};
 
-    const actionLink =
-      properties.action_link ||
-      properties.actionLink ||
+    const hashedToken =
+      properties.hashed_token ||
+      properties.hashedToken ||
       (
         linkData as any
-      ).action_link ||
+      ).hashed_token ||
       (
         linkData as any
-      ).actionLink ||
+      ).hashedToken ||
       "";
 
-    if (!actionLink) {
+    const passwordLink =
+      hashedToken
+        ?
+        `${PASSWORD_URL}?token_hash=${encodeURIComponent(hashedToken)}&type=invite`
+        :
+        "";
+
+    if (!passwordLink) {
       await supabase.auth
         .admin
         .deleteUser(
@@ -413,7 +420,7 @@ Deno.serve(
         {
           success: false,
           error:
-            "O link seguro foi criado, mas não pôde ser recuperado.",
+            "O token seguro foi criado, mas não pôde ser recuperado.",
         },
         500,
       );
@@ -575,7 +582,7 @@ Deno.serve(
         </p>
 
         <a
-          href="${escapeHtml(actionLink)}"
+          href="${escapeHtml(passwordLink)}"
           style="display:inline-block;background:#43e290;color:#04130c;text-decoration:none;font-weight:900;padding:14px 20px;border-radius:10px;margin-bottom:22px;"
         >
           Criar minha senha
@@ -610,7 +617,7 @@ Deno.serve(
 
         <p style="color:#7f8a84;font-size:12px;line-height:1.6;margin:22px 0 0;">
           Se o botão “Criar minha senha” não abrir, copie e cole este link no navegador:<br>
-          <span style="word-break:break-all;color:#aeb8b2;">${escapeHtml(actionLink)}</span>
+          <span style="word-break:break-all;color:#aeb8b2;">${escapeHtml(passwordLink)}</span>
         </p>
       </div>
     </div>
