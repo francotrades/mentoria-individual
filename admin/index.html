@@ -1466,6 +1466,129 @@
       }
     }
 
+  
+
+    /* ==========================================
+       LEMBRETES FINANCEIROS — ADMIN V9
+    ========================================== */
+
+    .reminder-center {
+      margin-top: 16px;
+      padding: 18px;
+      border: 1px solid rgba(67,226,144,.16);
+      border-radius: 12px;
+      background: rgba(67,226,144,.018);
+    }
+
+    .reminder-center-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+
+    .reminder-center-title {
+      font-size: 13px;
+      font-weight: 900;
+      margin-bottom: 4px;
+    }
+
+    .reminder-center-description {
+      color: var(--ft-muted, #89939f);
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .reminder-pending-list,
+    .reminder-history-list {
+      display: grid;
+      gap: 9px;
+    }
+
+    .reminder-subtitle {
+      margin: 16px 0 9px;
+      color: #aeb8b2;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .6px;
+      text-transform: uppercase;
+    }
+
+    .reminder-payment-row,
+    .reminder-history-row {
+      display: grid;
+      grid-template-columns: minmax(0,1fr) auto;
+      gap: 12px;
+      align-items: center;
+      padding: 12px;
+      border: 1px solid var(--ft-border, #202833);
+      border-radius: 10px;
+      background: #090e0b;
+    }
+
+    .reminder-payment-main,
+    .reminder-history-main {
+      min-width: 0;
+    }
+
+    .reminder-payment-title,
+    .reminder-history-title {
+      font-size: 12px;
+      font-weight: 900;
+      margin-bottom: 4px;
+    }
+
+    .reminder-payment-meta,
+    .reminder-history-meta {
+      color: var(--ft-muted, #89939f);
+      font-size: 10px;
+      line-height: 1.5;
+    }
+
+    .reminder-send-button {
+      border: 1px solid rgba(67,226,144,.28);
+      background: rgba(67,226,144,.07);
+      color: #8cf0ba;
+      border-radius: 8px;
+      padding: 9px 12px;
+      font-size: 10px;
+      font-weight: 900;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .reminder-empty {
+      padding: 12px;
+      border: 1px dashed var(--ft-border, #202833);
+      border-radius: 9px;
+      color: var(--ft-muted, #89939f);
+      font-size: 11px;
+    }
+
+    .reminder-tag {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 3px 6px;
+      border-radius: 999px;
+      background: rgba(67,226,144,.08);
+      color: #70e9aa;
+      font-size: 8px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 620px) {
+      .reminder-payment-row,
+      .reminder-history-row {
+        grid-template-columns: 1fr;
+      }
+
+      .reminder-send-button {
+        width: 100%;
+      }
+    }
+
   </style>
 </head>
 
@@ -2126,6 +2249,39 @@
         </div>
 
 
+        <div
+          id="studentReminderCenter"
+          class="reminder-center hidden"
+        >
+          <div class="reminder-center-header">
+            <div>
+              <div class="reminder-center-title">
+                Lembretes de pagamento
+              </div>
+              <div class="reminder-center-description">
+                Veja o histórico de avisos enviados e envie um lembrete manual quando necessário.
+              </div>
+            </div>
+          </div>
+
+          <div class="reminder-subtitle">
+            Parcelas pendentes
+          </div>
+          <div
+            id="studentReminderPendingList"
+            class="reminder-pending-list"
+          ></div>
+
+          <div class="reminder-subtitle">
+            Histórico de lembretes
+          </div>
+          <div
+            id="studentReminderHistoryList"
+            class="reminder-history-list"
+          ></div>
+        </div>
+
+
         <div class="student-progress">
 
           <div class="progress-top">
@@ -2706,6 +2862,15 @@ const saveStudentFinancialButton =
 const cancelStudentFinancialButton =
   $("cancelStudentFinancialButton");
 
+const studentReminderCenter =
+  $("studentReminderCenter");
+
+const studentReminderPendingList =
+  $("studentReminderPendingList");
+
+const studentReminderHistoryList =
+  $("studentReminderHistoryList");
+
 
 const sessionsPanel =
   $("sessionsPanel");
@@ -2772,6 +2937,7 @@ let allStudentSessions = [];
 let allProgress = [];
 let allFinancials = [];
 let allPayments = [];
+let allReminderLogs = [];
 
 let selectedStudent = null;
 let studentSessions = [];
@@ -3900,6 +4066,10 @@ async function loadBaseData() {
     [];
 
 
+  allReminderLogs =
+    [];
+
+
   try {
 
     const financeLoad =
@@ -3913,7 +4083,8 @@ async function loadBaseData() {
             nome,
             email,
             valor_total,
-            moeda
+            moeda,
+            observacoes
           `),
 
         supabase
@@ -3921,8 +4092,11 @@ async function loadBaseData() {
           .select(`
             id,
             mentorship_id,
+            numero_parcela,
             valor,
-            paga
+            vencimento,
+            paga,
+            data_pagamento
           `)
 
       ]);
@@ -3988,6 +4162,51 @@ async function loadBaseData() {
       financeError
     );
 
+  }
+
+
+  try {
+
+    const {
+      data: reminderData,
+      error: reminderError
+    } =
+      await supabase
+        .from("payment_reminder_log")
+        .select(`
+          id,
+          payment_id,
+          mentorship_id,
+          reminder_type,
+          recipient_email,
+          sent_at
+        `)
+        .order(
+          "sent_at",
+          {
+            ascending: false
+          }
+        )
+        .limit(300);
+
+
+    if (!reminderError) {
+      allReminderLogs =
+        reminderData || [];
+    }
+    else {
+      console.error(
+        "Histórico de lembretes não carregado:",
+        reminderError
+      );
+    }
+
+  }
+  catch (reminderLoadError) {
+    console.error(
+      "Histórico de lembretes ignorado:",
+      reminderLoadError
+    );
   }
 
 
@@ -5180,6 +5399,315 @@ function renderStudentData() {
       .add(
         "hidden"
       );
+
+  }
+
+
+  renderStudentReminders();
+
+}
+
+
+function reminderTypeLabel(
+  type
+) {
+
+  const labels = {
+    "5_days_before":
+      "5 dias antes",
+    "1_day_before":
+      "1 dia antes",
+    "due_today":
+      "No vencimento",
+    "3_days_overdue":
+      "3 dias depois",
+    manual:
+      "Manual"
+  };
+
+
+  return labels[type] ||
+    type ||
+    "Lembrete";
+
+}
+
+
+function formatDateTime(
+  value
+) {
+
+  if (!value) {
+    return "-";
+  }
+
+
+  return new Date(value)
+    .toLocaleString(
+      "pt-BR",
+      {
+        dateStyle:
+          "short",
+        timeStyle:
+          "short"
+      }
+    );
+
+}
+
+
+function renderStudentReminders() {
+
+  if (!selectedStudent) {
+    studentReminderCenter.classList
+      .add("hidden");
+    return;
+  }
+
+
+  const financialData =
+    getStudentFinancial(
+      selectedStudent
+    );
+
+
+  if (!financialData) {
+    studentReminderCenter.classList
+      .add("hidden");
+    return;
+  }
+
+
+  studentReminderCenter.classList
+    .remove("hidden");
+
+
+  const pendingPayments =
+    financialData.payments.filter(
+      payment =>
+        payment.paga !== true
+    );
+
+
+  if (pendingPayments.length === 0) {
+    studentReminderPendingList.innerHTML =
+      `
+        <div class="reminder-empty">
+          Nenhuma parcela pendente para este mentorado.
+        </div>
+      `;
+  }
+  else {
+
+    studentReminderPendingList.innerHTML =
+      pendingPayments
+        .map(
+          payment =>
+            `
+              <div class="reminder-payment-row">
+                <div class="reminder-payment-main">
+                  <div class="reminder-payment-title">
+                    Parcela ${escapeHTML(payment.numero_parcela || "-")} ·
+                    ${escapeHTML(formatMoney(payment.valor, financialData.financial.moeda))}
+                  </div>
+                  <div class="reminder-payment-meta">
+                    Vencimento: ${escapeHTML(formatDate(payment.vencimento))}
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  class="reminder-send-button"
+                  data-manual-reminder-payment="${escapeHTML(payment.id)}"
+                >
+                  Enviar lembrete
+                </button>
+              </div>
+            `
+        )
+        .join("");
+
+  }
+
+
+  const paymentMap =
+    new Map(
+      financialData.payments.map(
+        payment =>
+          [String(payment.id), payment]
+      )
+    );
+
+
+  const history =
+    allReminderLogs.filter(
+      log =>
+        log.mentorship_id ===
+        financialData.financial.id
+    );
+
+
+  if (history.length === 0) {
+    studentReminderHistoryList.innerHTML =
+      `
+        <div class="reminder-empty">
+          Nenhum lembrete registrado ainda.
+        </div>
+      `;
+  }
+  else {
+
+    studentReminderHistoryList.innerHTML =
+      history
+        .slice(0, 20)
+        .map(
+          log => {
+
+            const payment =
+              paymentMap.get(
+                String(log.payment_id)
+              );
+
+
+            return `
+              <div class="reminder-history-row">
+                <div class="reminder-history-main">
+                  <div class="reminder-history-title">
+                    ${payment ? `Parcela ${escapeHTML(payment.numero_parcela || "-")}` : "Parcela"}
+                    <span class="reminder-tag">
+                      ${escapeHTML(reminderTypeLabel(log.reminder_type))}
+                    </span>
+                  </div>
+                  <div class="reminder-history-meta">
+                    Enviado em ${escapeHTML(formatDateTime(log.sent_at))}
+                    · ${escapeHTML(log.recipient_email || selectedStudent.email || "-")}
+                  </div>
+                </div>
+              </div>
+            `;
+
+          }
+        )
+        .join("");
+
+  }
+
+}
+
+
+async function sendManualPaymentReminder(
+  paymentId
+) {
+
+  if (!selectedStudent) {
+    return;
+  }
+
+
+  const financialData =
+    getStudentFinancial(
+      selectedStudent
+    );
+
+
+  const payment =
+    financialData?.payments.find(
+      item =>
+        String(item.id) ===
+        String(paymentId)
+    );
+
+
+  if (!payment || payment.paga === true) {
+    showMessage(
+      "Esta parcela não está disponível para lembrete.",
+      "error"
+    );
+    return;
+  }
+
+
+  const confirmed =
+    confirm(
+      `Enviar agora um lembrete da parcela ${payment.numero_parcela || "-"} para ${selectedStudent.email || financialData.financial.email}?`
+    );
+
+
+  if (!confirmed) {
+    return;
+  }
+
+
+  const button =
+    studentReminderPendingList.querySelector(
+      `[data-manual-reminder-payment="${paymentId}"]`
+    );
+
+
+  if (button) {
+    button.disabled = true;
+    button.textContent =
+      "Enviando...";
+  }
+
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabase.functions.invoke(
+        "payment-reminders",
+        {
+          body: {
+            manual:
+              true,
+            payment_id:
+              Number(paymentId)
+          }
+        }
+      );
+
+
+    if (
+      error ||
+      !data ||
+      Number(data.sent || 0) < 1 ||
+      (
+        Array.isArray(data.errors) &&
+        data.errors.length > 0
+      )
+    ) {
+      console.error(
+        "Erro no lembrete manual:",
+        error,
+        data
+      );
+
+      showMessage(
+        "Não foi possível enviar o lembrete manual.",
+        "error"
+      );
+      return;
+    }
+
+
+    showMessage(
+      "Lembrete enviado por e-mail."
+    );
+
+
+    await refreshData();
+
+  }
+  finally {
+
+    if (button) {
+      button.disabled = false;
+      button.textContent =
+        "Enviar lembrete";
+    }
 
   }
 
@@ -6448,6 +6976,29 @@ async function refreshData() {
 
 
 /* EVENTOS */
+
+studentReminderPendingList.addEventListener(
+  "click",
+  async event => {
+
+    const button =
+      event.target.closest(
+        "[data-manual-reminder-payment]"
+      );
+
+
+    if (!button) {
+      return;
+    }
+
+
+    await sendManualPaymentReminder(
+      button.dataset.manualReminderPayment
+    );
+
+  }
+);
+
 
 studentSearch.addEventListener(
   "input",
