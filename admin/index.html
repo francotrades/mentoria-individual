@@ -1,0 +1,2293 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Painel do Mentor | FrancoTrades</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #080b0f;
+      color: #ffffff;
+    }
+
+    header {
+      min-height: 72px;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      padding: 18px 28px;
+
+      border-bottom: 1px solid #202833;
+      background: #0c1015;
+    }
+
+    .logo {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+
+    .logo span {
+      color: #16c784;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .area-button,
+    .logout-button {
+      border: 1px solid #2a3440;
+      background: transparent;
+      color: #ffffff;
+
+      padding: 10px 14px;
+
+      border-radius: 8px;
+
+      text-decoration: none;
+
+      cursor: pointer;
+
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .container {
+      max-width: 1180px;
+      margin: 0 auto;
+
+      padding: 40px 24px 70px;
+    }
+
+    .page-header {
+      margin-bottom: 30px;
+    }
+
+    .eyebrow {
+      color: #16c784;
+
+      font-size: 12px;
+      font-weight: 800;
+
+      text-transform: uppercase;
+      letter-spacing: 1px;
+
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      font-size: 30px;
+      margin-bottom: 8px;
+    }
+
+    .page-header p {
+      color: #89939f;
+      line-height: 1.5;
+    }
+
+    .panel {
+      background: #10141b;
+
+      border: 1px solid #202833;
+      border-radius: 15px;
+
+      padding: 24px;
+
+      margin-bottom: 22px;
+    }
+
+    .panel-title {
+      font-size: 18px;
+      font-weight: 700;
+
+      margin-bottom: 20px;
+    }
+
+    .form-grid {
+      display: grid;
+
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+      gap: 18px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      display: block;
+
+      color: #b5bec8;
+
+      font-size: 12px;
+      font-weight: 700;
+
+      margin-bottom: 7px;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+
+      background: #0b1016;
+      color: #ffffff;
+
+      border: 1px solid #2a3440;
+      border-radius: 9px;
+
+      padding: 12px 13px;
+
+      outline: none;
+
+      font-family: inherit;
+      font-size: 14px;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: #16c784;
+    }
+
+    textarea {
+      min-height: 110px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+
+      margin-top: 20px;
+    }
+
+    .primary-button {
+      border: none;
+      border-radius: 9px;
+
+      background: #16c784;
+      color: #04130d;
+
+      padding: 12px 18px;
+
+      font-weight: 800;
+
+      cursor: pointer;
+    }
+
+    .secondary-button {
+      border: 1px solid #35404d;
+      border-radius: 9px;
+
+      background: transparent;
+      color: #ffffff;
+
+      padding: 12px 18px;
+
+      font-weight: 700;
+
+      cursor: pointer;
+    }
+
+    .danger-button {
+      border: 1px solid rgba(239, 68, 68, 0.45);
+
+      border-radius: 9px;
+
+      background: rgba(239, 68, 68, 0.08);
+
+      color: #fca5a5;
+
+      padding: 12px 18px;
+
+      font-weight: 700;
+
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .student-summary {
+      display: grid;
+
+      grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+      gap: 14px;
+
+      margin-top: 22px;
+    }
+
+    .summary-card {
+      background: #0b1016;
+
+      border: 1px solid #202833;
+      border-radius: 11px;
+
+      padding: 16px;
+    }
+
+    .summary-label {
+      color: #89939f;
+      font-size: 11px;
+
+      margin-bottom: 7px;
+    }
+
+    .summary-value {
+      font-size: 15px;
+      font-weight: 700;
+
+      overflow-wrap: anywhere;
+    }
+
+    .green {
+      color: #16c784;
+    }
+
+    .session-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .session-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      gap: 20px;
+
+      background: #0b1016;
+
+      border: 1px solid #202833;
+      border-radius: 11px;
+
+      padding: 16px;
+    }
+
+    .session-item-main {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .session-number {
+      color: #16c784;
+
+      font-size: 11px;
+      font-weight: 800;
+
+      letter-spacing: 0.8px;
+
+      margin-bottom: 5px;
+    }
+
+    .session-item-title {
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    .session-item-meta {
+      color: #89939f;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .session-edit {
+      border: 1px solid #34404c;
+
+      background: transparent;
+      color: #ffffff;
+
+      border-radius: 8px;
+
+      padding: 9px 13px;
+
+      cursor: pointer;
+
+      white-space: nowrap;
+
+      font-weight: 700;
+    }
+
+    .status-pill {
+      display: inline-block;
+
+      padding: 4px 8px;
+
+      border-radius: 999px;
+
+      font-size: 10px;
+      font-weight: 800;
+
+      margin-left: 6px;
+    }
+
+    .status-pill.active {
+      background: rgba(22, 199, 132, 0.12);
+      color: #6ee7b7;
+    }
+
+    .status-pill.blocked {
+      background: rgba(239, 68, 68, 0.10);
+      color: #fca5a5;
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+
+      margin-top: 6px;
+    }
+
+    .checkbox-row input {
+      width: auto;
+    }
+
+    .checkbox-row label {
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .message {
+      display: none;
+
+      padding: 13px 15px;
+
+      border-radius: 10px;
+
+      margin-bottom: 20px;
+
+      font-size: 13px;
+    }
+
+    .message.success {
+      display: block;
+
+      border: 1px solid rgba(22, 199, 132, 0.3);
+      background: rgba(22, 199, 132, 0.08);
+
+      color: #6ee7b7;
+    }
+
+    .message.error {
+      display: block;
+
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      background: rgba(239, 68, 68, 0.08);
+
+      color: #fca5a5;
+    }
+
+    .loading {
+      padding: 90px 20px;
+
+      text-align: center;
+
+      color: #89939f;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .empty {
+      border: 1px dashed #303845;
+      border-radius: 10px;
+
+      padding: 18px;
+
+      color: #89939f;
+
+      font-size: 13px;
+    }
+
+    .hint {
+      margin-top: 7px;
+
+      color: #68737f;
+
+      font-size: 11px;
+      line-height: 1.4;
+    }
+
+    @media (max-width: 800px) {
+      .form-grid,
+      .student-summary {
+        grid-template-columns: 1fr;
+      }
+
+      .session-item {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .session-edit {
+        width: 100%;
+      }
+
+      header {
+        padding: 16px;
+      }
+
+      .container {
+        padding: 30px 16px 60px;
+      }
+
+      .area-button {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+
+  <div class="logo">
+    FRANCO<span>TRADES</span>
+  </div>
+
+  <div class="header-right">
+
+    <a
+      href="../aluno/"
+      class="area-button"
+    >
+      Área do aluno
+    </a>
+
+    <button
+      id="logoutButton"
+      class="logout-button"
+    >
+      Sair
+    </button>
+
+  </div>
+
+</header>
+
+
+<main class="container">
+
+  <div
+    id="loading"
+    class="loading"
+  >
+    Verificando acesso administrativo...
+  </div>
+
+
+  <div
+    id="adminContent"
+    class="hidden"
+  >
+
+    <div
+      id="message"
+      class="message"
+    ></div>
+
+
+    <section class="page-header">
+
+      <div class="eyebrow">
+        FrancoTrades
+      </div>
+
+      <h1>
+        Painel do Mentor
+      </h1>
+
+      <p>
+        Gerencie seus mentorados, prazo de acesso,
+        sessões e gravações.
+      </p>
+
+    </section>
+
+
+    <!-- ========================================= -->
+    <!-- ALUNO -->
+    <!-- ========================================= -->
+
+    <section class="panel">
+
+      <div class="panel-title">
+        Mentorado
+      </div>
+
+
+      <div class="field">
+
+        <label for="studentSelect">
+          Escolha o mentorado
+        </label>
+
+        <select id="studentSelect">
+
+          <option value="">
+            Selecione...
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <div
+        id="studentArea"
+        class="hidden"
+      >
+
+        <div class="student-summary">
+
+          <div class="summary-card">
+
+            <div class="summary-label">
+              Nome
+            </div>
+
+            <div
+              class="summary-value"
+              id="studentName"
+            >
+              -
+            </div>
+
+          </div>
+
+
+          <div class="summary-card">
+
+            <div class="summary-label">
+              E-mail
+            </div>
+
+            <div
+              class="summary-value"
+              id="studentEmail"
+            >
+              -
+            </div>
+
+          </div>
+
+
+          <div class="summary-card">
+
+            <div class="summary-label">
+              Status
+            </div>
+
+            <div
+              class="summary-value green"
+              id="studentStatus"
+            >
+              -
+            </div>
+
+          </div>
+
+
+          <div class="summary-card">
+
+            <div class="summary-label">
+              Acesso até
+            </div>
+
+            <div
+              class="summary-value"
+              id="studentExpiration"
+            >
+              -
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="form-grid" style="margin-top:22px;">
+
+          <div class="field">
+
+            <label for="studentStart">
+              Início da mentoria
+            </label>
+
+            <input
+              id="studentStart"
+              type="date"
+            >
+
+          </div>
+
+
+          <div class="field">
+
+            <label for="studentEnd">
+              Acesso até
+            </label>
+
+            <input
+              id="studentEnd"
+              type="date"
+            >
+
+          </div>
+
+
+          <div class="field">
+
+            <label for="studentStatusSelect">
+              Status do acesso
+            </label>
+
+            <select id="studentStatusSelect">
+
+              <option value="ativo">
+                Ativo
+              </option>
+
+              <option value="inativo">
+                Inativo
+              </option>
+
+              <option value="expirado">
+                Expirado
+              </option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+
+        <div class="button-row">
+
+          <button
+            id="saveStudentButton"
+            class="primary-button"
+          >
+            Salvar dados do mentorado
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ========================================= -->
+    <!-- SESSÕES DO ALUNO -->
+    <!-- ========================================= -->
+
+    <section
+      id="sessionsPanel"
+      class="panel hidden"
+    >
+
+      <div class="panel-title">
+        Sessões do mentorado
+      </div>
+
+
+      <div
+        id="studentSessionsList"
+        class="session-list"
+      ></div>
+
+
+      <div class="button-row">
+
+        <button
+          id="newSessionButton"
+          class="primary-button"
+        >
+          + Liberar sessão
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- ========================================= -->
+    <!-- EDITOR DE SESSÃO -->
+    <!-- ========================================= -->
+
+    <section
+      id="sessionEditor"
+      class="panel hidden"
+    >
+
+      <div
+        id="sessionEditorTitle"
+        class="panel-title"
+      >
+        Gerenciar sessão
+      </div>
+
+
+      <div class="form-grid">
+
+
+        <div class="field">
+
+          <label for="sessionSelect">
+            Sessão
+          </label>
+
+          <select id="sessionSelect"></select>
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="sessionDate">
+            Data da sessão
+          </label>
+
+          <input
+            id="sessionDate"
+            type="date"
+          >
+
+        </div>
+
+
+        <div class="field full">
+
+          <label for="sessionCustomTitle">
+            Título personalizado
+          </label>
+
+          <input
+            id="sessionCustomTitle"
+            type="text"
+            placeholder="Ex.: Price Action e Estrutura"
+          >
+
+        </div>
+
+
+        <div class="field full">
+
+          <label for="youtubeUrl">
+            Link privado do YouTube
+          </label>
+
+          <input
+            id="youtubeUrl"
+            type="url"
+            placeholder="https://youtu.be/..."
+          >
+
+          <div class="hint">
+            O aluno será direcionado ao YouTube e precisará
+            usar a conta Google que você autorizou no vídeo privado.
+          </div>
+
+        </div>
+
+
+        <div class="field full">
+
+          <label for="sessionNotes">
+            Observações
+          </label>
+
+          <textarea
+            id="sessionNotes"
+            placeholder="Resumo do que foi trabalhado nesta sessão..."
+          ></textarea>
+
+        </div>
+
+
+        <div class="field full">
+
+          <div class="checkbox-row">
+
+            <input
+              id="sessionReleased"
+              type="checkbox"
+              checked
+            >
+
+            <label for="sessionReleased">
+              Sessão liberada para o mentorado
+            </label>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="button-row">
+
+        <button
+          id="saveSessionButton"
+          class="primary-button"
+        >
+          Salvar sessão
+        </button>
+
+
+        <button
+          id="cancelSessionButton"
+          class="secondary-button"
+        >
+          Cancelar
+        </button>
+
+
+        <button
+          id="deleteSessionButton"
+          class="danger-button hidden"
+        >
+          Remover sessão do aluno
+        </button>
+
+      </div>
+
+    </section>
+
+  </div>
+
+</main>
+
+
+<script type="module">
+
+  import {
+    createClient
+  } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+
+  const SUPABASE_URL =
+    "https://vfnltuecpnuixemxvwvk.supabase.co";
+
+
+  const SUPABASE_PUBLISHABLE_KEY =
+    "sb_publishable_nxgAFL2foBN8CuKMT5_2qQ_uDlaJ4Xc";
+
+
+  const supabase =
+    createClient(
+      SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY
+    );
+
+
+  const loading =
+    document.getElementById("loading");
+
+  const adminContent =
+    document.getElementById("adminContent");
+
+  const message =
+    document.getElementById("message");
+
+  const studentSelect =
+    document.getElementById("studentSelect");
+
+  const studentArea =
+    document.getElementById("studentArea");
+
+  const studentName =
+    document.getElementById("studentName");
+
+  const studentEmail =
+    document.getElementById("studentEmail");
+
+  const studentStatus =
+    document.getElementById("studentStatus");
+
+  const studentExpiration =
+    document.getElementById("studentExpiration");
+
+  const studentStart =
+    document.getElementById("studentStart");
+
+  const studentEnd =
+    document.getElementById("studentEnd");
+
+  const studentStatusSelect =
+    document.getElementById("studentStatusSelect");
+
+  const saveStudentButton =
+    document.getElementById("saveStudentButton");
+
+  const sessionsPanel =
+    document.getElementById("sessionsPanel");
+
+  const studentSessionsList =
+    document.getElementById("studentSessionsList");
+
+  const newSessionButton =
+    document.getElementById("newSessionButton");
+
+  const sessionEditor =
+    document.getElementById("sessionEditor");
+
+  const sessionEditorTitle =
+    document.getElementById("sessionEditorTitle");
+
+  const sessionSelect =
+    document.getElementById("sessionSelect");
+
+  const sessionDate =
+    document.getElementById("sessionDate");
+
+  const sessionCustomTitle =
+    document.getElementById("sessionCustomTitle");
+
+  const youtubeUrl =
+    document.getElementById("youtubeUrl");
+
+  const sessionNotes =
+    document.getElementById("sessionNotes");
+
+  const sessionReleased =
+    document.getElementById("sessionReleased");
+
+  const saveSessionButton =
+    document.getElementById("saveSessionButton");
+
+  const cancelSessionButton =
+    document.getElementById("cancelSessionButton");
+
+  const deleteSessionButton =
+    document.getElementById("deleteSessionButton");
+
+  const logoutButton =
+    document.getElementById("logoutButton");
+
+
+  let loggedUser = null;
+
+  let profiles = [];
+
+  let allSessions = [];
+
+  let selectedStudent = null;
+
+  let studentSessions = [];
+
+  let editingStudentSessionId = null;
+
+
+  function showMessage(
+    text,
+    type = "success"
+  ) {
+
+    message.textContent =
+      text;
+
+    message.className =
+      `message ${type}`;
+
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+
+
+    setTimeout(
+      () => {
+
+        message.textContent =
+          "";
+
+        message.className =
+          "message";
+
+      },
+      4000
+    );
+
+  }
+
+
+  function formatDate(
+    value
+  ) {
+
+    if (!value) {
+      return "-";
+    }
+
+
+    const date =
+      new Date(
+        value + "T12:00:00"
+      );
+
+
+    return date
+      .toLocaleDateString(
+        "pt-BR"
+      );
+
+  }
+
+
+  function escapeHTML(
+    value
+  ) {
+
+    if (
+      value === null ||
+      value === undefined
+    ) {
+      return "";
+    }
+
+
+    return String(value)
+
+      .replaceAll(
+        "&",
+        "&amp;"
+      )
+
+      .replaceAll(
+        "<",
+        "&lt;"
+      )
+
+      .replaceAll(
+        ">",
+        "&gt;"
+      )
+
+      .replaceAll(
+        '"',
+        "&quot;"
+      )
+
+      .replaceAll(
+        "'",
+        "&#039;"
+      );
+
+  }
+
+
+  async function verifyAdmin() {
+
+    const {
+      data: {
+        session
+      }
+    } =
+      await supabase.auth
+        .getSession();
+
+
+    if (!session) {
+
+      window.location.href =
+        "../login/";
+
+      return false;
+
+    }
+
+
+    loggedUser =
+      session.user;
+
+
+    const {
+      data: profile,
+      error
+    } =
+      await supabase
+
+        .from(
+          "profiles"
+        )
+
+        .select(
+          "role"
+        )
+
+        .eq(
+          "id",
+          loggedUser.id
+        )
+
+        .single();
+
+
+    if (
+      error ||
+      !profile ||
+      profile.role !== "admin"
+    ) {
+
+      window.location.href =
+        "../aluno/";
+
+      return false;
+
+    }
+
+
+    return true;
+
+  }
+
+
+  async function loadBaseData() {
+
+    const [
+      profilesResult,
+      sessionsResult
+    ] =
+      await Promise.all([
+
+        supabase
+          .from("profiles")
+          .select(
+            `
+            id,
+            nome,
+            email,
+            data_inicio,
+            data_expiracao,
+            status,
+            role
+            `
+          )
+          .order(
+            "nome",
+            {
+              ascending: true
+            }
+          ),
+
+        supabase
+          .from("sessions")
+          .select(
+            `
+            id,
+            numero,
+            titulo,
+            descricao
+            `
+          )
+          .order(
+            "numero",
+            {
+              ascending: true
+            }
+          )
+
+      ]);
+
+
+    if (profilesResult.error) {
+
+      console.error(
+        profilesResult.error
+      );
+
+      showMessage(
+        "Não foi possível carregar os mentorados.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    if (sessionsResult.error) {
+
+      console.error(
+        sessionsResult.error
+      );
+
+      showMessage(
+        "Não foi possível carregar a lista de sessões.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    profiles =
+      profilesResult.data || [];
+
+
+    allSessions =
+      sessionsResult.data || [];
+
+
+    renderStudentSelect();
+
+  }
+
+
+  function renderStudentSelect() {
+
+    studentSelect.innerHTML =
+      `
+      <option value="">
+        Selecione um mentorado...
+      </option>
+      `;
+
+
+    for (
+      const profile of profiles
+    ) {
+
+      const option =
+        document.createElement(
+          "option"
+        );
+
+
+      option.value =
+        profile.id;
+
+
+      const name =
+        profile.nome ||
+        "Sem nome";
+
+
+      option.textContent =
+        `${name} — ${profile.email}`;
+
+
+      studentSelect
+        .appendChild(
+          option
+        );
+
+    }
+
+  }
+
+
+  async function selectStudent(
+    studentId
+  ) {
+
+    selectedStudent =
+      profiles.find(
+        profile =>
+          profile.id ===
+          studentId
+      );
+
+
+    if (!selectedStudent) {
+
+      studentArea
+        .classList
+        .add("hidden");
+
+      sessionsPanel
+        .classList
+        .add("hidden");
+
+      sessionEditor
+        .classList
+        .add("hidden");
+
+      return;
+
+    }
+
+
+    studentName.textContent =
+      selectedStudent.nome ||
+      "Sem nome";
+
+
+    studentEmail.textContent =
+      selectedStudent.email ||
+      "-";
+
+
+    studentStatus.textContent =
+      selectedStudent.status;
+
+
+    studentStatus.className =
+      "summary-value " +
+      (
+        selectedStudent.status === "ativo"
+          ?
+          "green"
+          :
+          ""
+      );
+
+
+    studentExpiration.textContent =
+      formatDate(
+        selectedStudent.data_expiracao
+      );
+
+
+    studentStart.value =
+      selectedStudent.data_inicio ||
+      "";
+
+
+    studentEnd.value =
+      selectedStudent.data_expiracao ||
+      "";
+
+
+    studentStatusSelect.value =
+      selectedStudent.status;
+
+
+    studentArea
+      .classList
+      .remove("hidden");
+
+
+    sessionsPanel
+      .classList
+      .remove("hidden");
+
+
+    sessionEditor
+      .classList
+      .add("hidden");
+
+
+    await loadStudentSessions();
+
+  }
+
+
+  async function loadStudentSessions() {
+
+    if (!selectedStudent) {
+      return;
+    }
+
+
+    const {
+      data,
+      error
+    } =
+      await supabase
+
+        .from(
+          "student_sessions"
+        )
+
+        .select(
+          `
+          id,
+          student_id,
+          session_id,
+          youtube_url,
+          data_sessao,
+          observacoes,
+          titulo_personalizado,
+          liberada,
+          sessions (
+            id,
+            numero,
+            titulo
+          )
+          `
+        )
+
+        .eq(
+          "student_id",
+          selectedStudent.id
+        )
+
+        .order(
+          "session_id",
+          {
+            ascending: true
+          }
+        );
+
+
+    if (error) {
+
+      console.error(
+        error
+      );
+
+      showMessage(
+        "Não foi possível carregar as sessões do mentorado.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    studentSessions =
+      data || [];
+
+
+    renderStudentSessions();
+
+  }
+
+
+  function renderStudentSessions() {
+
+    studentSessionsList.innerHTML =
+      "";
+
+
+    if (
+      studentSessions.length === 0
+    ) {
+
+      studentSessionsList.innerHTML =
+        `
+        <div class="empty">
+          Nenhuma sessão foi liberada para este mentorado.
+        </div>
+        `;
+
+      return;
+
+    }
+
+
+    for (
+      const item of
+      studentSessions
+    ) {
+
+      const sessionInfo =
+        item.sessions;
+
+
+      const number =
+        sessionInfo?.numero ||
+        item.session_id;
+
+
+      const title =
+        item.titulo_personalizado ||
+        sessionInfo?.titulo ||
+        `Sessão ${number}`;
+
+
+      const element =
+        document.createElement(
+          "div"
+        );
+
+
+      element.className =
+        "session-item";
+
+
+      element.innerHTML =
+        `
+        <div class="session-item-main">
+
+          <div class="session-number">
+            SESSÃO ${String(number).padStart(2, "0")}
+          </div>
+
+          <div class="session-item-title">
+            ${escapeHTML(title)}
+
+            <span
+              class="status-pill ${
+                item.liberada
+                  ?
+                  "active"
+                  :
+                  "blocked"
+              }"
+            >
+              ${
+                item.liberada
+                  ?
+                  "LIBERADA"
+                  :
+                  "BLOQUEADA"
+              }
+            </span>
+
+          </div>
+
+          <div class="session-item-meta">
+
+            ${
+              item.data_sessao
+                ?
+                "Data: " +
+                formatDate(
+                  item.data_sessao
+                )
+                :
+                "Sem data"
+            }
+
+            ·
+
+            ${
+              item.youtube_url
+                ?
+                "Gravação cadastrada"
+                :
+                "Sem gravação"
+            }
+
+          </div>
+
+        </div>
+
+        <button
+          class="session-edit"
+          data-id="${item.id}"
+        >
+          Editar
+        </button>
+        `;
+
+
+      element
+        .querySelector(
+          ".session-edit"
+        )
+        .addEventListener(
+          "click",
+          () => {
+
+            openExistingSession(
+              item.id
+            );
+
+          }
+        );
+
+
+      studentSessionsList
+        .appendChild(
+          element
+        );
+
+    }
+
+  }
+
+
+  function renderSessionOptions(
+    selectedSessionId = ""
+  ) {
+
+    sessionSelect.innerHTML =
+      "";
+
+
+    for (
+      const session of
+      allSessions
+    ) {
+
+      const option =
+        document.createElement(
+          "option"
+        );
+
+
+      option.value =
+        session.id;
+
+
+      option.textContent =
+        `Sessão ${String(session.numero).padStart(2, "0")}`;
+
+
+      if (
+        String(session.id) ===
+        String(selectedSessionId)
+      ) {
+
+        option.selected =
+          true;
+
+      }
+
+
+      sessionSelect
+        .appendChild(
+          option
+        );
+
+    }
+
+  }
+
+
+  function clearSessionForm() {
+
+    sessionDate.value =
+      "";
+
+    sessionCustomTitle.value =
+      "";
+
+    youtubeUrl.value =
+      "";
+
+    sessionNotes.value =
+      "";
+
+    sessionReleased.checked =
+      true;
+
+  }
+
+
+  function openNewSession() {
+
+    if (!selectedStudent) {
+      return;
+    }
+
+
+    editingStudentSessionId =
+      null;
+
+
+    sessionEditorTitle.textContent =
+      "Liberar nova sessão";
+
+
+    clearSessionForm();
+
+
+    const usedSessionIds =
+      new Set(
+        studentSessions.map(
+          item =>
+            Number(
+              item.session_id
+            )
+        )
+      );
+
+
+    sessionSelect.innerHTML =
+      "";
+
+
+    const availableSessions =
+      allSessions.filter(
+        session =>
+          !usedSessionIds.has(
+            Number(
+              session.id
+            )
+          )
+      );
+
+
+    if (
+      availableSessions.length === 0
+    ) {
+
+      showMessage(
+        "Todas as sessões disponíveis já estão vinculadas a este mentorado.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    for (
+      const session of
+      availableSessions
+    ) {
+
+      const option =
+        document.createElement(
+          "option"
+        );
+
+
+      option.value =
+        session.id;
+
+
+      option.textContent =
+        `Sessão ${String(session.numero).padStart(2, "0")}`;
+
+
+      sessionSelect
+        .appendChild(
+          option
+        );
+
+    }
+
+
+    sessionSelect.disabled =
+      false;
+
+
+    deleteSessionButton
+      .classList
+      .add("hidden");
+
+
+    sessionEditor
+      .classList
+      .remove("hidden");
+
+
+    sessionEditor.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+
+  }
+
+
+  function openExistingSession(
+    studentSessionId
+  ) {
+
+    const item =
+      studentSessions.find(
+        session =>
+          Number(session.id) ===
+          Number(studentSessionId)
+      );
+
+
+    if (!item) {
+      return;
+    }
+
+
+    editingStudentSessionId =
+      item.id;
+
+
+    sessionEditorTitle.textContent =
+      "Editar sessão";
+
+
+    renderSessionOptions(
+      item.session_id
+    );
+
+
+    sessionSelect.disabled =
+      true;
+
+
+    sessionDate.value =
+      item.data_sessao ||
+      "";
+
+
+    sessionCustomTitle.value =
+      item.titulo_personalizado ||
+      "";
+
+
+    youtubeUrl.value =
+      item.youtube_url ||
+      "";
+
+
+    sessionNotes.value =
+      item.observacoes ||
+      "";
+
+
+    sessionReleased.checked =
+      Boolean(
+        item.liberada
+      );
+
+
+    deleteSessionButton
+      .classList
+      .remove("hidden");
+
+
+    sessionEditor
+      .classList
+      .remove("hidden");
+
+
+    sessionEditor.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+
+  }
+
+
+  async function saveStudent() {
+
+    if (!selectedStudent) {
+      return;
+    }
+
+
+    saveStudentButton.disabled =
+      true;
+
+
+    const updates = {
+
+      data_inicio:
+        studentStart.value ||
+        null,
+
+      data_expiracao:
+        studentEnd.value ||
+        null,
+
+      status:
+        studentStatusSelect.value
+
+    };
+
+
+    const {
+      error
+    } =
+      await supabase
+
+        .from(
+          "profiles"
+        )
+
+        .update(
+          updates
+        )
+
+        .eq(
+          "id",
+          selectedStudent.id
+        );
+
+
+    saveStudentButton.disabled =
+      false;
+
+
+    if (error) {
+
+      console.error(
+        error
+      );
+
+      showMessage(
+        "Não foi possível salvar os dados do mentorado.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    selectedStudent.data_inicio =
+      updates.data_inicio;
+
+
+    selectedStudent.data_expiracao =
+      updates.data_expiracao;
+
+
+    selectedStudent.status =
+      updates.status;
+
+
+    studentStatus.textContent =
+      selectedStudent.status;
+
+
+    studentExpiration.textContent =
+      formatDate(
+        selectedStudent.data_expiracao
+      );
+
+
+    showMessage(
+      "Dados do mentorado atualizados."
+    );
+
+  }
+
+
+  async function saveSession() {
+
+    if (!selectedStudent) {
+      return;
+    }
+
+
+    const sessionId =
+      Number(
+        sessionSelect.value
+      );
+
+
+    if (!sessionId) {
+
+      showMessage(
+        "Escolha uma sessão.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    saveSessionButton.disabled =
+      true;
+
+
+    const payload = {
+
+      student_id:
+        selectedStudent.id,
+
+      session_id:
+        sessionId,
+
+      data_sessao:
+        sessionDate.value ||
+        null,
+
+      titulo_personalizado:
+        sessionCustomTitle.value.trim() ||
+        null,
+
+      youtube_url:
+        youtubeUrl.value.trim() ||
+        null,
+
+      observacoes:
+        sessionNotes.value.trim() ||
+        null,
+
+      liberada:
+        sessionReleased.checked
+
+    };
+
+
+    let result;
+
+
+    if (
+      editingStudentSessionId
+    ) {
+
+      result =
+        await supabase
+
+          .from(
+            "student_sessions"
+          )
+
+          .update(
+            payload
+          )
+
+          .eq(
+            "id",
+            editingStudentSessionId
+          );
+
+    }
+
+    else {
+
+      result =
+        await supabase
+
+          .from(
+            "student_sessions"
+          )
+
+          .insert(
+            payload
+          );
+
+    }
+
+
+    saveSessionButton.disabled =
+      false;
+
+
+    if (result.error) {
+
+      console.error(
+        result.error
+      );
+
+      showMessage(
+        "Não foi possível salvar a sessão.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    showMessage(
+      editingStudentSessionId
+        ?
+        "Sessão atualizada."
+        :
+        "Sessão liberada para o mentorado."
+    );
+
+
+    sessionEditor
+      .classList
+      .add("hidden");
+
+
+    await loadStudentSessions();
+
+  }
+
+
+  async function deleteSession() {
+
+    if (
+      !editingStudentSessionId
+    ) {
+      return;
+    }
+
+
+    const confirmed =
+      window.confirm(
+        "Tem certeza que deseja remover esta sessão deste mentorado?"
+      );
+
+
+    if (!confirmed) {
+      return;
+    }
+
+
+    deleteSessionButton.disabled =
+      true;
+
+
+    const {
+      error
+    } =
+      await supabase
+
+        .from(
+          "student_sessions"
+        )
+
+        .delete()
+
+        .eq(
+          "id",
+          editingStudentSessionId
+        );
+
+
+    deleteSessionButton.disabled =
+      false;
+
+
+    if (error) {
+
+      console.error(
+        error
+      );
+
+      showMessage(
+        "Não foi possível remover a sessão.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    sessionEditor
+      .classList
+      .add("hidden");
+
+
+    showMessage(
+      "Sessão removida do mentorado."
+    );
+
+
+    await loadStudentSessions();
+
+  }
+
+
+  studentSelect
+    .addEventListener(
+      "change",
+      async () => {
+
+        await selectStudent(
+          studentSelect.value
+        );
+
+      }
+    );
+
+
+  saveStudentButton
+    .addEventListener(
+      "click",
+      saveStudent
+    );
+
+
+  newSessionButton
+    .addEventListener(
+      "click",
+      openNewSession
+    );
+
+
+  saveSessionButton
+    .addEventListener(
+      "click",
+      saveSession
+    );
+
+
+  cancelSessionButton
+    .addEventListener(
+      "click",
+      () => {
+
+        sessionEditor
+          .classList
+          .add("hidden");
+
+      }
+    );
+
+
+  deleteSessionButton
+    .addEventListener(
+      "click",
+      deleteSession
+    );
+
+
+  logoutButton
+    .addEventListener(
+      "click",
+      async () => {
+
+        await supabase.auth
+          .signOut();
+
+
+        window.location.href =
+          "../login/";
+
+      }
+    );
+
+
+  async function init() {
+
+    const isAdmin =
+      await verifyAdmin();
+
+
+    if (!isAdmin) {
+      return;
+    }
+
+
+    await loadBaseData();
+
+
+    loading.classList
+      .add("hidden");
+
+
+    adminContent.classList
+      .remove("hidden");
+
+  }
+
+
+  init();
+
+</script>
+
+</body>
+</html>
