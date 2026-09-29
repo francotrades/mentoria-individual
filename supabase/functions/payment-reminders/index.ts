@@ -257,6 +257,31 @@ Deno.serve(async (request) => {
     );
   }
 
+  let requestBody: Record<string, unknown> = {};
+  try {
+    requestBody = await request.json();
+  } catch {
+    requestBody = {};
+  }
+
+  const previewMode = requestBody.preview === true;
+  const previewEmail =
+    typeof requestBody.preview_email === "string"
+      ? requestBody.preview_email.trim()
+      : "";
+
+  if (previewMode && !previewEmail) {
+    return new Response(
+      JSON.stringify({
+        error: "preview_email is required when preview=true",
+      }),
+      {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+  }
+
   if (
     !SUPABASE_URL ||
     !SERVICE_ROLE_KEY ||
@@ -341,17 +366,19 @@ Deno.serve(async (request) => {
       continue;
     }
 
-    const { data: existingLog } =
-      await supabase
-        .from("payment_reminder_log")
-        .select("id")
-        .eq("payment_id", payment.id)
-        .eq("reminder_type", type)
-        .maybeSingle();
+    if (!previewMode) {
+      const { data: existingLog } =
+        await supabase
+          .from("payment_reminder_log")
+          .select("id")
+          .eq("payment_id", payment.id)
+          .eq("reminder_type", type)
+          .maybeSingle();
 
-    if (existingLog) {
-      skipped++;
-      continue;
+      if (existingLog) {
+        skipped++;
+        continue;
+      }
     }
 
     const firstName =
@@ -371,9 +398,15 @@ Deno.serve(async (request) => {
     );
 
     try {
+      const recipient = previewMode
+        ? previewEmail
+        : financial.email;
+
       const provider = await sendEmail(
-        financial.email,
-        copy.subject,
+        recipient,
+        previewMode
+          ? `[PRÉVIA] ${copy.subject}`
+          : copy.subject,
         emailHtml(
           copy.headline,
           copy.intro,
@@ -381,25 +414,27 @@ Deno.serve(async (request) => {
         ),
       );
 
-      const { error: logError } =
-        await supabase
-          .from("payment_reminder_log")
-          .insert({
-            payment_id: payment.id,
-            mentorship_id: payment.mentorship_id,
-            reminder_type: type,
-            recipient_email: financial.email,
-            provider_message_id:
-              provider?.id ?? null,
-            provider_response:
-              provider ?? null,
-          });
+      if (!previewMode) {
+        const { error: logError } =
+          await supabase
+            .from("payment_reminder_log")
+            .insert({
+              payment_id: payment.id,
+              mentorship_id: payment.mentorship_id,
+              reminder_type: type,
+              recipient_email: financial.email,
+              provider_message_id:
+                provider?.id ?? null,
+              provider_response:
+                provider ?? null,
+            });
 
-      if (logError) {
-        console.error(
-          "Email sent but log failed",
-          logError,
-        );
+        if (logError) {
+          console.error(
+            "Email sent but log failed",
+            logError,
+          );
+        }
       }
 
       sent++;
@@ -423,6 +458,7 @@ Deno.serve(async (request) => {
       date: todayISO,
       sent,
       skipped,
+      preview: previewMode,
       errors,
     }),
     {
