@@ -3572,6 +3572,48 @@ createStudentButton
         newStudentFirstDue.value;
 
 
+      const {
+        data: existingFinancial,
+        error: existingFinancialError
+      } =
+        await supabase
+          .from(
+            "mentorship_financials"
+          )
+          .select(
+            "id, profile_id, nome, email, valor_total, moeda"
+          )
+          .ilike(
+            "email",
+            email
+          )
+          .maybeSingle();
+
+
+      if (existingFinancialError) {
+
+        console.error(
+          "Erro ao verificar financeiro existente:",
+          existingFinancialError
+        );
+
+
+        showMessage(
+          "Não foi possível verificar se este e-mail já possui financeiro cadastrado.",
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      const hasExistingFinancial =
+        Boolean(
+          existingFinancial?.id
+        );
+
+
       if (!nome) {
 
         showMessage(
@@ -3600,10 +3642,13 @@ createStudentButton
 
 
       if (
-        !Number.isFinite(
-          valorMentoria
-        ) ||
-        valorMentoria <= 0
+        !hasExistingFinancial &&
+        (
+          !Number.isFinite(
+            valorMentoria
+          ) ||
+          valorMentoria <= 0
+        )
       ) {
 
         showMessage(
@@ -3617,8 +3662,11 @@ createStudentButton
 
 
       if (
-        !numeroParcelas ||
-        numeroParcelas < 1
+        !hasExistingFinancial &&
+        (
+          !numeroParcelas ||
+          numeroParcelas < 1
+        )
       ) {
 
         showMessage(
@@ -3631,7 +3679,10 @@ createStudentButton
       }
 
 
-      if (!primeiroVencimento) {
+      if (
+        !hasExistingFinancial &&
+        !primeiroVencimento
+      ) {
 
         showMessage(
           "Informe o vencimento da primeira parcela.",
@@ -3648,7 +3699,11 @@ createStudentButton
 
 
       createStudentButton.textContent =
-        "CRIANDO MENTORADO E FINANCEIRO...";
+        hasExistingFinancial
+          ?
+          "CRIANDO CONTA E VINCULANDO FINANCEIRO..."
+          :
+          "CRIANDO MENTORADO E FINANCEIRO...";
 
 
       /* =========================================
@@ -3765,187 +3820,226 @@ createStudentButton
         data.student?.id;
 
 
-      const {
-        data: financialRecord,
-        error: financialError
-      } =
-        await supabase
-          .from(
-            "mentorship_financials"
-          )
-          .upsert(
-            {
-              profile_id:
-                createdId ||
-                null,
-
-              nome,
-
-              email,
-
-              valor_total:
-                valorMentoria,
-
-              moeda:
-                moedaMentoria,
-
-              observacoes:
-                `${numeroSessoes} sessões`,
-
-              quantidade_sessoes:
-                numeroSessoes,
-
-              sessoes_concluidas_importadas:
-                0,
-
-              origem:
-                "painel-admin"
-            },
-            {
-              onConflict:
-                "email"
-            }
-          )
-          .select(
-            "id"
-          )
-          .single();
-
-
       let financeWarning =
         "";
 
 
+      let financeWasPreserved =
+        false;
+
+
       if (
-        financialError ||
-        !financialRecord
+        hasExistingFinancial &&
+        existingFinancial
       ) {
 
-        console.error(
-          "Erro ao criar financeiro:",
-          financialError
-        );
+        const {
+          error: linkFinancialError
+        } =
+          await supabase
+            .from(
+              "mentorship_financials"
+            )
+            .update({
+              profile_id:
+                createdId ||
+                existingFinancial.profile_id ||
+                null
+            })
+            .eq(
+              "id",
+              existingFinancial.id
+            );
 
 
-        financeWarning =
-          " O mentorado foi criado, mas houve erro ao cadastrar o financeiro.";
+        if (linkFinancialError) {
+
+          console.error(
+            "Erro ao vincular financeiro existente:",
+            linkFinancialError
+          );
+
+
+          financeWarning =
+            " A conta foi criada, mas o financeiro existente não pôde ser vinculado automaticamente.";
+
+        }
+
+        else {
+
+          financeWasPreserved =
+            true;
+
+        }
 
       }
 
       else {
 
-        await supabase
-          .from(
-            "mentorship_payments"
-          )
-          .delete()
-          .eq(
-            "mentorship_id",
-            financialRecord.id
-          );
-
-
-        const baseAmount =
-          Math.floor(
-            (
-              valorMentoria /
-              numeroParcelas
-            ) *
-            100
-          ) /
-          100;
-
-
-        const paymentRows =
-          [];
-
-
-        let allocated =
-          0;
-
-
-        for (
-          let index = 0;
-          index < numeroParcelas;
-          index++
-        ) {
-
-          const isLast =
-            index ===
-            numeroParcelas - 1;
-
-
-          const amount =
-            isLast
-              ?
-              Number(
-                (
-                  valorMentoria -
-                  allocated
-                ).toFixed(2)
-              )
-              :
-              baseAmount;
-
-
-          allocated =
-            Number(
-              (
-                allocated +
-                amount
-              ).toFixed(2)
-            );
-
-
-          paymentRows.push({
-            mentorship_id:
-              financialRecord.id,
-
-            numero_parcela:
-              index + 1,
-
-            valor:
-              amount,
-
-            vencimento:
-              addMonthsISO(
-                primeiroVencimento,
-                index
-              ),
-
-            paga:
-              false,
-
-            data_pagamento:
-              null
-          });
-
-        }
-
-
         const {
-          error:
-            paymentsError
+          data: financialRecord,
+          error: financialError
         } =
           await supabase
             .from(
-              "mentorship_payments"
+              "mentorship_financials"
             )
             .insert(
-              paymentRows
-            );
+              {
+                profile_id:
+                  createdId ||
+                  null,
+
+                nome,
+
+                email,
+
+                valor_total:
+                  valorMentoria,
+
+                moeda:
+                  moedaMentoria,
+
+                observacoes:
+                  `${numeroSessoes} sessões`,
+
+                quantidade_sessoes:
+                  numeroSessoes,
+
+                sessoes_concluidas_importadas:
+                  0,
+
+                origem:
+                  "painel-admin"
+              }
+            )
+            .select(
+              "id"
+            )
+            .single();
 
 
-        if (paymentsError) {
+        if (
+          financialError ||
+          !financialRecord
+        ) {
 
           console.error(
-            "Erro ao criar parcelas:",
-            paymentsError
+            "Erro ao criar financeiro:",
+            financialError
           );
 
 
           financeWarning =
-            " O contrato foi criado, mas houve erro ao gerar as parcelas.";
+            " O mentorado foi criado, mas houve erro ao cadastrar o financeiro.";
+
+        }
+
+        else {
+
+          const baseAmount =
+            Math.floor(
+              (
+                valorMentoria /
+                numeroParcelas
+              ) *
+              100
+            ) /
+            100;
+
+
+          const paymentRows =
+            [];
+
+
+          let allocated =
+            0;
+
+
+          for (
+            let index = 0;
+            index < numeroParcelas;
+            index++
+          ) {
+
+            const isLast =
+              index ===
+              numeroParcelas - 1;
+
+
+            const amount =
+              isLast
+                ?
+                Number(
+                  (
+                    valorMentoria -
+                    allocated
+                  ).toFixed(2)
+                )
+                :
+                baseAmount;
+
+
+            allocated =
+              Number(
+                (
+                  allocated +
+                  amount
+                ).toFixed(2)
+              );
+
+
+            paymentRows.push({
+              mentorship_id:
+                financialRecord.id,
+
+              numero_parcela:
+                index + 1,
+
+              valor:
+                amount,
+
+              vencimento:
+                addMonthsISO(
+                  primeiroVencimento,
+                  index
+                ),
+
+              paga:
+                false,
+
+              data_pagamento:
+                null
+            });
+
+          }
+
+
+          const {
+            error:
+              paymentsError
+          } =
+            await supabase
+              .from(
+                "mentorship_payments"
+              )
+              .insert(
+                paymentRows
+              );
+
+
+          if (paymentsError) {
+
+            console.error(
+              "Erro ao criar parcelas:",
+              paymentsError
+            );
+
+
+            financeWarning =
+              " O contrato foi criado, mas houve erro ao gerar as parcelas.";
+
+          }
 
         }
 
@@ -3958,7 +4052,13 @@ createStudentButton
           "Mentorado criado e convite enviado." +
           financeWarning
           :
-          "Mentorado, financeiro e parcelas criados. Convite enviado por e-mail.",
+          (
+            financeWasPreserved
+              ?
+              "Mentorado criado, convite enviado e financeiro existente vinculado sem alterar valores ou parcelas."
+              :
+              "Mentorado, financeiro e parcelas criados. Convite enviado por e-mail."
+          ),
         financeWarning
           ?
           "error"
