@@ -1873,7 +1873,7 @@
           id="createStudentButton"
           class="primary-button"
         >
-          Criar mentorado, financeiro e enviar convite
+          Criar mentorado e enviar acesso
         </button>
 
 
@@ -3742,7 +3742,7 @@ createStudentButton
 
 
         createStudentButton.textContent =
-          "Criar mentorado e enviar convite";
+          "Criar mentorado e enviar acesso";
 
 
         showMessage(
@@ -3795,7 +3795,7 @@ createStudentButton
 
 
       createStudentButton.textContent =
-        "Criar mentorado, financeiro e enviar convite";
+        "Criar mentorado e enviar acesso";
 
 
       if (error) {
@@ -4111,65 +4111,41 @@ createStudentButton
       }
 
 
-      let welcomeWarning =
-        "";
-
-
-      if (createdId) {
-
-        const {
-          data: welcomeData,
-          error: welcomeError
-        } =
-          await supabase.functions
-            .invoke(
-              "student-welcome-notification",
-              {
-                body: {
-                  student_id:
-                    createdId
-                }
-              }
-            );
-
-
-        if (
-          welcomeError ||
-          !welcomeData?.sent
-        ) {
-
-          console.error(
-            "Erro ao enviar boas-vindas:",
-            welcomeError,
-            welcomeData
-          );
-
-
-          welcomeWarning =
-            " O convite foi enviado, mas o e-mail personalizado de boas-vindas não pôde ser enviado.";
-
-        }
-
-      }
+      const inviteWarning =
+        data?.email_sent === false
+          ?
+          (
+            " O cadastro foi criado, mas o e-mail de acesso não pôde ser enviado." +
+            (
+              data?.warning
+                ?
+                " " +
+                data.warning
+                :
+                ""
+            )
+          )
+          :
+          "";
 
 
       const finalWarning =
         financeWarning +
-        welcomeWarning;
+        inviteWarning;
 
 
       showMessage(
         finalWarning
           ?
-          "Mentorado criado e convite enviado." +
+          "Mentorado criado." +
           finalWarning
           :
           (
             financeWasPreserved
               ?
-              "Mentorado criado, convite enviado, financeiro existente preservado e boas-vindas enviadas por e-mail."
+              "Mentorado criado, financeiro existente preservado e e-mail de acesso enviado."
               :
-              "Mentorado, financeiro e parcelas criados. Convite e boas-vindas enviados por e-mail."
+              "Mentorado, financeiro e parcelas criados. E-mail de acesso enviado."
           ),
         finalWarning
           ?
