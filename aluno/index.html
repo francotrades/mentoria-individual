@@ -1225,6 +1225,28 @@
       background: rgba(67,226,144,.16);
     }
 
+      @media (max-width: 760px) {
+      .session-card {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+
+      .session-actions {
+        width: 100%;
+        align-items: stretch;
+        justify-content: stretch;
+        flex-direction: column;
+      }
+
+      .live-button,
+      .watch-button,
+      .complete-button,
+      .pending-button {
+        width: 100%;
+        min-height: 44px;
+      }
+    }
+
   </style>
 </head>
 
