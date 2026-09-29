@@ -5286,6 +5286,8 @@ async function loadBaseData() {
 
   renderStudentSelect();
 
+  await loadTradeReviews();
+
 }
 
 
@@ -8191,6 +8193,57 @@ async function refreshData() {
 
 
 /* EVENTOS */
+
+saveTradeReviewButton.addEventListener(
+  "click",
+  saveTradeReview
+);
+
+
+cancelTradeReviewButton.addEventListener(
+  "click",
+  resetTradeReviewForm
+);
+
+
+tradeReviewList.addEventListener(
+  "click",
+  async event => {
+
+    const editButton =
+      event.target.closest(
+        "[data-edit-trade-review]"
+      );
+
+    if (editButton) {
+
+      editTradeReview(
+        editButton.dataset
+          .editTradeReview
+      );
+
+      return;
+
+    }
+
+
+    const deleteButton =
+      event.target.closest(
+        "[data-delete-trade-review]"
+      );
+
+    if (deleteButton) {
+
+      await deleteTradeReview(
+        deleteButton.dataset
+          .deleteTradeReview
+      );
+
+    }
+
+  }
+);
+
 
 studentReminderPendingList.addEventListener(
   "click",
