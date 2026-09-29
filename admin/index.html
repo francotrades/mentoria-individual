@@ -2447,6 +2447,18 @@
             Salvar dados do mentorado
           </button>
 
+          <button
+            id="deleteTestStudentButton"
+            class="danger-button"
+            type="button"
+          >
+            Excluir mentorado de teste
+          </button>
+
+        </div>
+
+        <div class="hint" style="margin-top:10px;">
+          Exclusão definitiva para testes: remove conta, sessões, progresso e financeiro criado pelo painel. Registros financeiros importados ficam protegidos.
         </div>
 
       </div>
@@ -2849,6 +2861,9 @@ const studentStatusSelect =
 
 const saveStudentButton =
   $("saveStudentButton");
+
+const deleteTestStudentButton =
+  $("deleteTestStudentButton");
 
 
 const studentProgressText =
@@ -7429,6 +7444,182 @@ studentSelect.addEventListener(
 saveStudentButton.addEventListener(
   "click",
   saveStudent
+);
+
+
+deleteTestStudentButton.addEventListener(
+  "click",
+  async () => {
+
+    if (!selectedStudent) {
+      return;
+    }
+
+
+    const studentEmailValue =
+      (
+        selectedStudent.email ||
+        ""
+      )
+        .trim()
+        .toLowerCase();
+
+
+    if (!studentEmailValue) {
+
+      showMessage(
+        "Este mentorado não possui um e-mail válido para confirmação.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    const typedEmail =
+      prompt(
+        "ATENÇÃO: esta ação é definitiva e serve para testes.\n\n" +
+        "Ela removerá a conta do Supabase, sessões, progresso, parcelas e financeiro criado pelo painel.\n\n" +
+        "Para confirmar, digite exatamente o e-mail do mentorado:\n" +
+        studentEmailValue
+      );
+
+
+    if (typedEmail === null) {
+      return;
+    }
+
+
+    if (
+      typedEmail
+        .trim()
+        .toLowerCase() !==
+      studentEmailValue
+    ) {
+
+      showMessage(
+        "Exclusão cancelada: o e-mail digitado não corresponde ao mentorado.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    const confirmed =
+      confirm(
+        "Última confirmação: excluir definitivamente " +
+        (selectedStudent.nome || "este mentorado") +
+        " e apagar os dados de teste?"
+      );
+
+
+    if (!confirmed) {
+      return;
+    }
+
+
+    deleteTestStudentButton.disabled =
+      true;
+
+
+    deleteTestStudentButton.textContent =
+      "EXCLUINDO...";
+
+
+    const {
+      data: deleteData,
+      error: deleteError
+    } =
+      await supabase.functions
+        .invoke(
+          "delete-test-student",
+          {
+            body: {
+              student_id:
+                selectedStudent.id,
+
+              confirm_email:
+                studentEmailValue
+            }
+          }
+        );
+
+
+    deleteTestStudentButton.disabled =
+      false;
+
+
+    deleteTestStudentButton.textContent =
+      "Excluir mentorado de teste";
+
+
+    if (
+      deleteError ||
+      !deleteData?.deleted
+    ) {
+
+      console.error(
+        "Erro ao excluir mentorado:",
+        deleteError,
+        deleteData
+      );
+
+
+      showMessage(
+        deleteData?.error ||
+        "Não foi possível excluir o mentorado. Verifique a Edge Function delete-test-student.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    selectedStudent =
+      null;
+
+
+    studentSelect.value =
+      "";
+
+
+    studentArea.classList
+      .add(
+        "hidden"
+      );
+
+
+    sessionsPanel.classList
+      .add(
+        "hidden"
+      );
+
+
+    sessionEditor.classList
+      .add(
+        "hidden"
+      );
+
+
+    studentFinancialEditor.classList
+      .add(
+        "hidden"
+      );
+
+
+    await loadBaseData();
+
+
+    showMessage(
+      "Mentorado de teste excluído por completo. O mesmo e-mail já pode ser cadastrado novamente para testar o convite desde o início.",
+      "success"
+    );
+
+  }
 );
 
 
