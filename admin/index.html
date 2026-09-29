@@ -1118,6 +1118,135 @@
       }
     }
 
+  
+    /* ==========================================
+       ATENÇÃO NECESSÁRIA — ADMIN V5
+    ========================================== */
+
+    .attention-panel {
+      border-color: rgba(246,199,91,.16);
+    }
+
+    .attention-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 16px;
+    }
+
+    .attention-title {
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 5px;
+    }
+
+    .attention-subtitle {
+      color: var(--ft-muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .attention-count {
+      flex: 0 0 auto;
+      min-width: 38px;
+      height: 38px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(246,199,91,.20);
+      background: rgba(246,199,91,.06);
+      color: #f6c75b;
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .attention-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .attention-item {
+      width: 100%;
+      display: grid;
+      grid-template-columns: auto minmax(0,1fr) auto;
+      align-items: center;
+      gap: 13px;
+      padding: 13px 14px;
+      border-radius: 11px;
+      border: 1px solid var(--ft-border);
+      background: rgba(255,255,255,.012);
+      color: #fff;
+      text-align: left;
+      cursor: pointer;
+      transition: border-color .18s ease, background .18s ease;
+    }
+
+    .attention-item:hover {
+      border-color: rgba(67,226,144,.18);
+      background: rgba(67,226,144,.025);
+    }
+
+    .attention-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      background: rgba(246,199,91,.07);
+      border: 1px solid rgba(246,199,91,.14);
+    }
+
+    .attention-item.recording .attention-icon {
+      background: rgba(67,226,144,.05);
+      border-color: rgba(67,226,144,.14);
+    }
+
+    .attention-item.stalled .attention-icon {
+      background: rgba(255,125,125,.05);
+      border-color: rgba(255,125,125,.14);
+    }
+
+    .attention-name {
+      font-size: 12px;
+      font-weight: 900;
+      margin-bottom: 3px;
+    }
+
+    .attention-reason {
+      color: var(--ft-muted);
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    .attention-open {
+      color: var(--ft-green);
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .attention-empty {
+      padding: 14px;
+      border-radius: 10px;
+      border: 1px dashed var(--ft-border);
+      color: var(--ft-muted);
+      font-size: 12px;
+    }
+
+    @media (max-width: 650px) {
+      .attention-item {
+        grid-template-columns: auto minmax(0,1fr);
+      }
+
+      .attention-open {
+        grid-column: 2;
+      }
+    }
+
   </style>
 </head>
 
@@ -1397,6 +1526,41 @@
           Nos próximos 30 dias
         </div>
       </div>
+
+    </section>
+
+
+    <section
+      id="attentionPanel"
+      class="panel attention-panel"
+    >
+
+      <div class="attention-header">
+
+        <div>
+          <div class="attention-title">
+            Atenção necessária
+          </div>
+
+          <div class="attention-subtitle">
+            Pendências que podem exigir uma ação sua.
+          </div>
+        </div>
+
+        <div
+          id="attentionCount"
+          class="attention-count"
+        >
+          0
+        </div>
+
+      </div>
+
+
+      <div
+        id="attentionList"
+        class="attention-list"
+      ></div>
 
     </section>
 
@@ -1984,6 +2148,15 @@ const recordingsStat =
 
 const expiringStat =
   $("expiringStat");
+
+const attentionPanel =
+  $("attentionPanel");
+
+const attentionCount =
+  $("attentionCount");
+
+const attentionList =
+  $("attentionList");
 
 
 const studentSelect =
@@ -2769,6 +2942,8 @@ async function loadBaseData() {
 
   renderGlobalStats();
 
+  renderAttentionPanel();
+
   renderStudentSelect();
 
 }
@@ -2864,6 +3039,363 @@ function renderGlobalStats() {
 
       }
     ).length;
+
+}
+
+
+/* ATENÇÃO NECESSÁRIA */
+
+function daysSince(
+  dateValue
+) {
+
+  if (!dateValue) {
+    return null;
+  }
+
+
+  const today =
+    new Date();
+
+
+  today.setHours(
+    12,
+    0,
+    0,
+    0
+  );
+
+
+  const date =
+    new Date(
+      dateValue +
+      "T12:00:00"
+    );
+
+
+  return Math.floor(
+    (
+      today.getTime() -
+      date.getTime()
+    ) /
+    86400000
+  );
+
+}
+
+
+function renderAttentionPanel() {
+
+  const students =
+    profiles.filter(
+      profile =>
+        profile.role === "aluno" &&
+        profile.status === "ativo"
+    );
+
+
+  const items =
+    [];
+
+
+  for (
+    const student of students
+  ) {
+
+    const daysRemaining =
+      daysUntil(
+        student.data_expiracao
+      );
+
+
+    if (
+      daysRemaining !== null &&
+      daysRemaining >= 0 &&
+      daysRemaining <= 30
+    ) {
+
+      items.push({
+        priority:
+          1,
+        type:
+          "expiry",
+        student,
+        icon:
+          "⏳",
+        reason:
+          daysRemaining === 0
+            ?
+            "O acesso termina hoje."
+            :
+            `O acesso termina em ${daysRemaining} dias.`
+      });
+
+    }
+
+
+    const linked =
+      allStudentSessions.filter(
+        item =>
+          item.student_id ===
+          student.id &&
+          item.liberada === true
+      );
+
+
+    const missingRecording =
+      linked.filter(
+        item =>
+          Boolean(
+            item.data_sessao
+          ) &&
+          !item.youtube_url
+      );
+
+
+    if (
+      missingRecording.length > 0
+    ) {
+
+      items.push({
+        priority:
+          2,
+        type:
+          "recording",
+        student,
+        icon:
+          "▶",
+        reason:
+          missingRecording.length === 1
+            ?
+            "1 sessão realizada ainda está sem gravação."
+            :
+            `${missingRecording.length} sessões realizadas ainda estão sem gravação.`
+      });
+
+    }
+
+
+    const linkedIds =
+      new Set(
+        linked.map(
+          item =>
+            Number(
+              item.session_id
+            )
+        )
+      );
+
+
+    const completedCount =
+      allProgress.filter(
+        item =>
+          item.student_id ===
+          student.id &&
+          item.concluida === true &&
+          linkedIds.has(
+            Number(
+              item.session_id
+            )
+          )
+      ).length;
+
+
+    const hasPending =
+      linked.length > 0 &&
+      completedCount <
+      linked.length;
+
+
+    if (hasPending) {
+
+      const datedSessions =
+        linked
+          .filter(
+            item =>
+              Boolean(
+                item.data_sessao
+              )
+          )
+          .map(
+            item =>
+              item.data_sessao
+          )
+          .sort();
+
+
+      const lastActivityDate =
+        datedSessions.length > 0
+          ?
+          datedSessions[
+            datedSessions.length - 1
+          ]
+          :
+          student.data_inicio;
+
+
+      const inactiveDays =
+        daysSince(
+          lastActivityDate
+        );
+
+
+      if (
+        inactiveDays !== null &&
+        inactiveDays >= 30
+      ) {
+
+        items.push({
+          priority:
+            3,
+          type:
+            "stalled",
+          student,
+          icon:
+            "!",
+          reason:
+            `Sem nova sessão registrada há ${inactiveDays} dias e ainda há sessões pendentes.`
+        });
+
+      }
+
+    }
+
+  }
+
+
+  items.sort(
+    (a, b) =>
+      a.priority -
+      b.priority ||
+      (a.student.nome || "")
+        .localeCompare(
+          b.student.nome || "",
+          "pt-BR"
+        )
+  );
+
+
+  attentionCount.textContent =
+    items.length;
+
+
+  attentionList.innerHTML =
+    "";
+
+
+  if (
+    items.length === 0
+  ) {
+
+    attentionList.innerHTML =
+      `
+        <div class="attention-empty">
+          Nenhuma pendência identificada no momento.
+        </div>
+      `;
+
+    return;
+
+  }
+
+
+  for (
+    const item of items
+  ) {
+
+    const row =
+      document.createElement(
+        "button"
+      );
+
+
+    row.type =
+      "button";
+
+
+    row.className =
+      `attention-item ${item.type}`;
+
+
+    row.innerHTML =
+      `
+        <span class="attention-icon">
+          ${item.icon}
+        </span>
+
+        <span>
+          <span class="attention-name">
+            ${escapeHTML(item.student.nome || "Sem nome")}
+          </span>
+
+          <span class="attention-reason">
+            ${escapeHTML(item.reason)}
+          </span>
+        </span>
+
+        <span class="attention-open">
+          Abrir mentorado →
+        </span>
+      `;
+
+
+    row.addEventListener(
+      "click",
+      async () => {
+
+        studentFilter =
+          "todos";
+
+
+        for (
+          const button of
+          studentFilterButtons
+        ) {
+
+          button.classList.toggle(
+            "active",
+            button.dataset.studentFilter ===
+            "todos"
+          );
+
+        }
+
+
+        studentSearch.value =
+          "";
+
+
+        renderStudentSelect();
+
+
+        studentSelect.value =
+          item.student.id;
+
+
+        await selectStudent(
+          item.student.id
+        );
+
+
+        renderStudentSelect();
+
+
+        studentArea.scrollIntoView({
+          behavior:
+            "smooth",
+          block:
+            "start"
+        });
+
+      }
+    );
+
+
+    attentionList.appendChild(
+      row
+    );
+
+  }
 
 }
 
