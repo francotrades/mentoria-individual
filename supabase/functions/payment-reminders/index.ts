@@ -25,7 +25,8 @@ type ReminderType =
   | "5_days_before"
   | "1_day_before"
   | "due_today"
-  | "3_days_overdue";
+  | "3_days_overdue"
+  | "manual";
 
 function saoPauloDateISO() {
   const parts = new Intl.DateTimeFormat(
@@ -96,6 +97,17 @@ function reminderCopy(
   dueDate: string,
 ) {
   const safeName = firstName || "Olá";
+
+  if (type === "manual") {
+    return {
+      subject: `Lembrete sobre sua parcela ${installment} — Franco Trades`,
+      headline: "Lembrete da sua mentoria",
+      intro:
+        `${safeName}, passando apenas para lembrar da parcela ${installment} da sua mentoria${dueDate ? `, com vencimento em ${dueDate}` : ""}.`,
+      detail:
+        `Valor da parcela: ${amount}. Se o pagamento já tiver sido realizado, pode desconsiderar esta mensagem.`,
+    };
+  }
 
   if (type === "5_days_before") {
     return {
@@ -243,11 +255,43 @@ Deno.serve(async (request) => {
     );
   }
 
-  if (
-    !REMINDER_CRON_SECRET ||
-    request.headers.get("x-cron-secret") !==
-      REMINDER_CRON_SECRET
-  ) {
+  let requestBody: Record<string, unknown> = {};
+  try {
+    requestBody = await request.json();
+  } catch {
+    requestBody = {};
+  }
+
+  const cronAuthorized =
+    Boolean(REMINDER_CRON_SECRET) &&
+    request.headers.get("x-cron-secret") ===
+      REMINDER_CRON_SECRET;
+
+  let adminAuthorized = false;
+
+  const authHeader =
+    request.headers.get("authorization") ?? "";
+
+  if (authHeader.toLowerCase().startsWith("bearer ")) {
+    const token = authHeader.slice(7).trim();
+
+    const { data: authData } =
+      await supabase.auth.getUser(token);
+
+    if (authData?.user?.id) {
+      const { data: adminProfile } =
+        await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", authData.user.id)
+          .maybeSingle();
+
+      adminAuthorized =
+        adminProfile?.role === "admin";
+    }
+  }
+
+  if (!cronAuthorized && !adminAuthorized) {
     return new Response(
       JSON.stringify({ error: "Unauthorized" }),
       {
@@ -257,23 +301,46 @@ Deno.serve(async (request) => {
     );
   }
 
-  let requestBody: Record<string, unknown> = {};
-  try {
-    requestBody = await request.json();
-  } catch {
-    requestBody = {};
-  }
+  const previewMode =
+    requestBody.preview === true;
 
-  const previewMode = requestBody.preview === true;
   const previewEmail =
     typeof requestBody.preview_email === "string"
       ? requestBody.preview_email.trim()
       : "";
 
+  const manualMode =
+    requestBody.manual === true;
+
+  const manualPaymentId =
+    Number(requestBody.payment_id ?? 0);
+
   if (previewMode && !previewEmail) {
     return new Response(
       JSON.stringify({
         error: "preview_email is required when preview=true",
+      }),
+      {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+  }
+
+  if ((previewMode || manualMode) && !adminAuthorized && !cronAuthorized) {
+    return new Response(
+      JSON.stringify({ error: "Admin authorization required" }),
+      {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+  }
+
+  if (manualMode && (!adminAuthorized || !Number.isFinite(manualPaymentId) || manualPaymentId <= 0)) {
+    return new Response(
+      JSON.stringify({
+        error: "A valid payment_id and admin session are required for manual reminders",
       }),
       {
         status: 400,
@@ -302,8 +369,8 @@ Deno.serve(async (request) => {
 
   const todayISO = saoPauloDateISO();
 
-  const { data: payments, error: paymentsError } =
-    await supabase
+  let paymentsQuery =
+    supabase
       .from("mentorship_payments")
       .select(`
         id,
@@ -319,8 +386,18 @@ Deno.serve(async (request) => {
           moeda
         )
       `)
-      .eq("paga", false)
-      .not("vencimento", "is", null);
+      .eq("paga", false);
+
+  if (manualMode) {
+    paymentsQuery =
+      paymentsQuery.eq("id", manualPaymentId);
+  } else {
+    paymentsQuery =
+      paymentsQuery.not("vencimento", "is", null);
+  }
+
+  const { data: payments, error: paymentsError } =
+    await paymentsQuery;
 
   if (paymentsError) {
     console.error(paymentsError);
@@ -336,6 +413,18 @@ Deno.serve(async (request) => {
     );
   }
 
+  if (manualMode && (!payments || payments.length === 0)) {
+    return new Response(
+      JSON.stringify({
+        error: "Pending payment not found",
+      }),
+      {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+  }
+
   let sent = 0;
   let skipped = 0;
   const errors: Array<Record<string, unknown>> = [];
@@ -346,27 +435,27 @@ Deno.serve(async (request) => {
         ? payment.mentorship_financials[0]
         : payment.mentorship_financials;
 
-    if (
-      !financial?.email ||
-      !payment.vencimento
-    ) {
+    if (!financial?.email) {
       skipped++;
       continue;
     }
 
-    const diff = dateDiffDays(
-      payment.vencimento,
-      todayISO,
-    );
-
-    const type = reminderTypeForDiff(diff);
+    let type: ReminderType | null =
+      manualMode
+        ? "manual"
+        : reminderTypeForDiff(
+            dateDiffDays(
+              String(payment.vencimento),
+              todayISO,
+            ),
+          );
 
     if (!type) {
       skipped++;
       continue;
     }
 
-    if (!previewMode) {
+    if (!previewMode && !manualMode) {
       const { data: existingLog } =
         await supabase
           .from("payment_reminder_log")
@@ -394,7 +483,9 @@ Deno.serve(async (request) => {
         Number(payment.valor ?? 0),
         financial.moeda ?? "BRL",
       ),
-      formatDateBR(payment.vencimento),
+      payment.vencimento
+        ? formatDateBR(payment.vencimento)
+        : "",
     );
 
     try {
@@ -424,7 +515,7 @@ Deno.serve(async (request) => {
               reminder_type: type,
               recipient_email: financial.email,
               provider_message_id:
-                provider?.id ?? null,
+                provider?.sentAt ?? null,
               provider_response:
                 provider ?? null,
             });
@@ -434,6 +525,13 @@ Deno.serve(async (request) => {
             "Email sent but log failed",
             logError,
           );
+
+          errors.push({
+            payment_id: payment.id,
+            email: financial.email,
+            error:
+              `Email sent, but log failed: ${logError.message}`,
+          });
         }
       }
 
@@ -454,11 +552,12 @@ Deno.serve(async (request) => {
 
   return new Response(
     JSON.stringify({
-      ok: true,
+      ok: errors.length === 0,
       date: todayISO,
       sent,
       skipped,
       preview: previewMode,
+      manual: manualMode,
       errors,
     }),
     {
