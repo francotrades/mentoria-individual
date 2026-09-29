@@ -2578,6 +2578,24 @@
         </div>
 
 
+        <div class="field">
+
+          <label for="sessionTime">
+            Horário da sessão
+          </label>
+
+          <input
+            id="sessionTime"
+            type="time"
+          >
+
+          <div class="hint">
+            Horário de Brasília. O botão do Teams some automaticamente 1 hora depois.
+          </div>
+
+        </div>
+
+
         <div class="field full">
 
           <label for="sessionCustomTitle">
@@ -2924,6 +2942,9 @@ const sessionSelect =
 
 const sessionDate =
   $("sessionDate");
+
+const sessionTime =
+  $("sessionTime");
 
 const sessionCustomTitle =
   $("sessionCustomTitle");
@@ -4027,6 +4048,7 @@ async function loadBaseData() {
           youtube_url,
           teams_url,
           data_sessao,
+          session_time,
           observacoes,
           titulo_personalizado,
           liberada
@@ -6705,6 +6727,7 @@ async function saveStudent() {
 function clearSessionForm() {
 
   sessionDate.value = "";
+  sessionTime.value = "";
   sessionCustomTitle.value = "";
   youtubeUrl.value = "";
   teamsUrl.value = "";
@@ -6849,6 +6872,14 @@ function openExistingSession(
     "";
 
 
+  sessionTime.value =
+    item.session_time
+      ?
+      String(item.session_time).slice(0, 5)
+      :
+      "";
+
+
   sessionCustomTitle.value =
     item.titulo_personalizado ||
     "";
@@ -6947,6 +6978,10 @@ async function saveSession() {
 
     data_sessao:
       sessionDate.value ||
+      null,
+
+    session_time:
+      sessionTime.value ||
       null,
 
     titulo_personalizado:
