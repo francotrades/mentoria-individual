@@ -495,9 +495,7 @@ Deno.serve(async (request) => {
 
       const provider = await sendEmail(
         recipient,
-        previewMode
-          ? `[PRÉVIA] ${copy.subject}`
-          : copy.subject,
+        copy.subject,
         emailHtml(
           copy.headline,
           copy.intro,
