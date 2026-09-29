@@ -3352,7 +3352,7 @@ async function loadDashboard() {
 
 
     window.location.href =
-      "../login/";
+      "../login/?reason=profile";
 
 
     return;
@@ -3386,7 +3386,11 @@ async function loadDashboard() {
 
 
     window.location.href =
-      "../login/";
+      profile.status === "expirado"
+        ?
+        "../login/?reason=expired"
+        :
+        "../login/?reason=inactive";
 
 
     return;
@@ -3410,7 +3414,7 @@ async function loadDashboard() {
 
 
     window.location.href =
-      "../login/";
+      "../login/?reason=expired";
 
 
     return;
