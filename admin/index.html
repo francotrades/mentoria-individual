@@ -4046,20 +4046,67 @@ createStudentButton
       }
 
 
+      let welcomeWarning =
+        "";
+
+
+      if (createdId) {
+
+        const {
+          data: welcomeData,
+          error: welcomeError
+        } =
+          await supabase.functions
+            .invoke(
+              "student-welcome-notification",
+              {
+                body: {
+                  student_id:
+                    createdId
+                }
+              }
+            );
+
+
+        if (
+          welcomeError ||
+          !welcomeData?.sent
+        ) {
+
+          console.error(
+            "Erro ao enviar boas-vindas:",
+            welcomeError,
+            welcomeData
+          );
+
+
+          welcomeWarning =
+            " O convite foi enviado, mas o e-mail personalizado de boas-vindas não pôde ser enviado.";
+
+        }
+
+      }
+
+
+      const finalWarning =
+        financeWarning +
+        welcomeWarning;
+
+
       showMessage(
-        financeWarning
+        finalWarning
           ?
           "Mentorado criado e convite enviado." +
-          financeWarning
+          finalWarning
           :
           (
             financeWasPreserved
               ?
-              "Mentorado criado, convite enviado e financeiro existente vinculado sem alterar valores ou parcelas."
+              "Mentorado criado, convite enviado, financeiro existente preservado e boas-vindas enviadas por e-mail."
               :
-              "Mentorado, financeiro e parcelas criados. Convite enviado por e-mail."
+              "Mentorado, financeiro e parcelas criados. Convite e boas-vindas enviados por e-mail."
           ),
-        financeWarning
+        finalWarning
           ?
           "error"
           :
