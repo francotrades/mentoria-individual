@@ -3522,13 +3522,15 @@ createStudentButton
 
 async function loadBaseData() {
 
+  loading.textContent =
+    "Carregando dados do painel...";
+
+
   const [
     profilesResult,
     sessionsResult,
     studentSessionsResult,
-    progressResult,
-    financialsResult,
-    paymentsResult
+    progressResult
   ] =
     await Promise.all([
 
@@ -3584,26 +3586,6 @@ async function loadBaseData() {
           student_id,
           session_id,
           concluida
-        `),
-
-      supabase
-        .from("mentorship_financials")
-        .select(`
-          id,
-          profile_id,
-          nome,
-          email,
-          valor_total,
-          moeda
-        `),
-
-      supabase
-        .from("mentorship_payments")
-        .select(`
-          id,
-          mentorship_id,
-          valor,
-          paga
         `)
 
     ]);
@@ -3613,27 +3595,20 @@ async function loadBaseData() {
     profilesResult.error ||
     sessionsResult.error ||
     studentSessionsResult.error ||
-    progressResult.error ||
-    financialsResult.error ||
-    paymentsResult.error
+    progressResult.error
   ) {
 
     console.error(
       profilesResult.error,
       sessionsResult.error,
       studentSessionsResult.error,
-      progressResult.error,
-      financialsResult.error,
-      paymentsResult.error
+      progressResult.error
     );
 
 
-    showMessage(
-      "Não foi possível carregar o painel.",
-      "error"
+    throw new Error(
+      "Não foi possível carregar os dados principais do painel."
     );
-
-    return;
 
   }
 
@@ -3655,11 +3630,102 @@ async function loadBaseData() {
 
 
   allFinancials =
-    financialsResult.data || [];
+    [];
 
 
   allPayments =
-    paymentsResult.data || [];
+    [];
+
+
+  try {
+
+    const financeLoad =
+      Promise.all([
+
+        supabase
+          .from("mentorship_financials")
+          .select(`
+            id,
+            profile_id,
+            nome,
+            email,
+            valor_total,
+            moeda
+          `),
+
+        supabase
+          .from("mentorship_payments")
+          .select(`
+            id,
+            mentorship_id,
+            valor,
+            paga
+          `)
+
+      ]);
+
+
+    const timeout =
+      new Promise(
+        (_, reject) =>
+          setTimeout(
+            () =>
+              reject(
+                new Error(
+                  "Tempo limite ao carregar financeiro."
+                )
+              ),
+            6000
+          )
+      );
+
+
+    const [
+      financialsResult,
+      paymentsResult
+    ] =
+      await Promise.race([
+        financeLoad,
+        timeout
+      ]);
+
+
+    if (
+      !financialsResult.error &&
+      !paymentsResult.error
+    ) {
+
+      allFinancials =
+        financialsResult.data || [];
+
+
+      allPayments =
+        paymentsResult.data || [];
+
+    }
+
+    else {
+
+      console.error(
+        "Financeiro não carregado:",
+        financialsResult.error,
+        paymentsResult.error
+      );
+
+    }
+
+  }
+
+  catch (
+    financeError
+  ) {
+
+    console.error(
+      "Financeiro ignorado para não bloquear o painel:",
+      financeError
+    );
+
+  }
 
 
   renderGlobalStats();
@@ -5768,24 +5834,47 @@ logoutButton.addEventListener(
 
 async function init() {
 
-  const isAdmin =
-    await verifyAdmin();
+  try {
+
+    loading.textContent =
+      "Verificando acesso administrativo...";
 
 
-  if (!isAdmin) {
-    return;
+    const isAdmin =
+      await verifyAdmin();
+
+
+    if (!isAdmin) {
+      return;
+    }
+
+
+    await loadBaseData();
+
+
+    loading.classList
+      .add("hidden");
+
+
+    adminContent.classList
+      .remove("hidden");
+
   }
 
+  catch (
+    initError
+  ) {
 
-  await loadBaseData();
+    console.error(
+      "Erro ao iniciar painel:",
+      initError
+    );
 
 
-  loading.classList
-    .add("hidden");
+    loading.textContent =
+      "Não foi possível carregar o painel. Atualize a página; se persistir, verifique o Console do navegador.";
 
-
-  adminContent.classList
-    .remove("hidden");
+  }
 
 }
 
