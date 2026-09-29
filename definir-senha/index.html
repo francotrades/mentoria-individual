@@ -413,6 +413,28 @@ function blockPage(
 }
 
 
+function dateExpired(
+  expirationDate
+) {
+
+  if (!expirationDate) {
+    return false;
+  }
+
+
+  const expiration =
+    new Date(
+      expirationDate +
+      "T23:59:59"
+    );
+
+
+  return expiration <
+    new Date();
+
+}
+
+
 /* AJUSTA O TEXTO DE ACORDO COM O FLUXO */
 
 if (
@@ -645,7 +667,8 @@ form.addEventListener(
 
 
         const {
-          data: profile
+          data: profile,
+          error: profileError
         } =
           await supabase
 
@@ -654,7 +677,7 @@ form.addEventListener(
             )
 
             .select(
-              "role"
+              "role, status, data_expiracao"
             )
 
             .eq(
@@ -666,21 +689,91 @@ form.addEventListener(
 
 
         if (
-          profile?.role ===
+          profileError ||
+          !profile
+        ) {
+
+          await supabase.auth
+            .signOut();
+
+
+          window.location.href =
+            "../login/?reason=profile";
+
+          return;
+
+        }
+
+
+        if (
+          profile.role ===
           "admin"
         ) {
 
           window.location.href =
             "../admin/";
 
+          return;
+
         }
 
-        else {
+
+        if (
+          profile.status ===
+          "inativo"
+        ) {
+
+          await supabase.auth
+            .signOut();
+
+
+          window.location.href =
+            "../login/?reason=inactive";
+
+          return;
+
+        }
+
+
+        if (
+          profile.status ===
+            "expirado" ||
+          dateExpired(
+            profile.data_expiracao
+          )
+        ) {
+
+          await supabase.auth
+            .signOut();
+
+
+          window.location.href =
+            "../login/?reason=expired";
+
+          return;
+
+        }
+
+
+        if (
+          profile.role ===
+          "aluno"
+        ) {
 
           window.location.href =
             "../aluno/";
 
+          return;
+
         }
+
+
+        await supabase.auth
+          .signOut();
+
+
+        window.location.href =
+          "../login/?reason=profile";
 
       },
       1100
