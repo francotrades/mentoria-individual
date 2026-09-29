@@ -7,6 +7,13 @@ const GOOGLE_MAIL_WEBHOOK_URL = Deno.env.get("GOOGLE_MAIL_WEBHOOK_URL") ?? "";
 const GOOGLE_MAIL_SECRET = Deno.env.get("GOOGLE_MAIL_SECRET") ?? "";
 const REMINDER_CRON_SECRET = Deno.env.get("REMINDER_CRON_SECRET") ?? "";
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-cron-secret",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
 const STUDENT_AREA_URL =
   "https://francotrades.github.io/mentoria-individual/aluno/";
 
@@ -215,6 +222,7 @@ async function sendEmail(
     {
       method: "POST",
       headers: {
+        ...corsHeaders,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -245,12 +253,22 @@ async function sendEmail(
 }
 
 Deno.serve(async (request) => {
+  if (request.method === "OPTIONS") {
+    return new Response("ok", {
+      status: 200,
+      headers: corsHeaders,
+    });
+  }
+
   if (request.method !== "POST") {
     return new Response(
       JSON.stringify({ error: "Method not allowed" }),
       {
         status: 405,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+        },
       },
     );
   }
@@ -296,7 +314,10 @@ Deno.serve(async (request) => {
       JSON.stringify({ error: "Unauthorized" }),
       {
         status: 401,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+        },
       },
     );
   }
@@ -322,7 +343,10 @@ Deno.serve(async (request) => {
       }),
       {
         status: 400,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+        },
       },
     );
   }
@@ -332,7 +356,10 @@ Deno.serve(async (request) => {
       JSON.stringify({ error: "Admin authorization required" }),
       {
         status: 401,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+        },
       },
     );
   }
@@ -344,7 +371,10 @@ Deno.serve(async (request) => {
       }),
       {
         status: 400,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+        },
       },
     );
   }
@@ -362,7 +392,10 @@ Deno.serve(async (request) => {
       }),
       {
         status: 500,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+        },
       },
     );
   }
@@ -408,7 +441,10 @@ Deno.serve(async (request) => {
       }),
       {
         status: 500,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+        },
       },
     );
   }
@@ -420,7 +456,10 @@ Deno.serve(async (request) => {
       }),
       {
         status: 404,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+        },
       },
     );
   }
