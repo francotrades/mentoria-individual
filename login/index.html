@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+
   <meta charset="UTF-8">
 
   <meta
@@ -8,14 +9,10 @@
     content="width=device-width, initial-scale=1.0"
   >
 
-  <title>Área do Aluno | FrancoTrades</title>
-
-  <meta
-    name="description"
-    content="Área exclusiva para mentorados FrancoTrades."
-  >
+  <title>Login | FrancoTrades</title>
 
   <style>
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -23,673 +20,969 @@
     }
 
     body {
+
       min-height: 100vh;
-      font-family: Arial, Helvetica, sans-serif;
-
-      background:
-        radial-gradient(
-          circle at top,
-          rgba(19, 174, 115, 0.10),
-          transparent 35%
-        ),
-        #080b0f;
-
-      color: #ffffff;
 
       display: flex;
       align-items: center;
       justify-content: center;
 
       padding: 24px;
+
+      font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+      color: #ffffff;
+
+      background:
+        radial-gradient(
+          circle at top,
+          rgba(22, 199, 132, 0.08),
+          transparent 35%
+        ),
+        #080b0f;
+
     }
 
-    .login-wrapper {
+    .wrapper {
       width: 100%;
-      max-width: 430px;
+      max-width: 410px;
     }
 
     .brand {
       text-align: center;
-      margin-bottom: 34px;
+      margin-bottom: 30px;
     }
 
-    .brand-logo {
+    .logo {
+
       font-size: 28px;
       font-weight: 800;
+
       letter-spacing: 1px;
+
+      margin-bottom: 8px;
+
     }
 
-    .brand-logo span {
+    .logo span {
       color: #16c784;
     }
 
-    .brand-subtitle {
-      margin-top: 9px;
+    .subtitle {
+
       color: #89939f;
+
       font-size: 14px;
+
     }
 
-    .login-card {
-      background: rgba(16, 20, 27, 0.96);
+    .card {
+
+      background: #10141b;
 
       border: 1px solid #202833;
-      border-radius: 18px;
 
-      padding: 34px;
+      border-radius: 16px;
 
-      box-shadow:
-        0 25px 70px rgba(0, 0, 0, 0.45);
+      padding: 32px;
+
     }
 
     h1 {
-      font-size: 25px;
-      margin-bottom: 8px;
+
       text-align: center;
+
+      font-size: 25px;
+
+      margin-bottom: 8px;
+
     }
 
     .description {
-      color: #89939f;
+
       text-align: center;
+
+      color: #89939f;
+
       font-size: 14px;
 
-      margin-bottom: 30px;
       line-height: 1.5;
+
+      margin-bottom: 27px;
+
     }
 
     .field {
-      margin-bottom: 18px;
+      margin-bottom: 17px;
     }
 
     label {
+
       display: block;
 
-      color: #c8d0d9;
-      font-size: 13px;
-      font-weight: 600;
+      margin-bottom: 7px;
 
-      margin-bottom: 8px;
+      color: #c1cad4;
+
+      font-size: 12px;
+      font-weight: 700;
+
     }
 
-    .input-wrapper {
+    .password-wrapper {
       position: relative;
     }
 
     input {
+
       width: 100%;
 
-      padding: 14px 15px;
+      padding: 13px 14px;
 
-      border-radius: 10px;
+      background: #0b1016;
+
       border: 1px solid #2a3440;
+      border-radius: 9px;
+
+      color: white;
 
       outline: none;
 
-      background: #0b1016;
-      color: #ffffff;
+      font-size: 14px;
 
-      font-size: 15px;
-
-      transition: border 0.2s ease;
     }
 
     input:focus {
       border-color: #16c784;
     }
 
-    #password {
-      padding-right: 55px;
+    .password-wrapper input {
+      padding-right: 72px;
     }
 
-    .password-button {
+    .show-password {
+
       position: absolute;
 
-      right: 10px;
+      right: 13px;
       top: 50%;
+
       transform: translateY(-50%);
 
       border: none;
+
       background: transparent;
 
       color: #89939f;
 
       cursor: pointer;
 
-      font-size: 13px;
-      font-weight: 600;
+      font-size: 12px;
+      font-weight: 700;
+
     }
 
     .login-button {
+
       width: 100%;
 
-      margin-top: 8px;
-
-      padding: 15px;
-
       border: none;
-      border-radius: 10px;
+      border-radius: 9px;
 
       background: #16c784;
+
       color: #04130d;
 
+      padding: 14px;
+
       font-weight: 800;
-      font-size: 14px;
 
       cursor: pointer;
 
-      transition:
-        transform 0.15s ease,
-        opacity 0.15s ease;
-    }
+      margin-top: 8px;
 
-    .login-button:hover {
-      transform: translateY(-1px);
     }
 
     .login-button:disabled {
-      opacity: 0.55;
-      cursor: not-allowed;
-      transform: none;
+      opacity: .55;
+      cursor: wait;
+    }
+
+    .secure {
+
+      margin-top: 23px;
+
+      text-align: center;
+
+      color: #68737f;
+
+      font-size: 11px;
+
     }
 
     .message {
+
       display: none;
 
-      margin-top: 18px;
-      padding: 12px;
+      margin-bottom: 19px;
+
+      padding: 12px 13px;
 
       border-radius: 9px;
 
       font-size: 13px;
-      line-height: 1.4;
+      line-height: 1.5;
 
       text-align: center;
+
     }
 
     .message.error {
+
       display: block;
 
-      background: rgba(239, 68, 68, 0.10);
-      border: 1px solid rgba(239, 68, 68, 0.30);
+      border: 1px solid rgba(239, 68, 68, .35);
+
+      background: rgba(239, 68, 68, .08);
 
       color: #fca5a5;
+
     }
 
-    .message.success {
+    .message.info {
+
       display: block;
 
-      background: rgba(22, 199, 132, 0.10);
-      border: 1px solid rgba(22, 199, 132, 0.30);
+      border: 1px solid rgba(22, 199, 132, .30);
+
+      background: rgba(22, 199, 132, .07);
 
       color: #6ee7b7;
+
     }
 
-    .footer {
+    .forgot {
+
+      display: block;
+
+      margin-top: 15px;
+
       text-align: center;
 
-      color: #59626d;
+      color: #89939f;
 
       font-size: 12px;
 
-      margin-top: 24px;
+      text-decoration: none;
+
     }
 
-    .security {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-
-      color: #68737f;
-
-      font-size: 12px;
-
-      margin-top: 20px;
+    .forgot:hover {
+      color: #16c784;
     }
 
-    @media (max-width: 500px) {
-      .login-card {
-        padding: 27px 21px;
-      }
-    }
   </style>
+
 </head>
 
 <body>
 
-  <main class="login-wrapper">
+<div class="wrapper">
 
-    <header class="brand">
+  <div class="brand">
 
-      <div class="brand-logo">
-        FRANCO<span>TRADES</span>
+    <div class="logo">
+      FRANCO<span>TRADES</span>
+    </div>
+
+    <div class="subtitle">
+      Mentoria Individual
+    </div>
+
+  </div>
+
+
+  <div class="card">
+
+    <h1>
+      Área do Aluno
+    </h1>
+
+    <p class="description">
+      Entre com o e-mail e a senha cadastrados
+      para acessar sua mentoria.
+    </p>
+
+
+    <div
+      id="message"
+      class="message"
+    ></div>
+
+
+    <form id="loginForm">
+
+      <div class="field">
+
+        <label for="email">
+          E-mail
+        </label>
+
+        <input
+          id="email"
+          type="email"
+          autocomplete="email"
+          required
+          placeholder="seu@email.com"
+        >
+
       </div>
 
-      <div class="brand-subtitle">
-        Mentoria Individual
-      </div>
 
-    </header>
+      <div class="field">
 
-    <section class="login-card">
+        <label for="password">
+          Senha
+        </label>
 
-      <h1>Área do Aluno</h1>
-
-      <p class="description">
-        Entre com o e-mail e a senha cadastrados
-        para acessar sua mentoria.
-      </p>
-
-      <form id="loginForm">
-
-        <div class="field">
-
-          <label for="email">
-            E-mail
-          </label>
+        <div class="password-wrapper">
 
           <input
-            type="email"
-            id="email"
-            autocomplete="email"
-            placeholder="seu@email.com"
+            id="password"
+            type="password"
+            autocomplete="current-password"
             required
           >
 
-        </div>
-
-        <div class="field">
-
-          <label for="password">
-            Senha
-          </label>
-
-          <div class="input-wrapper">
-
-            <input
-              type="password"
-              id="password"
-              autocomplete="current-password"
-              placeholder="Sua senha"
-              required
-            >
-
-            <button
-              type="button"
-              class="password-button"
-              id="togglePassword"
-            >
-              Mostrar
-            </button>
-
-          </div>
+          <button
+            id="showPassword"
+            class="show-password"
+            type="button"
+          >
+            Mostrar
+          </button>
 
         </div>
 
-        <button
-          type="submit"
-          class="login-button"
-          id="loginButton"
-        >
-          ENTRAR
-        </button>
-
-        <div
-          id="message"
-          class="message"
-        ></div>
-
-      </form>
-
-      <div class="security">
-        🔒 Acesso exclusivo para mentorados
       </div>
 
-    </section>
 
-    <footer class="footer">
-      © FrancoTrades
-    </footer>
+      <button
+        id="loginButton"
+        class="login-button"
+        type="submit"
+      >
+        ENTRAR
+      </button>
 
-  </main>
-
-
-  <script type="module">
-
-    import {
-      createClient
-    } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+    </form>
 
 
-    // ----------------------------------------------------------
-    // CONEXÃO COM O SUPABASE
-    // ----------------------------------------------------------
-
-    const SUPABASE_URL =
-      "https://vfnltuecpnuixemxvwvk.supabase.co";
-
-    const SUPABASE_PUBLISHABLE_KEY =
-      "sb_publishable_nxgAFL2foBN8CuKMT5_2qQ_uDlaJ4Xc";
+    <a
+      href="#"
+      id="forgotPassword"
+      class="forgot"
+    >
+      Esqueci minha senha
+    </a>
 
 
-    const supabase = createClient(
-      SUPABASE_URL,
-      SUPABASE_PUBLISHABLE_KEY
+    <div class="secure">
+      🔒 Acesso exclusivo para mentorados
+    </div>
+
+  </div>
+
+</div>
+
+
+<script type="module">
+
+import {
+  createClient
+} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+
+const SUPABASE_URL =
+  "https://vfnltuecpnuixemxvwvk.supabase.co";
+
+
+const SUPABASE_PUBLISHABLE_KEY =
+  "sb_publishable_nxgAFL2foBN8CuKMT5_2qQ_uDlaJ4Xc";
+
+
+const supabase =
+  createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+  );
+
+
+const loginForm =
+  document.getElementById(
+    "loginForm"
+  );
+
+
+const emailInput =
+  document.getElementById(
+    "email"
+  );
+
+
+const passwordInput =
+  document.getElementById(
+    "password"
+  );
+
+
+const loginButton =
+  document.getElementById(
+    "loginButton"
+  );
+
+
+const message =
+  document.getElementById(
+    "message"
+  );
+
+
+const showPassword =
+  document.getElementById(
+    "showPassword"
+  );
+
+
+const forgotPassword =
+  document.getElementById(
+    "forgotPassword"
+  );
+
+
+function showMessage(
+  text,
+  type = "error"
+) {
+
+  message.textContent =
+    text;
+
+
+  message.className =
+    `message ${type}`;
+
+}
+
+
+function hideMessage() {
+
+  message.textContent =
+    "";
+
+
+  message.className =
+    "message";
+
+}
+
+
+function dateExpired(
+  expirationDate
+) {
+
+  if (!expirationDate) {
+    return false;
+  }
+
+
+  const today =
+    new Date();
+
+
+  today.setHours(
+    0,
+    0,
+    0,
+    0
+  );
+
+
+  const expiration =
+    new Date(
+      expirationDate +
+      "T23:59:59"
     );
 
 
-    // ----------------------------------------------------------
-    // ELEMENTOS DA PÁGINA
-    // ----------------------------------------------------------
+  return (
+    expiration <
+    today
+  );
 
-    const loginForm =
-      document.getElementById("loginForm");
-
-    const emailInput =
-      document.getElementById("email");
-
-    const passwordInput =
-      document.getElementById("password");
-
-    const loginButton =
-      document.getElementById("loginButton");
-
-    const message =
-      document.getElementById("message");
-
-    const togglePassword =
-      document.getElementById("togglePassword");
+}
 
 
-    // ----------------------------------------------------------
-    // MOSTRAR / ESCONDER SENHA
-    // ----------------------------------------------------------
+/* =========================================
+   DECIDE PARA ONDE O USUÁRIO DEVE IR
+========================================= */
 
-    togglePassword.addEventListener(
-      "click",
-      () => {
+async function redirectUser(
+  user
+) {
 
-        const isPassword =
-          passwordInput.type === "password";
+  const {
+    data: profile,
+    error
+  } =
+    await supabase
 
-        passwordInput.type =
-          isPassword
-            ? "text"
-            : "password";
+      .from(
+        "profiles"
+      )
 
-        togglePassword.textContent =
-          isPassword
-            ? "Ocultar"
-            : "Mostrar";
-      }
+      .select(`
+        role,
+        status,
+        data_expiracao
+      `)
+
+      .eq(
+        "id",
+        user.id
+      )
+
+      .single();
+
+
+  if (
+    error ||
+    !profile
+  ) {
+
+    console.error(
+      "Erro carregando profile:",
+      error
     );
 
 
-    // ----------------------------------------------------------
-    // MOSTRAR MENSAGENS
-    // ----------------------------------------------------------
+    await supabase.auth
+      .signOut();
 
-    function showMessage(
-      text,
-      type = "error"
+
+    showMessage(
+      "Não foi possível localizar seu cadastro. Entre em contato com a FrancoTrades."
+    );
+
+
+    loginButton.disabled =
+      false;
+
+
+    loginButton.textContent =
+      "ENTRAR";
+
+
+    return;
+
+  }
+
+
+  /* ADMIN */
+
+  if (
+    profile.role ===
+    "admin"
+  ) {
+
+    window.location.href =
+      "../admin/";
+
+
+    return;
+
+  }
+
+
+  /* ALUNO INATIVO */
+
+  if (
+    profile.status ===
+    "inativo"
+  ) {
+
+    await supabase.auth
+      .signOut();
+
+
+    showMessage(
+      "Seu acesso à mentoria está temporariamente inativo."
+    );
+
+
+    loginButton.disabled =
+      false;
+
+
+    loginButton.textContent =
+      "ENTRAR";
+
+
+    return;
+
+  }
+
+
+  /* ALUNO EXPIRADO */
+
+  if (
+    profile.status ===
+      "expirado" ||
+    dateExpired(
+      profile.data_expiracao
+    )
+  ) {
+
+    await supabase.auth
+      .signOut();
+
+
+    showMessage(
+      "O período de acesso à sua mentoria expirou. Entre em contato com a FrancoTrades."
+    );
+
+
+    loginButton.disabled =
+      false;
+
+
+    loginButton.textContent =
+      "ENTRAR";
+
+
+    return;
+
+  }
+
+
+  /* ALUNO ATIVO */
+
+  if (
+    profile.role ===
+    "aluno"
+  ) {
+
+    window.location.href =
+      "../aluno/";
+
+
+    return;
+
+  }
+
+
+  /* SEGURANÇA */
+
+  await supabase.auth
+    .signOut();
+
+
+  showMessage(
+    "Seu usuário não possui um tipo de acesso válido."
+  );
+
+
+  loginButton.disabled =
+    false;
+
+
+  loginButton.textContent =
+    "ENTRAR";
+
+}
+
+
+/* =========================================
+   LOGIN
+========================================= */
+
+loginForm.addEventListener(
+  "submit",
+
+  async event => {
+
+    event.preventDefault();
+
+
+    hideMessage();
+
+
+    const email =
+      emailInput.value
+        .trim()
+        .toLowerCase();
+
+
+    const password =
+      passwordInput.value;
+
+
+    if (
+      !email ||
+      !password
     ) {
 
-      message.textContent = text;
-
-      message.className =
-        `message ${type}`;
-
-    }
+      showMessage(
+        "Preencha o e-mail e a senha."
+      );
 
 
-    function clearMessage() {
-
-      message.textContent = "";
-
-      message.className = "message";
+      return;
 
     }
 
 
-    // ----------------------------------------------------------
-    // VERIFICA SE O ALUNO PODE ACESSAR
-    // ----------------------------------------------------------
+    loginButton.disabled =
+      true;
 
-    async function validateStudent(user) {
 
-      const {
-        data: profile,
+    loginButton.textContent =
+      "ENTRANDO...";
+
+
+    const {
+      data,
+      error
+    } =
+      await supabase.auth
+        .signInWithPassword({
+
+          email,
+
+          password
+
+        });
+
+
+    if (error) {
+
+      console.error(
         error
-      } = await supabase
-        .from("profiles")
-        .select(
-          "nome, status, data_inicio, data_expiracao"
-        )
-        .eq("id", user.id)
-        .single();
+      );
 
 
-      if (error || !profile) {
+      loginButton.disabled =
+        false;
 
-        return {
-          allowed: false,
-          reason:
-            "Não foi possível localizar seu cadastro."
-        };
 
-      }
+      loginButton.textContent =
+        "ENTRAR";
 
 
-      if (profile.status !== "ativo") {
+      if (
+        error.message
+          ?.toLowerCase()
+          .includes(
+            "invalid login credentials"
+          )
+      ) {
 
-        return {
-          allowed: false,
-          reason:
-            "Seu acesso à mentoria não está ativo."
-        };
-
-      }
-
-
-      if (profile.data_expiracao) {
-
-        const expirationDate =
-          new Date(
-            profile.data_expiracao + "T23:59:59"
-          );
-
-        const today =
-          new Date();
-
-
-        if (today > expirationDate) {
-
-          return {
-            allowed: false,
-            reason:
-              "Seu período de acesso à mentoria expirou."
-          };
-
-        }
-
-      }
-
-
-      return {
-        allowed: true,
-        profile
-      };
-
-    }
-
-
-    // ----------------------------------------------------------
-    // LOGIN
-    // ----------------------------------------------------------
-
-    loginForm.addEventListener(
-      "submit",
-      async event => {
-
-        event.preventDefault();
-
-        clearMessage();
-
-
-        const email =
-          emailInput.value.trim();
-
-        const password =
-          passwordInput.value;
-
-
-        loginButton.disabled = true;
-
-        loginButton.textContent =
-          "ENTRANDO...";
-
-
-        try {
-
-          const {
-            data,
-            error
-          } = await supabase.auth
-            .signInWithPassword({
-              email,
-              password
-            });
-
-
-          if (error) {
-
-            throw error;
-
-          }
-
-
-          const validation =
-            await validateStudent(
-              data.user
-            );
-
-
-          if (!validation.allowed) {
-
-            await supabase.auth.signOut();
-
-            showMessage(
-              validation.reason
-            );
-
-            return;
-
-          }
-
-
-          showMessage(
-            "Login realizado. Entrando...",
-            "success"
-          );
-
-
-          setTimeout(
-            () => {
-
-              window.location.href =
-                "../aluno/";
-
-            },
-            500
-          );
-
-        }
-
-        catch (error) {
-
-          console.error(error);
-
-
-          let errorMessage =
-            "Não foi possível entrar. Confira seu e-mail e sua senha.";
-
-
-          if (
-            error.message
-              ?.toLowerCase()
-              .includes("invalid login credentials")
-          ) {
-
-            errorMessage =
-              "E-mail ou senha incorretos.";
-
-          }
-
-
-          showMessage(
-            errorMessage
-          );
-
-        }
-
-        finally {
-
-          loginButton.disabled = false;
-
-          loginButton.textContent =
-            "ENTRAR";
-
-        }
-
-      }
-    );
-
-
-    // ----------------------------------------------------------
-    // SE JÁ ESTIVER LOGADO, MANDA PARA O DASHBOARD
-    // ----------------------------------------------------------
-
-    async function checkExistingSession() {
-
-      const {
-        data: {
-          session
-        }
-      } =
-        await supabase.auth.getSession();
-
-
-      if (!session) {
-
-        return;
-
-      }
-
-
-      const validation =
-        await validateStudent(
-          session.user
+        showMessage(
+          "E-mail ou senha incorretos."
         );
-
-
-      if (validation.allowed) {
-
-        window.location.href =
-          "../aluno/";
 
       }
 
       else {
 
-        await supabase.auth.signOut();
+        showMessage(
+          "Não foi possível realizar o login. Tente novamente."
+        );
 
       }
+
+
+      return;
 
     }
 
 
-    checkExistingSession();
+    if (
+      !data?.user
+    ) {
 
-  </script>
+      loginButton.disabled =
+        false;
+
+
+      loginButton.textContent =
+        "ENTRAR";
+
+
+      showMessage(
+        "Não foi possível identificar o usuário."
+      );
+
+
+      return;
+
+    }
+
+
+    await redirectUser(
+      data.user
+    );
+
+  }
+);
+
+
+/* =========================================
+   MOSTRAR / ESCONDER SENHA
+========================================= */
+
+showPassword.addEventListener(
+  "click",
+  () => {
+
+    const showing =
+      passwordInput.type ===
+      "text";
+
+
+    passwordInput.type =
+      showing
+        ?
+        "password"
+        :
+        "text";
+
+
+    showPassword.textContent =
+      showing
+        ?
+        "Mostrar"
+        :
+        "Ocultar";
+
+  }
+);
+
+
+/* =========================================
+   RECUPERAÇÃO DE SENHA
+========================================= */
+
+forgotPassword.addEventListener(
+  "click",
+
+  async event => {
+
+    event.preventDefault();
+
+
+    hideMessage();
+
+
+    const email =
+      emailInput.value
+        .trim()
+        .toLowerCase();
+
+
+    if (!email) {
+
+      showMessage(
+        "Digite primeiro seu e-mail no campo acima."
+      );
+
+
+      return;
+
+    }
+
+
+    const {
+      error
+    } =
+      await supabase.auth
+        .resetPasswordForEmail(
+          email,
+          {
+            redirectTo:
+              "https://francotrades.github.io/mentoria-individual/definir-senha/"
+          }
+        );
+
+
+    if (error) {
+
+      console.error(
+        error
+      );
+
+
+      showMessage(
+        "Não foi possível enviar o e-mail de recuperação."
+      );
+
+
+      return;
+
+    }
+
+
+    showMessage(
+      "Enviamos um link de recuperação de senha para seu e-mail.",
+      "info"
+    );
+
+  }
+);
+
+
+/* =========================================
+   USUÁRIO JÁ ESTÁ LOGADO?
+========================================= */
+
+async function checkExistingSession() {
+
+  const {
+    data: {
+      session
+    }
+  } =
+    await supabase.auth
+      .getSession();
+
+
+  if (
+    session?.user
+  ) {
+
+    loginButton.disabled =
+      true;
+
+
+    loginButton.textContent =
+      "REDIRECIONANDO...";
+
+
+    await redirectUser(
+      session.user
+    );
+
+  }
+
+}
+
+
+checkExistingSession();
+
+</script>
 
 </body>
 </html>
