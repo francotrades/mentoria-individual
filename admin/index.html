@@ -543,6 +543,248 @@
         display: none;
       }
     }
+  
+    /* ==========================================
+       FRANCO TRADES — ADMIN V2
+       Ajustes visuais + busca e filtros
+    ========================================== */
+
+    :root {
+      --ft-bg: #050706;
+      --ft-card: #0c110e;
+      --ft-card-light: #101713;
+      --ft-border: rgba(255,255,255,.08);
+      --ft-green: #43e290;
+      --ft-green-strong: #25c978;
+      --ft-muted: #8f9a94;
+      --ft-muted-2: #626d67;
+    }
+
+    body {
+      background:
+        radial-gradient(circle at 50% -10%, rgba(67,226,144,.09), transparent 30%),
+        var(--ft-bg);
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(5,7,6,.92);
+      border-bottom-color: var(--ft-border);
+      backdrop-filter: blur(16px);
+    }
+
+    .logo span,
+    .eyebrow,
+    .green,
+    .session-number {
+      color: var(--ft-green);
+    }
+
+    .area-button,
+    .logout-button,
+    .secondary-button,
+    .session-edit {
+      border-color: var(--ft-border);
+      background: rgba(255,255,255,.015);
+    }
+
+    .area-button:hover,
+    .logout-button:hover,
+    .secondary-button:hover,
+    .session-edit:hover {
+      color: var(--ft-green);
+      border-color: rgba(67,226,144,.25);
+      background: rgba(67,226,144,.04);
+    }
+
+    .new-student-button,
+    .primary-button {
+      background: var(--ft-green);
+      color: #04130c;
+    }
+
+    .new-student-button:hover,
+    .primary-button:hover {
+      background: #55eca0;
+    }
+
+    .stat-card,
+    .panel {
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.022), rgba(255,255,255,.008)),
+        var(--ft-card);
+      border-color: var(--ft-border);
+      box-shadow: 0 18px 55px rgba(0,0,0,.18);
+    }
+
+    .stat-card {
+      transition: transform .18s ease, border-color .18s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(67,226,144,.18);
+    }
+
+    .stat-label,
+    .page-header p,
+    .new-student-intro,
+    .summary-label,
+    .progress-number,
+    .session-item-meta,
+    .hint {
+      color: var(--ft-muted);
+    }
+
+    input,
+    select,
+    textarea,
+    .summary-card,
+    .student-progress,
+    .mini-stat,
+    .session-item {
+      background: #090e0b;
+      border-color: var(--ft-border);
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--ft-green);
+      box-shadow: 0 0 0 3px rgba(67,226,144,.06);
+    }
+
+    .progress-fill {
+      background: linear-gradient(90deg, var(--ft-green-strong), var(--ft-green));
+      box-shadow: 0 0 18px rgba(67,226,144,.20);
+    }
+
+    .mentor-toolbar {
+      display: grid;
+      grid-template-columns: minmax(240px, 1fr) auto;
+      gap: 14px;
+      align-items: end;
+      margin-bottom: 18px;
+    }
+
+    .search-wrap {
+      position: relative;
+    }
+
+    .search-wrap input {
+      padding-left: 40px;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--ft-muted-2);
+      pointer-events: none;
+      font-size: 15px;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .filter-button {
+      border: 1px solid var(--ft-border);
+      background: rgba(255,255,255,.015);
+      color: #c9d1cd;
+      padding: 10px 12px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: .18s ease;
+    }
+
+    .filter-button:hover {
+      border-color: rgba(67,226,144,.22);
+      color: var(--ft-green);
+    }
+
+    .filter-button.active {
+      background: rgba(67,226,144,.09);
+      border-color: rgba(67,226,144,.28);
+      color: var(--ft-green);
+    }
+
+    .student-select-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 8px;
+      color: var(--ft-muted-2);
+      font-size: 11px;
+    }
+
+    .student-status-dot {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      margin-right: 6px;
+      vertical-align: 1px;
+      background: var(--ft-green);
+    }
+
+    .student-status-dot.warning {
+      background: #f6c75b;
+    }
+
+    .student-status-dot.off {
+      background: #ff7d7d;
+    }
+
+    .summary-card {
+      min-height: 84px;
+    }
+
+    .summary-value.status-active {
+      color: var(--ft-green);
+    }
+
+    .summary-value.status-inactive {
+      color: #ff9b9b;
+    }
+
+    .panel-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .panel-title-row .panel-title {
+      margin-bottom: 4px;
+    }
+
+    .panel-subtitle {
+      color: var(--ft-muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 780px) {
+      .mentor-toolbar {
+        grid-template-columns: 1fr;
+      }
+
+      .filter-group {
+        justify-content: flex-start;
+      }
+    }
+
   </style>
 </head>
 
@@ -828,8 +1070,73 @@
 
     <section class="panel">
 
-      <div class="panel-title">
-        Mentorado
+      <div class="panel-title-row">
+        <div>
+          <div class="panel-title">
+            Mentorados
+          </div>
+          <div class="panel-subtitle">
+            Localize rapidamente um aluno e acompanhe acesso, progresso e sessões.
+          </div>
+        </div>
+      </div>
+
+
+      <div class="mentor-toolbar">
+
+        <div class="field" style="margin:0;">
+          <label for="studentSearch">
+            Buscar mentorado
+          </label>
+
+          <div class="search-wrap">
+            <span class="search-icon">⌕</span>
+            <input
+              id="studentSearch"
+              type="search"
+              placeholder="Digite nome ou e-mail..."
+              autocomplete="off"
+            >
+          </div>
+        </div>
+
+
+        <div class="filter-group" aria-label="Filtros de mentorados">
+
+          <button
+            type="button"
+            class="filter-button active"
+            data-student-filter="ativos"
+          >
+            Ativos
+          </button>
+
+          <button
+            type="button"
+            class="filter-button"
+            data-student-filter="expirando"
+          >
+            Expirando
+          </button>
+
+          <button
+            type="button"
+            class="filter-button"
+            data-student-filter="inativos"
+          >
+            Inativos
+          </button>
+
+          <button
+            type="button"
+            class="filter-button"
+            data-student-filter="todos"
+          >
+            Todos
+          </button>
+
+        </div>
+
       </div>
 
 
@@ -840,12 +1147,15 @@
         </label>
 
         <select id="studentSelect">
-
           <option value="">
-            Selecione...
+            Selecione um mentorado...
           </option>
-
         </select>
+
+        <div class="student-select-meta">
+          <span id="studentFilterCount">0 mentorados encontrados</span>
+          <span id="studentFilterHint">Filtro: ativos</span>
+        </div>
 
       </div>
 
@@ -1291,6 +1601,18 @@ const expiringStat =
 const studentSelect =
   $("studentSelect");
 
+const studentSearch =
+  $("studentSearch");
+
+const studentFilterCount =
+  $("studentFilterCount");
+
+const studentFilterHint =
+  $("studentFilterHint");
+
+const studentFilterButtons =
+  [...document.querySelectorAll("[data-student-filter]")];
+
 const studentArea =
   $("studentArea");
 
@@ -1398,6 +1720,8 @@ let studentSessions = [];
 let studentProgress = [];
 
 let editingStudentSessionId = null;
+
+let studentFilter = "ativos";
 
 
 /* UTILIDADES */
@@ -2070,8 +2394,23 @@ function renderGlobalStats() {
 
   activeStudentsStat.textContent =
     actualStudents.filter(
-      profile =>
-        profile.status === "ativo"
+      profile => {
+
+        if (profile.status !== "ativo") {
+          return false;
+        }
+
+        const days =
+          daysUntil(
+            profile.data_expiracao
+          );
+
+        return (
+          days === null ||
+          days >= 0
+        );
+
+      }
     ).length;
 
 
@@ -2128,7 +2467,116 @@ function renderGlobalStats() {
 
 /* SELECT ALUNOS */
 
+function getFilteredStudents() {
+
+  const query =
+    (studentSearch?.value || "")
+      .trim()
+      .toLowerCase();
+
+
+  return profiles
+    .filter(
+      profile =>
+        profile.role === "aluno"
+    )
+    .filter(
+      profile => {
+
+        const days =
+          daysUntil(
+            profile.data_expiracao
+          );
+
+
+        if (
+          studentFilter === "ativos"
+        ) {
+
+          return (
+            profile.status === "ativo" &&
+            (
+              days === null ||
+              days >= 0
+            )
+          );
+
+        }
+
+
+        if (
+          studentFilter === "expirando"
+        ) {
+
+          return (
+            profile.status === "ativo" &&
+            days !== null &&
+            days >= 0 &&
+            days <= 30
+          );
+
+        }
+
+
+        if (
+          studentFilter === "inativos"
+        ) {
+
+          return (
+            profile.status !== "ativo" ||
+            (
+              days !== null &&
+              days < 0
+            )
+          );
+
+        }
+
+
+        return true;
+
+      }
+    )
+    .filter(
+      profile => {
+
+        if (!query) {
+          return true;
+        }
+
+
+        const haystack =
+          `${profile.nome || ""} ${profile.email || ""}`
+            .toLowerCase();
+
+
+        return haystack.includes(
+          query
+        );
+
+      }
+    )
+    .sort(
+      (a, b) =>
+        (a.nome || "")
+          .localeCompare(
+            b.nome || "",
+            "pt-BR"
+          )
+    );
+
+}
+
+
 function renderStudentSelect() {
+
+  const previousValue =
+    studentSelect.value;
+
+
+  const filteredStudents =
+    getFilteredStudents();
+
 
   studentSelect.innerHTML =
     `
@@ -2139,7 +2587,7 @@ function renderStudentSelect() {
 
 
   for (
-    const profile of profiles
+    const profile of filteredStudents
   ) {
 
     const option =
@@ -2157,12 +2605,42 @@ function renderStudentSelect() {
       "Sem nome";
 
 
+    const days =
+      daysUntil(
+        profile.data_expiracao
+      );
+
+
+    let suffix =
+      "";
+
+
+    if (
+      profile.status !== "ativo" ||
+      (
+        days !== null &&
+        days < 0
+      )
+    ) {
+
+      suffix =
+        " — INATIVO";
+
+    }
+
+    else if (
+      days !== null &&
+      days <= 30
+    ) {
+
+      suffix =
+        ` — EXPIRA EM ${days}D`;
+
+    }
+
+
     option.textContent =
-      profile.role === "admin"
-        ?
-        `${name} — ${profile.email} (ADMIN/TESTE)`
-        :
-        `${name} — ${profile.email}`;
+      `${name} — ${profile.email || "sem e-mail"}${suffix}`;
 
 
     studentSelect.appendChild(
@@ -2170,6 +2648,46 @@ function renderStudentSelect() {
     );
 
   }
+
+
+  const stillVisible =
+    filteredStudents.some(
+      profile =>
+        profile.id ===
+        previousValue
+    );
+
+
+  if (stillVisible) {
+
+    studentSelect.value =
+      previousValue;
+
+  }
+
+
+  studentFilterCount.textContent =
+    filteredStudents.length === 1
+      ?
+      "1 mentorado encontrado"
+      :
+      `${filteredStudents.length} mentorados encontrados`;
+
+
+  const filterNames = {
+    ativos:
+      "ativos",
+    expirando:
+      "expirando em até 30 dias",
+    inativos:
+      "inativos/expirados",
+    todos:
+      "todos"
+  };
+
+
+  studentFilterHint.textContent =
+    `Filtro: ${filterNames[studentFilter] || "todos"}`;
 
 }
 
@@ -2250,8 +2768,50 @@ function renderStudentData() {
     "-";
 
 
+  const remainingDays =
+    daysUntil(
+      selectedStudent.data_expiracao
+    );
+
+
+  const accessIsActive =
+    selectedStudent.status === "ativo" &&
+    (
+      remainingDays === null ||
+      remainingDays >= 0
+    );
+
+
   studentStatus.textContent =
-    selectedStudent.status;
+    accessIsActive
+      ?
+      "Ativo"
+      :
+      (
+        selectedStudent.status === "expirado" ||
+        (
+          remainingDays !== null &&
+          remainingDays < 0
+        )
+          ?
+          "Expirado"
+          :
+          "Inativo"
+      );
+
+
+  studentStatus.classList
+    .toggle(
+      "status-active",
+      accessIsActive
+    );
+
+
+  studentStatus.classList
+    .toggle(
+      "status-inactive",
+      !accessIsActive
+    );
 
 
   studentExpiration.textContent =
@@ -2855,6 +3415,51 @@ async function refreshData() {
 
 
 /* EVENTOS */
+
+studentSearch.addEventListener(
+  "input",
+  () => {
+
+    renderStudentSelect();
+
+  }
+);
+
+
+for (
+  const button of
+  studentFilterButtons
+) {
+
+  button.addEventListener(
+    "click",
+    () => {
+
+      studentFilter =
+        button.dataset.studentFilter ||
+        "todos";
+
+
+      for (
+        const item of
+        studentFilterButtons
+      ) {
+
+        item.classList.toggle(
+          "active",
+          item === button
+        );
+
+      }
+
+
+      renderStudentSelect();
+
+    }
+  );
+
+}
+
 
 studentSelect.addEventListener(
   "change",
