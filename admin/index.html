@@ -1355,6 +1355,117 @@
       }
     }
 
+  
+    /* ==========================================
+       EDITOR FINANCEIRO — ADMIN V8
+    ========================================== */
+
+    .financial-manage-row {
+      margin-top: 10px;
+    }
+
+    .financial-editor {
+      margin-top: 16px;
+      padding: 18px;
+      border: 1px solid rgba(67,226,144,.16);
+      border-radius: 12px;
+      background: rgba(67,226,144,.02);
+    }
+
+    .financial-editor-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .financial-editor-title {
+      font-size: 15px;
+      font-weight: 900;
+      margin-bottom: 4px;
+    }
+
+    .financial-editor-description {
+      color: var(--ft-muted);
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .financial-editor-grid {
+      display: grid;
+      grid-template-columns: 1fr .7fr;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .financial-payments-editor {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .financial-payment-row {
+      display: grid;
+      grid-template-columns: 70px 1fr 1fr auto auto;
+      gap: 8px;
+      align-items: end;
+      padding: 10px;
+      border: 1px solid var(--ft-border);
+      border-radius: 10px;
+      background: #090e0b;
+    }
+
+    .financial-payment-row .field {
+      margin: 0;
+    }
+
+    .financial-payment-row label {
+      font-size: 9px;
+    }
+
+    .financial-payment-check {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 42px;
+      padding: 0 4px;
+      font-size: 10px;
+      color: var(--ft-muted);
+    }
+
+    .financial-payment-check input {
+      width: 17px;
+      height: 17px;
+      accent-color: var(--ft-green);
+    }
+
+    .remove-payment-button {
+      min-height: 42px;
+      padding: 0 11px;
+      border-radius: 8px;
+      border: 1px solid rgba(239,68,68,.25);
+      background: rgba(239,68,68,.05);
+      color: #ff9b9b;
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    @media (max-width: 780px) {
+      .financial-editor-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .financial-payment-row {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .financial-payment-row > :first-child {
+        grid-column: 1 / -1;
+      }
+    }
+
   </style>
 </head>
 
@@ -1894,6 +2005,125 @@
           class="student-card-financial hidden"
           style="margin-top:18px;padding:16px;border:1px solid var(--ft-border);border-radius:12px;background:#090e0b;"
         ></div>
+
+
+        <div class="button-row financial-manage-row">
+
+          <button
+            id="openStudentFinancialEditor"
+            class="secondary-button"
+            type="button"
+          >
+            Gerenciar financeiro
+          </button>
+
+          <a
+            href="./financeiro/"
+            class="area-button"
+          >
+            Abrir financeiro completo
+          </a>
+
+        </div>
+
+
+        <div
+          id="studentFinancialEditor"
+          class="financial-editor hidden"
+        >
+
+          <div class="financial-editor-header">
+
+            <div>
+              <div class="financial-editor-title">
+                Financeiro do mentorado
+              </div>
+
+              <div class="financial-editor-description">
+                Edite contrato, moeda, parcelas, vencimentos e status de pagamento.
+              </div>
+            </div>
+
+          </div>
+
+
+          <div class="financial-editor-grid">
+
+            <div class="field">
+              <label for="studentFinancialTotal">
+                Valor total
+              </label>
+
+              <input
+                id="studentFinancialTotal"
+                type="number"
+                min="0"
+                step="0.01"
+              >
+            </div>
+
+
+            <div class="field">
+              <label for="studentFinancialCurrency">
+                Moeda
+              </label>
+
+              <select id="studentFinancialCurrency">
+                <option value="BRL">BRL — Real</option>
+                <option value="USD">USD — Dólar</option>
+              </select>
+            </div>
+
+          </div>
+
+
+          <div class="field">
+            <label for="studentFinancialNotes">
+              Observações financeiras
+            </label>
+
+            <textarea
+              id="studentFinancialNotes"
+              style="min-height:72px;"
+            ></textarea>
+          </div>
+
+
+          <div
+            id="studentFinancialPayments"
+            class="financial-payments-editor"
+          ></div>
+
+
+          <div class="button-row">
+
+            <button
+              id="addStudentPaymentButton"
+              class="secondary-button"
+              type="button"
+            >
+              + Adicionar parcela
+            </button>
+
+            <button
+              id="saveStudentFinancialButton"
+              class="primary-button"
+              type="button"
+            >
+              Salvar financeiro
+            </button>
+
+            <button
+              id="cancelStudentFinancialButton"
+              class="secondary-button"
+              type="button"
+            >
+              Cancelar
+            </button>
+
+          </div>
+
+        </div>
 
 
         <div class="student-progress">
@@ -2449,6 +2679,33 @@ const expirationWarning =
 const studentFinancialQuick =
   $("studentFinancialQuick");
 
+const openStudentFinancialEditor =
+  $("openStudentFinancialEditor");
+
+const studentFinancialEditor =
+  $("studentFinancialEditor");
+
+const studentFinancialTotal =
+  $("studentFinancialTotal");
+
+const studentFinancialCurrency =
+  $("studentFinancialCurrency");
+
+const studentFinancialNotes =
+  $("studentFinancialNotes");
+
+const studentFinancialPayments =
+  $("studentFinancialPayments");
+
+const addStudentPaymentButton =
+  $("addStudentPaymentButton");
+
+const saveStudentFinancialButton =
+  $("saveStudentFinancialButton");
+
+const cancelStudentFinancialButton =
+  $("cancelStudentFinancialButton");
+
 
 const sessionsPanel =
   $("sessionsPanel");
@@ -2682,6 +2939,12 @@ function getStudentFinancial(
 
   return {
     financial,
+    payments:
+      [...payments].sort(
+        (a, b) =>
+          Number(a.numero_parcela || 0) -
+          Number(b.numero_parcela || 0)
+      ),
     received,
     outstanding:
       Math.max(
@@ -4747,6 +5010,10 @@ async function selectStudent(
     .add("hidden");
 
 
+  studentFinancialEditor.classList
+    .add("hidden");
+
+
   for (
     const card of
     studentsGrid.querySelectorAll(
@@ -4915,6 +5182,512 @@ function renderStudentData() {
       );
 
   }
+
+}
+
+
+function addFinancialPaymentRow(
+  payment = {}
+) {
+
+  const row =
+    document.createElement(
+      "div"
+    );
+
+
+  row.className =
+    "financial-payment-row";
+
+
+  row.innerHTML =
+    `
+      <div class="field">
+        <label>Parcela</label>
+        <input
+          class="financial-payment-number"
+          type="number"
+          min="1"
+          step="1"
+          value="${payment.numero_parcela || studentFinancialPayments.children.length + 1}"
+        >
+      </div>
+
+      <div class="field">
+        <label>Valor</label>
+        <input
+          class="financial-payment-value"
+          type="number"
+          min="0"
+          step="0.01"
+          value="${payment.valor ?? ""}"
+        >
+      </div>
+
+      <div class="field">
+        <label>Vencimento</label>
+        <input
+          class="financial-payment-due"
+          type="date"
+          value="${payment.vencimento || ""}"
+        >
+      </div>
+
+      <label class="financial-payment-check">
+        <input
+          class="financial-payment-paid"
+          type="checkbox"
+          ${payment.paga ? "checked" : ""}
+        >
+        Pago
+      </label>
+
+      <button
+        class="remove-payment-button"
+        type="button"
+      >
+        Remover
+      </button>
+    `;
+
+
+  row.dataset.paidDate =
+    payment.data_pagamento ||
+    "";
+
+
+  row.querySelector(
+    ".remove-payment-button"
+  )
+    .addEventListener(
+      "click",
+      () => {
+
+        row.remove();
+
+      }
+    );
+
+
+  studentFinancialPayments.appendChild(
+    row
+  );
+
+}
+
+
+function openFinancialEditor() {
+
+  if (!selectedStudent) {
+    return;
+  }
+
+
+  const financialData =
+    getStudentFinancial(
+      selectedStudent
+    );
+
+
+  studentFinancialPayments.innerHTML =
+    "";
+
+
+  if (financialData) {
+
+    studentFinancialTotal.value =
+      financialData.financial.valor_total ||
+      "";
+
+
+    studentFinancialCurrency.value =
+      financialData.financial.moeda ||
+      "BRL";
+
+
+    studentFinancialNotes.value =
+      financialData.financial.observacoes ||
+      "";
+
+
+    for (
+      const payment of
+      financialData.payments
+    ) {
+
+      addFinancialPaymentRow(
+        payment
+      );
+
+    }
+
+  }
+
+  else {
+
+    studentFinancialTotal.value =
+      "";
+
+
+    studentFinancialCurrency.value =
+      "BRL";
+
+
+    studentFinancialNotes.value =
+      "";
+
+
+    addFinancialPaymentRow({
+      numero_parcela:
+        1,
+      vencimento:
+        dateToISO(
+          new Date()
+        ),
+      paga:
+        false
+    });
+
+  }
+
+
+  studentFinancialEditor.classList
+    .remove(
+      "hidden"
+    );
+
+
+  studentFinancialEditor.scrollIntoView({
+    behavior:
+      "smooth",
+    block:
+      "start"
+  });
+
+}
+
+
+async function saveStudentFinancial() {
+
+  if (!selectedStudent) {
+    return;
+  }
+
+
+  const totalValue =
+    Number(
+      studentFinancialTotal.value
+    );
+
+
+  if (
+    !Number.isFinite(
+      totalValue
+    ) ||
+    totalValue <= 0
+  ) {
+
+    showMessage(
+      "Informe um valor total válido para a mentoria.",
+      "error"
+    );
+
+    return;
+
+  }
+
+
+  const rows =
+    [
+      ...studentFinancialPayments.querySelectorAll(
+        ".financial-payment-row"
+      )
+    ];
+
+
+  if (
+    rows.length === 0
+  ) {
+
+    showMessage(
+      "Cadastre pelo menos uma parcela.",
+      "error"
+    );
+
+    return;
+
+  }
+
+
+  const paymentRows =
+    [];
+
+
+  for (
+    let index = 0;
+    index < rows.length;
+    index++
+  ) {
+
+    const row =
+      rows[index];
+
+
+    const value =
+      Number(
+        row.querySelector(
+          ".financial-payment-value"
+        ).value
+      );
+
+
+    const due =
+      row.querySelector(
+        ".financial-payment-due"
+      ).value;
+
+
+    const paid =
+      row.querySelector(
+        ".financial-payment-paid"
+      ).checked;
+
+
+    if (
+      !Number.isFinite(
+        value
+      ) ||
+      value < 0
+    ) {
+
+      showMessage(
+        "Revise o valor das parcelas.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    paymentRows.push({
+      numero_parcela:
+        index + 1,
+      valor:
+        value,
+      vencimento:
+        due ||
+        null,
+      paga:
+        paid,
+      data_pagamento:
+        paid
+          ?
+          (
+            row.dataset.paidDate ||
+            dateToISO(
+              new Date()
+            )
+          )
+          :
+          null
+    });
+
+  }
+
+
+  saveStudentFinancialButton.disabled =
+    true;
+
+
+  saveStudentFinancialButton.textContent =
+    "SALVANDO...";
+
+
+  const existing =
+    getStudentFinancial(
+      selectedStudent
+    );
+
+
+  const {
+    data: financial,
+    error: financialError
+  } =
+    await supabase
+      .from(
+        "mentorship_financials"
+      )
+      .upsert(
+        {
+          id:
+            existing?.financial?.id ||
+            undefined,
+
+          profile_id:
+            selectedStudent.id,
+
+          nome:
+            selectedStudent.nome ||
+            "",
+
+          email:
+            selectedStudent.email ||
+            "",
+
+          valor_total:
+            totalValue,
+
+          moeda:
+            studentFinancialCurrency.value,
+
+          observacoes:
+            studentFinancialNotes.value
+              .trim() ||
+            null,
+
+          quantidade_sessoes:
+            studentSessions.length ||
+            existing?.financial?.quantidade_sessoes ||
+            12,
+
+          origem:
+            existing?.financial?.origem ||
+            "painel-admin"
+        },
+        {
+          onConflict:
+            "email"
+        }
+      )
+      .select(
+        "id"
+      )
+      .single();
+
+
+  if (
+    financialError ||
+    !financial
+  ) {
+
+    console.error(
+      financialError
+    );
+
+
+    saveStudentFinancialButton.disabled =
+      false;
+
+
+    saveStudentFinancialButton.textContent =
+      "Salvar financeiro";
+
+
+    showMessage(
+      "Não foi possível salvar o contrato financeiro.",
+      "error"
+    );
+
+    return;
+
+  }
+
+
+  const {
+    error: deletePaymentsError
+  } =
+    await supabase
+      .from(
+        "mentorship_payments"
+      )
+      .delete()
+      .eq(
+        "mentorship_id",
+        financial.id
+      );
+
+
+  if (deletePaymentsError) {
+
+    console.error(
+      deletePaymentsError
+    );
+
+
+    saveStudentFinancialButton.disabled =
+      false;
+
+
+    saveStudentFinancialButton.textContent =
+      "Salvar financeiro";
+
+
+    showMessage(
+      "O contrato foi salvo, mas não foi possível atualizar as parcelas.",
+      "error"
+    );
+
+    return;
+
+  }
+
+
+  const {
+    error: insertPaymentsError
+  } =
+    await supabase
+      .from(
+        "mentorship_payments"
+      )
+      .insert(
+        paymentRows.map(
+          payment => ({
+            mentorship_id:
+              financial.id,
+            ...payment
+          })
+        )
+      );
+
+
+  saveStudentFinancialButton.disabled =
+    false;
+
+
+  saveStudentFinancialButton.textContent =
+    "Salvar financeiro";
+
+
+  if (insertPaymentsError) {
+
+    console.error(
+      insertPaymentsError
+    );
+
+
+    showMessage(
+      "Contrato salvo, mas houve erro ao recriar as parcelas.",
+      "error"
+    );
+
+    return;
+
+  }
+
+
+  studentFinancialEditor.classList
+    .add(
+      "hidden"
+    );
+
+
+  showMessage(
+    "Financeiro atualizado."
+  );
+
+
+  await refreshData();
 
 }
 
@@ -5719,6 +6492,41 @@ for (
   );
 
 }
+
+
+openStudentFinancialEditor.addEventListener(
+  "click",
+  openFinancialEditor
+);
+
+
+addStudentPaymentButton.addEventListener(
+  "click",
+  () => {
+
+    addFinancialPaymentRow();
+
+  }
+);
+
+
+cancelStudentFinancialButton.addEventListener(
+  "click",
+  () => {
+
+    studentFinancialEditor.classList
+      .add(
+        "hidden"
+      );
+
+  }
+);
+
+
+saveStudentFinancialButton.addEventListener(
+  "click",
+  saveStudentFinancial
+);
 
 
 studentSelect.addEventListener(
