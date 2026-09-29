@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Área do Aluno | FrancoTrades</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #080b0f;
+      color: #ffffff;
+      min-height: 100vh;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      padding: 20px 28px;
+
+      border-bottom: 1px solid #202833;
+
+      background: #0c1015;
+    }
+
+    .logo {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+
+    .logo span {
+      color: #16c784;
+    }
+
+    .logout {
+      border: 1px solid #2a3440;
+      background: transparent;
+      color: #ffffff;
+
+      padding: 10px 14px;
+
+      border-radius: 8px;
+
+      cursor: pointer;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+
+      padding: 40px 24px 60px;
+    }
+
+    .welcome {
+      margin-bottom: 30px;
+    }
+
+    .welcome h1 {
+      font-size: 30px;
+      margin-bottom: 8px;
+    }
+
+    .welcome p {
+      color: #89939f;
+    }
+
+    .grid {
+      display: grid;
+
+      grid-template-columns:
+        repeat(auto-fit, minmax(230px, 1fr));
+
+      gap: 18px;
+
+      margin-bottom: 32px;
+    }
+
+    .card {
+      background: #10141b;
+
+      border: 1px solid #202833;
+
+      border-radius: 14px;
+
+      padding: 22px;
+    }
+
+    .card-label {
+      color: #89939f;
+      font-size: 13px;
+
+      margin-bottom: 8px;
+    }
+
+    .card-value {
+      font-size: 23px;
+      font-weight: 700;
+    }
+
+    .green {
+      color: #16c784;
+    }
+
+    .section-title {
+      font-size: 20px;
+
+      margin-bottom: 18px;
+    }
+
+    .progress-wrapper {
+      background: #10141b;
+
+      border: 1px solid #202833;
+
+      border-radius: 14px;
+
+      padding: 22px;
+
+      margin-bottom: 30px;
+    }
+
+    .progress-top {
+      display: flex;
+      justify-content: space-between;
+
+      margin-bottom: 12px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 12px;
+
+      background: #1b222c;
+
+      border-radius: 999px;
+
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+
+      background: #16c784;
+
+      transition: width 0.3s ease;
+    }
+
+    .sessions {
+      display: grid;
+      gap: 14px;
+    }
+
+    .session-card {
+      background: #10141b;
+
+      border: 1px solid #202833;
+
+      border-radius: 12px;
+
+      padding: 18px;
+
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      gap: 20px;
+    }
+
+    .session-info h3 {
+      font-size: 16px;
+      margin-bottom: 5px;
+    }
+
+    .session-info p {
+      font-size: 13px;
+      color: #89939f;
+    }
+
+    .session-action {
+      padding: 10px 14px;
+
+      border: none;
+      border-radius: 8px;
+
+      background: #16c784;
+      color: #04130d;
+
+      font-weight: 700;
+
+      cursor: pointer;
+
+      text-decoration: none;
+
+      white-space: nowrap;
+    }
+
+    .session-action.disabled {
+      background: #2a313a;
+      color: #6f7883;
+
+      cursor: default;
+    }
+
+    .empty {
+      color: #89939f;
+
+      padding: 20px;
+
+      border: 1px dashed #303845;
+
+      border-radius: 10px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 80px 20px;
+
+      color: #89939f;
+    }
+
+    @media (max-width: 650px) {
+
+      header {
+        padding: 18px;
+      }
+
+      .container {
+        padding: 30px 18px 50px;
+      }
+
+      .session-card {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .session-action {
+        width: 100%;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="logo">
+      FRANCO<span>TRADES</span>
+    </div>
+
+    <button
+      id="logoutButton"
+      class="logout"
+    >
+      Sair
+    </button>
+  </header>
+
+  <main class="container">
+
+    <div
+      id="loading"
+      class="loading"
+    >
+      Carregando sua área...
+    </div>
+
+    <div
+      id="content"
+      style="display:none;"
+    >
+
+      <section class="welcome">
+        <h1 id="welcomeName">
+          Olá!
+        </h1>
+
+        <p>
+          Bem-vindo à sua Mentoria Individual.
+        </p>
+      </section>
+
+      <section class="grid">
+
+        <div class="card">
+          <div class="card-label">
+            Status
+          </div>
+
+          <div
+            class="card-value green"
+            id="status"
+          >
+            Ativo
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-label">
+            Início da mentoria
+          </div>
+
+          <div
+            class="card-value"
+            id="startDate"
+          >
+            -
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-label">
+            Acesso até
+          </div>
+
+          <div
+            class="card-value"
+            id="expirationDate"
+          >
+            -
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-label">
+            Dias restantes
+          </div>
+
+          <div
+            class="card-value"
+            id="daysRemaining"
+          >
+            -
+          </div>
+        </div>
+
+      </section>
+
+      <section class="progress-wrapper">
+
+        <div class="progress-top">
+
+          <span>
+            Progresso
+          </span>
+
+          <span id="progressText">
+            0 de 0 sessões
+          </span>
+
+        </div>
+
+        <div class="progress-bar">
+          <div
+            class="progress-fill"
+            id="progressFill"
+          ></div>
+        </div>
+
+      </section>
+
+      <section>
+
+        <h2 class="section-title">
+          Suas sessões
+        </h2>
+
+        <div
+          id="sessionsList"
+          class="sessions"
+        ></div>
+
+      </section>
+
+    </div>
+
+  </main>
+
+
+  <script type="module">
+
+    import {
+      createClient
+    } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+
+    const SUPABASE_URL =
+      "https://vfnltuecpnuixemxvwvk.supabase.co";
+
+    const SUPABASE_PUBLISHABLE_KEY =
+      "sb_publishable_nxgAFL2foBN8CuKMT5_2qQ_uDlaJ4Xc";
+
+
+    const supabase = createClient(
+      SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY
+    );
+
+
+    const loading =
+      document.getElementById("loading");
+
+    const content =
+      document.getElementById("content");
+
+    const welcomeName =
+      document.getElementById("welcomeName");
+
+    const statusElement =
+      document.getElementById("status");
+
+    const startDateElement =
+      document.getElementById("startDate");
+
+    const expirationDateElement =
+      document.getElementById("expirationDate");
+
+    const daysRemainingElement =
+      document.getElementById("daysRemaining");
+
+    const progressText =
+      document.getElementById("progressText");
+
+    const progressFill =
+      document.getElementById("progressFill");
+
+    const sessionsList =
+      document.getElementById("sessionsList");
+
+    const logoutButton =
+      document.getElementById("logoutButton");
+
+
+    function formatDate(dateString) {
+
+      if (!dateString) {
+        return "-";
+      }
+
+      const date =
+        new Date(
+          dateString + "T12:00:00"
+        );
+
+      return date.toLocaleDateString(
+        "pt-BR"
+      );
+    }
+
+
+    function calculateDaysRemaining(
+      expirationDate
+    ) {
+
+      if (!expirationDate) {
+        return "-";
+      }
+
+      const today =
+        new Date();
+
+      today.setHours(
+        0,
+        0,
+        0,
+        0
+      );
+
+
+      const expiration =
+        new Date(
+          expirationDate + "T00:00:00"
+        );
+
+
+      const difference =
+        expiration - today;
+
+
+      return Math.max(
+        0,
+        Math.ceil(
+          difference /
+          (1000 * 60 * 60 * 24)
+        )
+      );
+    }
+
+
+    async function loadDashboard() {
+
+      const {
+        data: {
+          session
+        }
+      } =
+        await supabase.auth.getSession();
+
+
+      if (!session) {
+
+        window.location.href =
+          "../login/";
+
+        return;
+      }
+
+
+      const user =
+        session.user;
+
+
+      const {
+        data: profile,
+        error: profileError
+      } =
+        await supabase
+          .from("profiles")
+          .select(
+            "nome, email, data_inicio, data_expiracao, status"
+          )
+          .eq(
+            "id",
+            user.id
+          )
+          .single();
+
+
+      if (
+        profileError ||
+        !profile
+      ) {
+
+        await supabase.auth.signOut();
+
+        window.location.href =
+          "../login/";
+
+        return;
+      }
+
+
+      if (
+        profile.status !== "ativo"
+      ) {
+
+        await supabase.auth.signOut();
+
+        window.location.href =
+          "../login/";
+
+        return;
+      }
+
+
+      const daysRemaining =
+        calculateDaysRemaining(
+          profile.data_expiracao
+        );
+
+
+      if (
+        daysRemaining <= 0
+      ) {
+
+        await supabase.auth.signOut();
+
+        window.location.href =
+          "../login/";
+
+        return;
+      }
+
+
+      welcomeName.textContent =
+        profile.nome
+          ? `Olá, ${profile.nome}!`
+          : "Olá!";
+
+
+      statusElement.textContent =
+        profile.status === "ativo"
+          ? "Ativo"
+          : profile.status;
+
+
+      startDateElement.textContent =
+        formatDate(
+          profile.data_inicio
+        );
+
+
+      expirationDateElement.textContent =
+        formatDate(
+          profile.data_expiracao
+        );
+
+
+      daysRemainingElement.textContent =
+        daysRemaining;
+
+
+      // --------------------------------------------------
+      // BUSCAR SESSÕES DO ALUNO
+      // --------------------------------------------------
+
+      const {
+        data: studentSessions,
+        error: sessionsError
+      } =
+        await supabase
+          .from(
+            "student_sessions"
+          )
+          .select(`
+            id,
+            session_id,
+            youtube_url,
+            data_sessao,
+            liberada,
+            sessions (
+              numero,
+              titulo,
+              descricao
+            )
+          `)
+          .eq(
+            "student_id",
+            user.id
+          )
+          .eq(
+            "liberada",
+            true
+          )
+          .order(
+            "session_id",
+            {
+              ascending: true
+            }
+          );
+
+
+      if (sessionsError) {
+
+        console.error(
+          sessionsError
+        );
+
+      }
+
+
+      const sessions =
+        studentSessions || [];
+
+
+      // --------------------------------------------------
+      // BUSCAR PROGRESSO
+      // --------------------------------------------------
+
+      const {
+        data: progressData
+      } =
+        await supabase
+          .from(
+            "student_progress"
+          )
+          .select(
+            "session_id, concluida"
+          )
+          .eq(
+            "student_id",
+            user.id
+          );
+
+
+      const progressMap =
+        new Map();
+
+
+      for (
+        const item of
+        progressData || []
+      ) {
+
+        progressMap.set(
+          item.session_id,
+          item.concluida
+        );
+
+      }
+
+
+      const completedCount =
+        sessions.filter(
+          item =>
+            progressMap.get(
+              item.session_id
+            ) === true
+        ).length;
+
+
+      const totalSessions =
+        sessions.length;
+
+
+      const percentage =
+        totalSessions > 0
+          ? Math.round(
+              completedCount /
+              totalSessions *
+              100
+            )
+          : 0;
+
+
+      progressText.textContent =
+        `${completedCount} de ${totalSessions} sessões`;
+
+
+      progressFill.style.width =
+        `${percentage}%`;
+
+
+      // --------------------------------------------------
+      // EXIBIR SESSÕES
+      // --------------------------------------------------
+
+      sessionsList.innerHTML =
+        "";
+
+
+      if (
+        sessions.length === 0
+      ) {
+
+        sessionsList.innerHTML =
+          `
+          <div class="empty">
+            Nenhuma sessão foi liberada ainda.
+          </div>
+          `;
+
+      }
+
+      else {
+
+        for (
+          const item of sessions
+        ) {
+
+          const sessionInfo =
+            item.sessions;
+
+
+          const card =
+            document.createElement(
+              "div"
+            );
+
+
+          card.className =
+            "session-card";
+
+
+          const hasVideo =
+            Boolean(
+              item.youtube_url
+            );
+
+
+          card.innerHTML =
+            `
+            <div class="session-info">
+
+              <h3>
+                ${
+                  sessionInfo
+                    ?.titulo ||
+                  `Sessão ${item.session_id}`
+                }
+              </h3>
+
+              <p>
+                ${
+                  item.data_sessao
+                    ? "Realizada em " +
+                      formatDate(
+                        item.data_sessao
+                      )
+                    : "Sessão liberada"
+                }
+              </p>
+
+            </div>
+
+            ${
+              hasVideo
+                ?
+                `
+                <a
+                  class="session-action"
+                  href="${item.youtube_url}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  ▶ Assistir
+                </a>
+                `
+                :
+                `
+                <span
+                  class="session-action disabled"
+                >
+                  Vídeo em breve
+                </span>
+                `
+            }
+            `;
+
+
+          sessionsList.appendChild(
+            card
+          );
+
+        }
+
+      }
+
+
+      loading.style.display =
+        "none";
+
+      content.style.display =
+        "block";
+
+    }
+
+
+    logoutButton.addEventListener(
+      "click",
+      async () => {
+
+        await supabase.auth.signOut();
+
+        window.location.href =
+          "../login/";
+
+      }
+    );
+
+
+    loadDashboard();
+
+  </script>
+
+</body>
+</html>
