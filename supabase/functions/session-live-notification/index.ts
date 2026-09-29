@@ -215,6 +215,7 @@ Deno.serve(async (request) => {
         session_id,
         teams_url,
         data_sessao,
+        session_time,
         titulo_personalizado
       `)
       .eq("id", studentSessionId)
@@ -305,6 +306,11 @@ Deno.serve(async (request) => {
       ? formatDateBR(studentSession.data_sessao)
       : "";
 
+  const timeText =
+    studentSession.session_time
+      ? String(studentSession.session_time).slice(0, 5)
+      : "";
+
   const subject =
     `Link da sessão ${sessionNumber} disponível — Franco Trades`;
 
@@ -332,7 +338,7 @@ Deno.serve(async (request) => {
 
         <p style="color:#ffffff;font-size:15px;font-weight:700;line-height:1.65;margin:0 0 22px;">
           Sessão ${escapeHtml(sessionNumber)} · ${escapeHtml(sessionTitle)}
-          ${dateText ? `<br><span style="color:#b2bbb6;font-weight:400;">Data: ${escapeHtml(dateText)}</span>` : ""}
+          ${dateText ? `<br><span style="color:#b2bbb6;font-weight:400;">Data: ${escapeHtml(dateText)}${timeText ? ` às ${escapeHtml(timeText)}` : ""}</span>` : ""}
         </p>
 
         <a
