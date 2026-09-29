@@ -2608,6 +2608,25 @@
 
         <div class="field full">
 
+          <label for="teamsUrl">
+            Link da aula ao vivo (Microsoft Teams)
+          </label>
+
+          <input
+            id="teamsUrl"
+            type="url"
+            placeholder="https://teams.microsoft.com/..."
+          >
+
+          <div class="hint">
+            Quando preenchido, o mentorado verá o botão “Entrar na aula ao vivo”.
+          </div>
+
+        </div>
+
+
+        <div class="field full">
+
           <label for="sessionNotes">
             Observações
           </label>
@@ -2911,6 +2930,9 @@ const sessionCustomTitle =
 
 const youtubeUrl =
   $("youtubeUrl");
+
+const teamsUrl =
+  $("teamsUrl");
 
 const sessionNotes =
   $("sessionNotes");
@@ -4003,6 +4025,7 @@ async function loadBaseData() {
           student_id,
           session_id,
           youtube_url,
+          teams_url,
           data_sessao,
           observacoes,
           titulo_personalizado,
@@ -6684,6 +6707,7 @@ function clearSessionForm() {
   sessionDate.value = "";
   sessionCustomTitle.value = "";
   youtubeUrl.value = "";
+  teamsUrl.value = "";
   sessionNotes.value = "";
   sessionReleased.checked = true;
 
@@ -6835,6 +6859,11 @@ function openExistingSession(
     "";
 
 
+  teamsUrl.value =
+    item.teams_url ||
+    "";
+
+
   sessionNotes.value =
     item.observacoes ||
     "";
@@ -6908,6 +6937,11 @@ async function saveSession() {
 
     youtube_url:
       youtubeUrl.value
+        .trim() ||
+      null,
+
+    teams_url:
+      teamsUrl.value
         .trim() ||
       null,
 
