@@ -1082,6 +1082,128 @@
 
     }
 
+  
+    /* ==========================================
+       PAGAMENTOS / PIX
+    ========================================== */
+
+    .payment-panel {
+      padding: 26px;
+      margin-bottom: 38px;
+      border-color: rgba(67, 226, 144, 0.16);
+    }
+
+    .payment-grid {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .payment-summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .payment-summary-item {
+      padding: 13px;
+      border-radius: 11px;
+      border: 1px solid var(--border);
+      background: var(--bg-soft);
+    }
+
+    .payment-summary-label {
+      color: var(--muted-2);
+      font-size: 9px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .7px;
+      margin-bottom: 5px;
+    }
+
+    .payment-summary-value {
+      font-size: 15px;
+      font-weight: 900;
+    }
+
+    .payment-summary-value.pending {
+      color: var(--yellow);
+    }
+
+    .payment-summary-value.paid {
+      color: var(--green);
+    }
+
+    .pix-box {
+      padding: 17px;
+      border: 1px solid var(--border-green);
+      border-radius: 13px;
+      background: rgba(67, 226, 144, 0.035);
+    }
+
+    .pix-name {
+      font-size: 13px;
+      font-weight: 900;
+      margin-bottom: 7px;
+    }
+
+    .pix-key {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+      margin-bottom: 12px;
+    }
+
+    .pix-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .copy-pix-button {
+      border: 0;
+      border-radius: 9px;
+      padding: 11px 14px;
+      background: var(--green);
+      color: #04130c;
+      font-size: 11px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .qr-wrap {
+      display: flex;
+      justify-content: center;
+      margin-top: 14px;
+    }
+
+    .qr-card {
+      padding: 10px;
+      background: #fff;
+      border-radius: 12px;
+      width: fit-content;
+    }
+
+    .qr-note {
+      color: var(--muted-2);
+      font-size: 9px;
+      line-height: 1.45;
+      margin-top: 9px;
+    }
+
+    @media (max-width: 760px) {
+      .payment-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .payment-summary {
+        grid-template-columns: 1fr;
+      }
+    }
+
   </style>
 </head>
 
@@ -1312,6 +1434,139 @@
 
 
     <!-- ======================================
+         PAGAMENTO
+    ======================================= -->
+
+    <section
+      id="paymentPanel"
+      class="panel payment-panel hidden"
+    >
+
+      <div class="section-kicker">
+        Financeiro
+      </div>
+
+      <div class="section-heading" style="margin-bottom:0;">
+        <div>
+          <h2>
+            Sua próxima parcela
+          </h2>
+        </div>
+
+        <p id="paymentStatusText">
+          -
+        </p>
+      </div>
+
+
+      <div class="payment-grid">
+
+        <div>
+
+          <div class="payment-summary">
+
+            <div class="payment-summary-item">
+              <div class="payment-summary-label">
+                Parcela
+              </div>
+
+              <div
+                id="paymentInstallment"
+                class="payment-summary-value"
+              >
+                -
+              </div>
+            </div>
+
+
+            <div class="payment-summary-item">
+              <div class="payment-summary-label">
+                Vencimento
+              </div>
+
+              <div
+                id="paymentDueDate"
+                class="payment-summary-value"
+              >
+                -
+              </div>
+            </div>
+
+
+            <div class="payment-summary-item">
+              <div class="payment-summary-label">
+                Valor
+              </div>
+
+              <div
+                id="paymentAmount"
+                class="payment-summary-value pending"
+              >
+                -
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="pix-box">
+
+          <div
+            id="pixName"
+            class="pix-name"
+          >
+            Franco Trades
+          </div>
+
+          <div
+            id="pixKey"
+            class="pix-key"
+          >
+            -
+          </div>
+
+
+          <div class="pix-actions">
+
+            <button
+              id="copyPixButton"
+              class="copy-pix-button"
+              type="button"
+            >
+              Copiar chave PIX
+            </button>
+
+          </div>
+
+
+          <div class="qr-wrap">
+
+            <div class="qr-card">
+              <canvas
+                id="pixQrCanvas"
+                width="156"
+                height="156"
+              ></canvas>
+            </div>
+
+          </div>
+
+
+          <div class="qr-note">
+            QR da chave PIX. Se o aplicativo do seu banco não reconhecer automaticamente,
+            use o botão “Copiar chave PIX”.
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ======================================
          ACESSO
     ======================================= -->
 
@@ -1431,6 +1686,9 @@ import {
 } from
   "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
+import QRCode from
+  "https://cdn.jsdelivr.net/npm/qrcode@1.5.4/+esm";
+
 
 const SUPABASE_URL =
   "https://vfnltuecpnuixemxvwvk.supabase.co";
@@ -1519,6 +1777,33 @@ const daysRemainingElement =
 const accessWarning =
   $("accessWarning");
 
+const paymentPanel =
+  $("paymentPanel");
+
+const paymentStatusText =
+  $("paymentStatusText");
+
+const paymentInstallment =
+  $("paymentInstallment");
+
+const paymentDueDate =
+  $("paymentDueDate");
+
+const paymentAmount =
+  $("paymentAmount");
+
+const pixName =
+  $("pixName");
+
+const pixKey =
+  $("pixKey");
+
+const copyPixButton =
+  $("copyPixButton");
+
+const pixQrCanvas =
+  $("pixQrCanvas");
+
 
 const logoutButton =
   $("logoutButton");
@@ -1555,6 +1840,277 @@ function formatDate(
   ).toLocaleDateString(
     "pt-BR"
   );
+
+}
+
+
+function formatMoney(
+  value,
+  currency = "BRL"
+) {
+
+  return new Intl.NumberFormat(
+    currency === "USD"
+      ?
+      "en-US"
+      :
+      "pt-BR",
+    {
+      style:
+        "currency",
+      currency
+    }
+  ).format(
+    Number(
+      value ||
+      0
+    )
+  );
+
+}
+
+
+async function loadPaymentArea() {
+
+  if (!currentUser) {
+    return;
+  }
+
+
+  try {
+
+    const {
+      data: financial,
+      error: financialError
+    } =
+      await supabase
+        .from(
+          "mentorship_financials"
+        )
+        .select(
+          "id, valor_total, moeda"
+        )
+        .eq(
+          "profile_id",
+          currentUser.id
+        )
+        .maybeSingle();
+
+
+    if (
+      financialError ||
+      !financial
+    ) {
+
+      return;
+
+    }
+
+
+    const [
+      paymentsResult,
+      settingsResult
+    ] =
+      await Promise.all([
+
+        supabase
+          .from(
+            "mentorship_payments"
+          )
+          .select(
+            "numero_parcela, valor, vencimento, paga, data_pagamento"
+          )
+          .eq(
+            "mentorship_id",
+            financial.id
+          )
+          .order(
+            "numero_parcela",
+            {
+              ascending:
+                true
+            }
+          ),
+
+        supabase
+          .from(
+            "mentorship_settings"
+          )
+          .select(
+            "pix_name, pix_key"
+          )
+          .eq(
+            "id",
+            1
+          )
+          .maybeSingle()
+
+      ]);
+
+
+    if (
+      paymentsResult.error
+    ) {
+
+      return;
+
+    }
+
+
+    const pending =
+      (
+        paymentsResult.data ||
+        []
+      )
+        .filter(
+          item =>
+            item.paga !== true
+        )
+        .sort(
+          (a, b) =>
+            (
+              a.vencimento ||
+              "9999-12-31"
+            )
+              .localeCompare(
+                b.vencimento ||
+                "9999-12-31"
+              )
+        )[0];
+
+
+    if (!pending) {
+
+      paymentPanel.classList
+        .remove(
+          "hidden"
+        );
+
+
+      paymentStatusText.textContent =
+        "Tudo em dia";
+
+
+      paymentInstallment.textContent =
+        "—";
+
+
+      paymentDueDate.textContent =
+        "—";
+
+
+      paymentAmount.textContent =
+        "Quitado";
+
+
+      paymentAmount.classList
+        .remove(
+          "pending"
+        );
+
+
+      paymentAmount.classList
+        .add(
+          "paid"
+        );
+
+
+      return;
+
+    }
+
+
+    const settings =
+      settingsResult.data ||
+      {
+        pix_name:
+          "Franco Trades",
+        pix_key:
+          "0b3aead6-081c-4c89-88d5-ad5bd784163b"
+      };
+
+
+    paymentInstallment.textContent =
+      `Parcela ${pending.numero_parcela}`;
+
+
+    paymentDueDate.textContent =
+      formatDate(
+        pending.vencimento
+      );
+
+
+    paymentAmount.textContent =
+      formatMoney(
+        pending.valor,
+        financial.moeda
+      );
+
+
+    paymentAmount.classList
+      .add(
+        "pending"
+      );
+
+
+    paymentAmount.classList
+      .remove(
+        "paid"
+      );
+
+
+    paymentStatusText.textContent =
+      pending.vencimento
+        ?
+        `Vence em ${formatDate(pending.vencimento)}`
+        :
+        "Pagamento pendente";
+
+
+    pixName.textContent =
+      settings?.pix_name ||
+      "Franco Trades";
+
+
+    pixKey.textContent =
+      settings?.pix_key ||
+      "0b3aead6-081c-4c89-88d5-ad5bd784163b";
+
+
+    copyPixButton.dataset.pixKey =
+      settings?.pix_key ||
+      "0b3aead6-081c-4c89-88d5-ad5bd784163b";
+
+
+    await QRCode.toCanvas(
+      pixQrCanvas,
+      copyPixButton.dataset.pixKey,
+      {
+        width:
+          156,
+        margin:
+          1
+      }
+    );
+
+
+    paymentPanel.classList
+      .remove(
+        "hidden"
+      );
+
+  }
+
+  catch (
+    paymentError
+  ) {
+
+    console.error(
+      "Financeiro do aluno não carregado:",
+      paymentError
+    );
+
+  }
 
 }
 
@@ -2566,6 +3122,8 @@ async function loadDashboard() {
 
   renderSessions();
 
+  await loadPaymentArea();
+
 
   loading.classList
     .add("hidden");
@@ -2575,6 +3133,46 @@ async function loadDashboard() {
     .remove("hidden");
 
 }
+
+
+copyPixButton.addEventListener(
+  "click",
+  async () => {
+
+    const key =
+      copyPixButton.dataset.pixKey;
+
+
+    if (!key) {
+      return;
+    }
+
+
+    try {
+
+      await navigator.clipboard
+        .writeText(
+          key
+        );
+
+
+      showMessage(
+        "Chave PIX copiada."
+      );
+
+    }
+
+    catch {
+
+      showMessage(
+        "Não foi possível copiar automaticamente. Selecione a chave PIX manualmente.",
+        "error"
+      );
+
+    }
+
+  }
+);
 
 
 /* ==========================================
