@@ -166,8 +166,8 @@
     }
 
     button:disabled {
-      opacity: .55;
-      cursor: wait;
+      opacity: .50;
+      cursor: not-allowed;
     }
 
     .message {
@@ -212,6 +212,22 @@
 
     }
 
+    .loading {
+
+      color: #89939f;
+
+      text-align: center;
+
+      font-size: 13px;
+
+      margin-bottom: 18px;
+
+    }
+
+    .hidden {
+      display: none;
+    }
+
   </style>
 
 </head>
@@ -223,6 +239,7 @@
   <div class="logo">
     FRANCO<span>TRADES</span>
   </div>
+
 
   <div class="card">
 
@@ -236,7 +253,18 @@
     </p>
 
 
-    <form id="passwordForm">
+    <div
+      id="loading"
+      class="loading"
+    >
+      Validando seu convite...
+    </div>
+
+
+    <form
+      id="passwordForm"
+      class="hidden"
+    >
 
       <div class="field">
 
@@ -279,13 +307,13 @@
         DEFINIR MINHA SENHA
       </button>
 
-
-      <div
-        id="message"
-        class="message"
-      ></div>
-
     </form>
+
+
+    <div
+      id="message"
+      class="message"
+    ></div>
 
   </div>
 
@@ -297,6 +325,43 @@
 import {
   createClient
 } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+
+/* =====================================================
+   IMPORTANTE:
+   Antes do Supabase processar a URL, verificamos
+   se esta página realmente veio de um convite.
+   ===================================================== */
+
+const originalHash =
+  window.location.hash;
+
+
+const originalSearch =
+  window.location.search;
+
+
+const hashParams =
+  new URLSearchParams(
+    originalHash.startsWith("#")
+      ? originalHash.substring(1)
+      : originalHash
+  );
+
+
+const searchParams =
+  new URLSearchParams(
+    originalSearch
+  );
+
+
+const authType =
+  hashParams.get("type") ||
+  searchParams.get("type");
+
+
+const isInviteLink =
+  authType === "invite";
 
 
 const supabase =
@@ -312,6 +377,12 @@ const supabase =
 const form =
   document.getElementById(
     "passwordForm"
+  );
+
+
+const loading =
+  document.getElementById(
+    "loading"
   );
 
 
@@ -353,30 +424,118 @@ function showMessage(
 }
 
 
-/* Aguarda a sessão criada pelo convite */
+function showForm() {
 
-async function initialize() {
+  loading.classList.add(
+    "hidden"
+  );
 
-  const {
-    data: {
-      session
-    }
-  } =
-    await supabase.auth
-      .getSession();
-
-
-  if (!session) {
-
-    showMessage(
-      "O convite é inválido, expirou ou não foi aberto corretamente pelo e-mail.",
-      "error"
-    );
-
-  }
+  form.classList.remove(
+    "hidden"
+  );
 
 }
 
+
+function blockPage(
+  text
+) {
+
+  loading.classList.add(
+    "hidden"
+  );
+
+  form.classList.add(
+    "hidden"
+  );
+
+  showMessage(
+    text,
+    "error"
+  );
+
+}
+
+
+/* =====================================================
+   VALIDAÇÃO DO CONVITE
+   ===================================================== */
+
+async function initialize() {
+
+  /*
+   * Se alguém simplesmente digitar:
+   *
+   * /definir-senha/
+   *
+   * a página NÃO permitirá alteração da senha.
+   */
+
+  if (!isInviteLink) {
+
+    blockPage(
+      "Esta página só pode ser utilizada através do link de convite enviado pela FrancoTrades."
+    );
+
+    return;
+
+  }
+
+
+  /*
+   * O Supabase detecta automaticamente os tokens
+   * recebidos na URL do convite.
+   */
+
+  let attempts = 0;
+
+
+  while (
+    attempts < 20
+  ) {
+
+    const {
+      data: {
+        session
+      }
+    } =
+      await supabase.auth
+        .getSession();
+
+
+    if (session) {
+
+      showForm();
+
+      return;
+
+    }
+
+
+    await new Promise(
+      resolve =>
+        setTimeout(
+          resolve,
+          150
+        )
+    );
+
+
+    attempts++;
+
+  }
+
+
+  blockPage(
+    "Este convite é inválido ou expirou. Solicite um novo convite para acessar a mentoria."
+  );
+
+}
+
+
+/* =====================================================
+   DEFINIR SENHA
+   ===================================================== */
 
 form.addEventListener(
   "submit",
@@ -430,6 +589,30 @@ form.addEventListener(
       "SALVANDO...";
 
 
+    /*
+     * Confere a sessão uma última vez.
+     */
+
+    const {
+      data: {
+        session
+      }
+    } =
+      await supabase.auth
+        .getSession();
+
+
+    if (!session) {
+
+      blockPage(
+        "Sua sessão de convite expirou. Solicite um novo convite."
+      );
+
+      return;
+
+    }
+
+
     const {
       error
     } =
@@ -447,7 +630,7 @@ form.addEventListener(
 
 
       showMessage(
-        "Não foi possível definir sua senha. Abra novamente o link recebido por e-mail.",
+        "Não foi possível definir sua senha. Solicite um novo convite.",
         "error"
       );
 
@@ -466,7 +649,7 @@ form.addEventListener(
 
 
     showMessage(
-      "Senha criada com sucesso. Entrando na sua área...",
+      "Senha criada com sucesso. Redirecionando para sua área...",
       "success"
     );
 
