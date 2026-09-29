@@ -2874,6 +2874,60 @@ async function toggleSessionProgress(
    RENDERIZAR SESSÕES
 ========================================== */
 
+function isLiveLinkAvailable(
+  item
+) {
+
+  if (!item.teams_url) {
+    return false;
+  }
+
+
+  if (
+    !item.data_sessao ||
+    !item.session_time
+  ) {
+    return true;
+  }
+
+
+  const time =
+    String(
+      item.session_time
+    ).slice(
+      0,
+      5
+    );
+
+
+  const scheduledAt =
+    new Date(
+      `${item.data_sessao}T${time}:00-03:00`
+    );
+
+
+  if (
+    Number.isNaN(
+      scheduledAt.getTime()
+    )
+  ) {
+    return true;
+  }
+
+
+  const expiresAt =
+    new Date(
+      scheduledAt.getTime() +
+      60 * 60 * 1000
+    );
+
+
+  return new Date() <=
+    expiresAt;
+
+}
+
+
 function renderSessions() {
 
   sessionsList.innerHTML =
@@ -2930,8 +2984,8 @@ function renderSessions() {
 
 
     const hasLive =
-      Boolean(
-        item.teams_url
+      isLiveLinkAvailable(
+        item
       );
 
 
@@ -2997,9 +3051,21 @@ function renderSessions() {
             ${
               item.data_sessao
                 ?
-                "Realizada em " +
-                formatDate(
-                  item.data_sessao
+                (
+                  "Sessão em " +
+                  formatDate(
+                    item.data_sessao
+                  ) +
+                  (
+                    item.session_time
+                      ?
+                      " às " +
+                      String(
+                        item.session_time
+                      ).slice(0, 5)
+                      :
+                      ""
+                  )
                 )
                 :
                 "Sessão liberada"
@@ -3346,6 +3412,7 @@ async function loadDashboard() {
         youtube_url,
         teams_url,
         data_sessao,
+        session_time,
         observacoes,
         titulo_personalizado,
         liberada,
