@@ -1247,6 +1247,130 @@
       }
     }
 
+
+
+    /* ==========================================
+       REVISÃO DOS TRADES
+    ========================================== */
+
+    .trade-reviews-section {
+      margin-bottom: 40px;
+    }
+
+    .trade-reviews-intro {
+      padding: 22px 23px;
+      margin-bottom: 12px;
+      border: 1px solid rgba(67,226,144,.16);
+      border-radius: 15px;
+      background:
+        linear-gradient(180deg, rgba(67,226,144,.035), transparent 72%),
+        var(--card);
+    }
+
+    .trade-reviews-intro p {
+      max-width: 820px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .trade-reviews-rule {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 13px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border-green);
+      background: rgba(67,226,144,.05);
+      color: #8ceeb9;
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .trade-reviews-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .trade-review-card {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 22px;
+      align-items: center;
+      padding: 21px 22px;
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.018), rgba(255,255,255,.006)),
+        var(--card);
+    }
+
+    .trade-review-kicker {
+      color: var(--green);
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .trade-review-title {
+      font-size: 17px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .trade-review-meta,
+    .trade-review-description {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.55;
+    }
+
+    .trade-review-description {
+      max-width: 760px;
+      margin-top: 7px;
+      color: #aeb8b3;
+    }
+
+    .trade-reviews-locked {
+      padding: 22px;
+      border: 1px dashed rgba(67,226,144,.22);
+      border-radius: 14px;
+      background: rgba(67,226,144,.025);
+    }
+
+    .trade-reviews-locked strong {
+      display: block;
+      color: var(--text);
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+
+    .trade-reviews-locked p {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .trade-reviews-progress {
+      margin-top: 13px;
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    @media (max-width: 800px) {
+      .trade-review-card {
+        grid-template-columns: 1fr;
+      }
+
+      .trade-review-card .watch-button {
+        width: 100%;
+      }
+    }
+
   </style>
 </head>
 
@@ -1471,6 +1595,54 @@
       <div
         id="sessionsList"
         class="sessions"
+      ></div>
+
+    </section>
+
+
+    <!-- ======================================
+         REVISÃO DOS TRADES
+    ======================================= -->
+
+    <section
+      id="tradeReviewsSection"
+      class="trade-reviews-section"
+    >
+
+      <div class="section-heading">
+        <div>
+          <div class="section-kicker">
+            Conteúdo complementar
+          </div>
+
+          <h2>
+            Revisão dos Trades
+          </h2>
+        </div>
+
+        <p>
+          Estudos práticos selecionados.
+        </p>
+      </div>
+
+
+      <div class="trade-reviews-intro">
+        <p>
+          Nesta área, publico revisões em vídeo de operações selecionadas por
+          apresentarem contextos, execuções ou pontos de decisão especialmente
+          úteis para consolidar os conceitos da mentoria. O objetivo é
+          transformar exemplos práticos em material complementar de estudo.
+        </p>
+
+        <div class="trade-reviews-rule">
+          🔒 Disponível após a liberação das 8 primeiras aulas
+        </div>
+      </div>
+
+
+      <div
+        id="tradeReviewsList"
+        class="trade-reviews-list"
       ></div>
 
     </section>
@@ -1810,6 +1982,10 @@ const sessionsList =
   $("sessionsList");
 
 
+const tradeReviewsList =
+  $("tradeReviewsList");
+
+
 const statusElement =
   $("status");
 
@@ -1869,6 +2045,10 @@ let currentUser =
 
 
 let currentSessions =
+  [];
+
+
+let tradeReviews =
   [];
 
 
@@ -2966,6 +3146,254 @@ async function toggleSessionProgress(
 
 
 /* ==========================================
+   REVISÃO DOS TRADES
+========================================== */
+
+function countFirstEightReleased() {
+
+  const releasedNumbers =
+    new Set(
+      currentSessions
+        .map(
+          item =>
+            Number(
+              item.sessions?.numero
+            )
+        )
+        .filter(
+          number =>
+            Number.isFinite(number) &&
+            number >= 1 &&
+            number <= 8
+        )
+    );
+
+
+  return releasedNumbers.size;
+
+}
+
+
+function renderTradeReviewsLocked(
+  releasedCount
+) {
+
+  tradeReviewsList.innerHTML =
+    `
+      <div class="trade-reviews-locked">
+        <strong>
+          Conteúdo ainda bloqueado
+        </strong>
+
+        <p>
+          A Revisão dos Trades é liberada automaticamente quando as
+          8 primeiras aulas da mentoria estiverem disponíveis para você.
+          Nesse momento, você já terá a base necessária para aproveitar
+          melhor as análises.
+        </p>
+
+        <div class="trade-reviews-progress">
+          ${releasedCount} de 8 aulas liberadas
+        </div>
+      </div>
+    `;
+
+}
+
+
+function renderTradeReviews() {
+
+  tradeReviewsList.innerHTML =
+    "";
+
+
+  if (
+    tradeReviews.length ===
+    0
+  ) {
+
+    tradeReviewsList.innerHTML =
+      `
+        <div class="empty">
+          Nenhuma revisão foi publicada ainda.
+          Novos estudos aparecerão aqui automaticamente.
+        </div>
+      `;
+
+    return;
+
+  }
+
+
+  for (
+    const item of
+    tradeReviews
+  ) {
+
+    const card =
+      document.createElement(
+        "article"
+      );
+
+    card.className =
+      "trade-review-card";
+
+
+    const publishedDate =
+      item.published_at
+        ?
+        new Date(
+          item.published_at
+        ).toLocaleDateString(
+          "pt-BR"
+        )
+        :
+        "";
+
+
+    card.innerHTML =
+      `
+        <div>
+          <div class="trade-review-kicker">
+            Revisão de operação
+          </div>
+
+          <div class="trade-review-title">
+            ${escapeHTML(item.titulo)}
+          </div>
+
+          ${
+            publishedDate
+              ?
+              `
+                <div class="trade-review-meta">
+                  Publicado em ${publishedDate}
+                </div>
+              `
+              :
+              ""
+          }
+
+          ${
+            item.descricao
+              ?
+              `
+                <div class="trade-review-description">
+                  ${escapeHTML(item.descricao)}
+                </div>
+              `
+              :
+              ""
+          }
+        </div>
+
+        <div>
+          <a
+            class="watch-button"
+            href="${escapeHTML(item.youtube_url)}"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            ▶ Assistir revisão
+          </a>
+        </div>
+      `;
+
+
+    tradeReviewsList.appendChild(
+      card
+    );
+
+  }
+
+}
+
+
+async function loadTradeReviews() {
+
+  const releasedCount =
+    countFirstEightReleased();
+
+
+  if (
+    releasedCount < 8
+  ) {
+
+    tradeReviews =
+      [];
+
+    renderTradeReviewsLocked(
+      releasedCount
+    );
+
+    return;
+
+  }
+
+
+  tradeReviewsList.innerHTML =
+    `
+      <div class="empty">
+        Carregando revisões...
+      </div>
+    `;
+
+
+  const {
+    data,
+    error
+  } =
+    await supabase
+      .from("trade_reviews")
+      .select(`
+        id,
+        titulo,
+        descricao,
+        youtube_url,
+        published_at
+      `)
+      .eq(
+        "ativo",
+        true
+      )
+      .order(
+        "published_at",
+        {
+          ascending: false
+        }
+      );
+
+
+  if (error) {
+
+    console.error(
+      "Erro ao carregar Revisão dos Trades:",
+      error
+    );
+
+
+    tradeReviewsList.innerHTML =
+      `
+        <div class="empty">
+          A Revisão dos Trades está temporariamente indisponível.
+        </div>
+      `;
+
+    return;
+
+  }
+
+
+  tradeReviews =
+    data || [];
+
+
+  renderTradeReviews();
+
+}
+
+
+/* ==========================================
    RENDERIZAR SESSÕES
 ========================================== */
 
@@ -3618,6 +4046,8 @@ async function loadDashboard() {
   updateProgressUI();
 
   renderSessions();
+
+  await loadTradeReviews();
 
   await loadPaymentArea();
 
