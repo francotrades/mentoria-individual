@@ -298,6 +298,12 @@ const authType =
   searchParams.get("type");
 
 
+const tokenHash =
+  searchParams.get(
+    "token_hash"
+  );
+
+
 const allowedTypes =
   new Set([
     "invite",
@@ -468,10 +474,66 @@ else if (
 
 async function initialize() {
 
+  const urlError =
+    searchParams.get(
+      "error_description"
+    ) ||
+    searchParams.get(
+      "error"
+    );
+
+
+  if (
+    tokenHash &&
+    authType ===
+      "invite"
+  ) {
+
+    const {
+      error:
+        verifyError
+    } =
+      await supabase.auth
+        .verifyOtp({
+          token_hash:
+            tokenHash,
+          type:
+            "invite"
+        });
+
+
+    if (verifyError) {
+
+      console.error(
+        "Erro ao validar convite:",
+        verifyError
+      );
+
+
+      blockPage(
+        "Este link de convite é inválido, já foi utilizado ou expirou. Peça um novo convite à Franco Trades."
+      );
+
+      return;
+
+    }
+
+
+    showForm();
+
+    return;
+
+  }
+
+
   if (!isAllowedFlow) {
 
     blockPage(
-      "Esta página só pode ser utilizada através de um link válido de convite ou recuperação de senha."
+      urlError
+        ?
+        "Este link de convite é inválido, já foi utilizado ou expirou. Peça um novo convite à Franco Trades."
+        :
+        "Esta página só pode ser utilizada através de um link válido de convite ou recuperação de senha."
     );
 
     return;
