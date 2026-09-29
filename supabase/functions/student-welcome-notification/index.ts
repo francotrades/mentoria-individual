@@ -325,28 +325,37 @@ Deno.serve(async (req) => {
         </p>
 
         <div style="background:#09100c;border:1px solid rgba(67,226,144,.16);border-radius:12px;padding:18px;margin-bottom:20px;">
-          <div style="color:#43e290;font-size:13px;font-weight:900;margin-bottom:10px;">1. Crie sua senha</div>
+          <div style="color:#43e290;font-size:13px;font-weight:900;margin-bottom:10px;">1. Procure primeiro o e-mail de convite da Supabase</div>
           <div style="color:#b2bbb6;font-size:14px;line-height:1.65;">
-            Você receberá o convite de acesso no e-mail <strong style="color:#fff;">${escapeHtml(email)}</strong>. Abra o link do convite e defina sua senha pessoal. Se não encontrar o convite na caixa de entrada, verifique também Spam ou Lixo Eletrônico.
+            Além deste e-mail de boas-vindas, você receberá um outro e-mail automático enviado pela <strong style="color:#fff;">Supabase</strong>, que é o serviço usado para criar seu acesso com segurança. Esse é o e-mail que contém o link para definir sua senha pela primeira vez.
+            <br><br>
+            Procure na sua caixa de entrada por um e-mail da Supabase. Se não encontrar, verifique também <strong style="color:#fff;">Spam, Lixo Eletrônico ou Promoções</strong>. Abra esse e-mail e clique no link de convite para criar sua senha.
           </div>
         </div>
 
         <div style="background:#09100c;border:1px solid rgba(67,226,144,.16);border-radius:12px;padding:18px;margin-bottom:20px;">
-          <div style="color:#43e290;font-size:13px;font-weight:900;margin-bottom:10px;">2. Acesse sempre pela Área do Aluno</div>
+          <div style="color:#43e290;font-size:13px;font-weight:900;margin-bottom:10px;">2. Use o e-mail cadastrado</div>
+          <div style="color:#b2bbb6;font-size:14px;line-height:1.65;">
+            Seu acesso foi criado com o e-mail <strong style="color:#fff;">${escapeHtml(email)}</strong>. Use esse endereço para entrar na plataforma e, sempre que possível, mantenha esse mesmo e-mail na sua conta Google/YouTube para facilitar o acesso às gravações privadas.
+          </div>
+        </div>
+
+        <div style="background:#09100c;border:1px solid rgba(67,226,144,.16);border-radius:12px;padding:18px;margin-bottom:20px;">
+          <div style="color:#43e290;font-size:13px;font-weight:900;margin-bottom:10px;">3. Acesse sempre pela Área do Aluno</div>
           <div style="color:#b2bbb6;font-size:14px;line-height:1.65;">
             Depois de criar sua senha, você poderá entrar sempre pelo botão <strong style="color:#fff;">Área do Aluno</strong> no site da mentoria ou pelo botão abaixo.
           </div>
         </div>
 
         <div style="background:#09100c;border:1px solid rgba(67,226,144,.16);border-radius:12px;padding:18px;margin-bottom:20px;">
-          <div style="color:#43e290;font-size:13px;font-weight:900;margin-bottom:10px;">3. Importante sobre as gravações no YouTube</div>
+          <div style="color:#43e290;font-size:13px;font-weight:900;margin-bottom:10px;">4. Importante sobre as gravações no YouTube</div>
           <div style="color:#b2bbb6;font-size:14px;line-height:1.65;">
             Use este mesmo e-mail cadastrado na mentoria — <strong style="color:#fff;">${escapeHtml(email)}</strong> — na sua conta do YouTube/Google. As gravações privadas podem ser liberadas especificamente para esse endereço, então usar a mesma conta evita problemas de acesso.
           </div>
         </div>
 
         <div style="background:#09100c;border:1px solid rgba(67,226,144,.16);border-radius:12px;padding:18px;margin-bottom:24px;">
-          <div style="color:#43e290;font-size:13px;font-weight:900;margin-bottom:10px;">4. Como funcionará daqui para frente</div>
+          <div style="color:#43e290;font-size:13px;font-weight:900;margin-bottom:10px;">5. Como funcionará daqui para frente</div>
           <div style="color:#b2bbb6;font-size:14px;line-height:1.7;">
             Quando o link de uma aula ao vivo estiver disponível, você receberá um aviso por e-mail com acesso direto ao Microsoft Teams. Após a sessão, a gravação será disponibilizada na plataforma quando estiver pronta. Na Área do Aluno você também poderá acompanhar seu progresso e as informações financeiras da mentoria.
           </div>
