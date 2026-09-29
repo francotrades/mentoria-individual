@@ -1589,6 +1589,150 @@
       }
     }
 
+
+
+    /* ==========================================
+       REVISÃO DOS TRADES — BIBLIOTECA GLOBAL
+    ========================================== */
+
+    .trade-review-panel {
+      margin-bottom: 22px;
+      padding: 24px;
+      border-color: rgba(67,226,144,.17);
+      background:
+        linear-gradient(180deg, rgba(67,226,144,.025), transparent 42%),
+        #0b100d;
+    }
+
+    .trade-review-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .trade-review-title {
+      font-size: 18px;
+      font-weight: 900;
+      margin-bottom: 5px;
+    }
+
+    .trade-review-description {
+      max-width: 760px;
+      color: var(--ft-muted, #89939f);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .trade-review-rule {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border: 1px solid rgba(67,226,144,.15);
+      border-radius: 9px;
+      background: rgba(67,226,144,.045);
+      color: #9cefc3;
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .trade-review-form {
+      display: grid;
+      grid-template-columns: minmax(180px, .7fr) minmax(260px, 1.3fr);
+      gap: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      border: 1px solid var(--ft-border, #202833);
+      border-radius: 12px;
+      background: rgba(255,255,255,.014);
+    }
+
+    .trade-review-form .full {
+      grid-column: 1 / -1;
+    }
+
+    .trade-review-actions {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      flex-wrap: wrap;
+      grid-column: 1 / -1;
+    }
+
+    .trade-review-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .trade-review-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: center;
+      padding: 15px 16px;
+      border: 1px solid var(--ft-border, #202833);
+      border-radius: 11px;
+      background: #090e0b;
+    }
+
+    .trade-review-item-title {
+      font-size: 13px;
+      font-weight: 900;
+      margin-bottom: 5px;
+    }
+
+    .trade-review-item-meta {
+      color: var(--ft-muted, #89939f);
+      font-size: 10px;
+      line-height: 1.55;
+    }
+
+    .trade-review-item-description {
+      margin-top: 7px;
+      color: #abb5af;
+      font-size: 11px;
+      line-height: 1.55;
+    }
+
+    .trade-review-badge {
+      display: inline-flex;
+      align-items: center;
+      margin-left: 7px;
+      padding: 3px 7px;
+      border-radius: 999px;
+      border: 1px solid rgba(67,226,144,.18);
+      background: rgba(67,226,144,.07);
+      color: #70e9aa;
+      font-size: 8px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    .trade-review-badge.off {
+      color: #ffb2b2;
+      border-color: rgba(255,125,125,.18);
+      background: rgba(255,125,125,.06);
+    }
+
+    .trade-review-item-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    @media (max-width: 760px) {
+      .trade-review-form,
+      .trade-review-item {
+        grid-template-columns: 1fr;
+      }
+
+      .trade-review-item-actions {
+        justify-content: flex-start;
+      }
+    }
+
   </style>
 </head>
 
@@ -1996,6 +2140,121 @@
         id="attentionList"
         class="attention-list"
       ></div>
+
+    </section>
+
+
+    <section
+      id="tradeReviewPanel"
+      class="panel trade-review-panel"
+    >
+
+      <div class="trade-review-header">
+        <div>
+          <div class="trade-review-title">
+            Revisão dos Trades
+          </div>
+
+          <div class="trade-review-description">
+            Biblioteca global de análises em vídeo de operações selecionadas
+            por você por terem valor didático para os mentorados. Um único
+            cadastro disponibiliza o vídeo automaticamente para todos os
+            alunos elegíveis.
+          </div>
+
+          <div class="trade-review-rule">
+            🔒 Os vídeos ficam visíveis somente para mentorados com acesso
+            ativo e com as 8 primeiras aulas já liberadas.
+          </div>
+        </div>
+      </div>
+
+
+      <div class="trade-review-form">
+
+        <div class="field">
+          <label for="tradeReviewTitle">
+            Título da revisão
+          </label>
+
+          <input
+            id="tradeReviewTitle"
+            type="text"
+            placeholder="Ex.: Rompimento falso no suporte"
+          >
+        </div>
+
+
+        <div class="field">
+          <label for="tradeReviewUrl">
+            Link do vídeo no YouTube
+          </label>
+
+          <input
+            id="tradeReviewUrl"
+            type="url"
+            placeholder="https://youtube.com/..."
+          >
+        </div>
+
+
+        <div class="field full">
+          <label for="tradeReviewDescription">
+            Descrição
+          </label>
+
+          <textarea
+            id="tradeReviewDescription"
+            placeholder="Explique brevemente o contexto ou o principal aprendizado desta revisão."
+            style="min-height:74px;"
+          ></textarea>
+        </div>
+
+
+        <div class="field full">
+          <div class="checkbox-row">
+            <input
+              id="tradeReviewActive"
+              type="checkbox"
+              checked
+            >
+
+            <label for="tradeReviewActive">
+              Vídeo publicado para os mentorados elegíveis
+            </label>
+          </div>
+        </div>
+
+
+        <div class="trade-review-actions">
+          <button
+            id="saveTradeReviewButton"
+            type="button"
+            class="primary-button"
+          >
+            Adicionar revisão
+          </button>
+
+          <button
+            id="cancelTradeReviewButton"
+            type="button"
+            class="secondary-button hidden"
+          >
+            Cancelar edição
+          </button>
+        </div>
+
+      </div>
+
+
+      <div
+        id="tradeReviewList"
+        class="trade-review-list"
+      >
+        <div class="reminder-empty">
+          Carregando revisões...
+        </div>
+      </div>
 
     </section>
 
@@ -2814,6 +3073,31 @@ const attentionList =
   $("attentionList");
 
 
+const tradeReviewPanel =
+  $("tradeReviewPanel");
+
+const tradeReviewTitle =
+  $("tradeReviewTitle");
+
+const tradeReviewUrl =
+  $("tradeReviewUrl");
+
+const tradeReviewDescription =
+  $("tradeReviewDescription");
+
+const tradeReviewActive =
+  $("tradeReviewActive");
+
+const saveTradeReviewButton =
+  $("saveTradeReviewButton");
+
+const cancelTradeReviewButton =
+  $("cancelTradeReviewButton");
+
+const tradeReviewList =
+  $("tradeReviewList");
+
+
 const studentSelect =
   $("studentSelect");
 
@@ -2996,6 +3280,9 @@ let allProgress = [];
 let allFinancials = [];
 let allPayments = [];
 let allReminderLogs = [];
+let allTradeReviews = [];
+
+let editingTradeReviewId = null;
 
 let selectedStudent = null;
 let studentSessions = [];
@@ -4298,6 +4585,431 @@ createStudentButton
 
     }
   );
+
+
+/* REVISÃO DOS TRADES */
+
+function resetTradeReviewForm() {
+
+  editingTradeReviewId =
+    null;
+
+  tradeReviewTitle.value =
+    "";
+
+  tradeReviewUrl.value =
+    "";
+
+  tradeReviewDescription.value =
+    "";
+
+  tradeReviewActive.checked =
+    true;
+
+  saveTradeReviewButton.textContent =
+    "Adicionar revisão";
+
+  cancelTradeReviewButton.classList
+    .add("hidden");
+
+}
+
+
+function renderTradeReviews() {
+
+  tradeReviewList.innerHTML =
+    "";
+
+  if (
+    allTradeReviews.length ===
+    0
+  ) {
+
+    tradeReviewList.innerHTML =
+      `
+        <div class="reminder-empty">
+          Nenhuma revisão publicada ainda.
+        </div>
+      `;
+
+    return;
+
+  }
+
+
+  for (
+    const item of
+    allTradeReviews
+  ) {
+
+    const row =
+      document.createElement(
+        "div"
+      );
+
+    row.className =
+      "trade-review-item";
+
+    const published =
+      item.published_at
+        ?
+        new Date(
+          item.published_at
+        ).toLocaleDateString(
+          "pt-BR"
+        )
+        :
+        "-";
+
+    row.innerHTML =
+      `
+        <div>
+          <div class="trade-review-item-title">
+            ${escapeHTML(item.titulo)}
+            <span class="trade-review-badge ${item.ativo ? "" : "off"}">
+              ${item.ativo ? "Publicado" : "Oculto"}
+            </span>
+          </div>
+
+          <div class="trade-review-item-meta">
+            Publicado em ${published}
+          </div>
+
+          ${
+            item.descricao
+              ?
+              `
+                <div class="trade-review-item-description">
+                  ${escapeHTML(item.descricao)}
+                </div>
+              `
+              :
+              ""
+          }
+        </div>
+
+        <div class="trade-review-item-actions">
+          <a
+            class="area-button"
+            href="${escapeHTML(item.youtube_url)}"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Ver vídeo
+          </a>
+
+          <button
+            type="button"
+            class="secondary-button"
+            data-edit-trade-review="${item.id}"
+          >
+            Editar
+          </button>
+
+          <button
+            type="button"
+            class="danger-button"
+            data-delete-trade-review="${item.id}"
+          >
+            Excluir
+          </button>
+        </div>
+      `;
+
+    tradeReviewList.appendChild(
+      row
+    );
+
+  }
+
+}
+
+
+async function loadTradeReviews() {
+
+  const {
+    data,
+    error
+  } =
+    await supabase
+      .from("trade_reviews")
+      .select(`
+        id,
+        titulo,
+        descricao,
+        youtube_url,
+        ativo,
+        published_at
+      `)
+      .order(
+        "published_at",
+        {
+          ascending: false
+        }
+      );
+
+
+  if (error) {
+
+    console.error(
+      "Revisão dos Trades não carregada:",
+      error
+    );
+
+    tradeReviewList.innerHTML =
+      `
+        <div class="reminder-empty">
+          A biblioteca ainda não está disponível.
+          Execute o arquivo supabase/trade_reviews.sql no Supabase.
+        </div>
+      `;
+
+    return;
+
+  }
+
+
+  allTradeReviews =
+    data || [];
+
+  renderTradeReviews();
+
+}
+
+
+async function saveTradeReview() {
+
+  const title =
+    tradeReviewTitle.value
+      .trim();
+
+  const url =
+    tradeReviewUrl.value
+      .trim();
+
+  const description =
+    tradeReviewDescription.value
+      .trim();
+
+
+  if (
+    !title ||
+    !url
+  ) {
+
+    showMessage(
+      "Preencha o título e o link do vídeo.",
+      "error"
+    );
+
+    return;
+
+  }
+
+
+  saveTradeReviewButton.disabled =
+    true;
+
+  saveTradeReviewButton.textContent =
+    editingTradeReviewId
+      ?
+      "SALVANDO..."
+      :
+      "ADICIONANDO...";
+
+
+  const payload = {
+    titulo: title,
+    youtube_url: url,
+    descricao:
+      description ||
+      null,
+    ativo:
+      tradeReviewActive.checked
+  };
+
+
+  const result =
+    editingTradeReviewId
+
+      ?
+
+      await supabase
+        .from("trade_reviews")
+        .update(payload)
+        .eq(
+          "id",
+          editingTradeReviewId
+        )
+
+      :
+
+      await supabase
+        .from("trade_reviews")
+        .insert(payload);
+
+
+  saveTradeReviewButton.disabled =
+    false;
+
+
+  if (result.error) {
+
+    console.error(
+      result.error
+    );
+
+    saveTradeReviewButton.textContent =
+      editingTradeReviewId
+        ?
+        "Salvar alterações"
+        :
+        "Adicionar revisão";
+
+    showMessage(
+      "Não foi possível salvar a revisão.",
+      "error"
+    );
+
+    return;
+
+  }
+
+
+  showMessage(
+    editingTradeReviewId
+      ?
+      "Revisão atualizada."
+      :
+      "Revisão adicionada para todos os mentorados elegíveis."
+  );
+
+
+  resetTradeReviewForm();
+
+  await loadTradeReviews();
+
+}
+
+
+function editTradeReview(
+  id
+) {
+
+  const item =
+    allTradeReviews.find(
+      review =>
+        Number(review.id) ===
+        Number(id)
+    );
+
+
+  if (!item) {
+    return;
+  }
+
+
+  editingTradeReviewId =
+    item.id;
+
+  tradeReviewTitle.value =
+    item.titulo ||
+    "";
+
+  tradeReviewUrl.value =
+    item.youtube_url ||
+    "";
+
+  tradeReviewDescription.value =
+    item.descricao ||
+    "";
+
+  tradeReviewActive.checked =
+    item.ativo === true;
+
+  saveTradeReviewButton.textContent =
+    "Salvar alterações";
+
+  cancelTradeReviewButton.classList
+    .remove("hidden");
+
+  tradeReviewPanel.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+
+}
+
+
+async function deleteTradeReview(
+  id
+) {
+
+  const item =
+    allTradeReviews.find(
+      review =>
+        Number(review.id) ===
+        Number(id)
+    );
+
+
+  if (!item) {
+    return;
+  }
+
+
+  const confirmed =
+    confirm(
+      "Excluir a revisão “" +
+      item.titulo +
+      "”?\n\nO vídeo deixará de aparecer para todos os mentorados."
+    );
+
+
+  if (!confirmed) {
+    return;
+  }
+
+
+  const {
+    error
+  } =
+    await supabase
+      .from("trade_reviews")
+      .delete()
+      .eq(
+        "id",
+        id
+      );
+
+
+  if (error) {
+
+    showMessage(
+      "Não foi possível excluir a revisão.",
+      "error"
+    );
+
+    return;
+
+  }
+
+
+  if (
+    Number(editingTradeReviewId) ===
+    Number(id)
+  ) {
+    resetTradeReviewForm();
+  }
+
+
+  await loadTradeReviews();
+
+  showMessage(
+    "Revisão excluída."
+  );
+
+}
 
 
 /* CARREGAMENTO */
