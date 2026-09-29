@@ -3806,8 +3806,58 @@ createStudentButton
         );
 
 
+        let functionErrorMessage =
+          "";
+
+
+        try {
+
+          if (
+            error.context &&
+            typeof error.context.json ===
+            "function"
+          ) {
+
+            const functionErrorBody =
+              await error.context
+                .json();
+
+
+            functionErrorMessage =
+              functionErrorBody?.error ||
+              functionErrorBody?.message ||
+              "";
+
+          }
+
+        }
+
+        catch (
+          contextError
+        ) {
+
+          console.error(
+            "Não foi possível ler a resposta detalhada da função:",
+            contextError
+          );
+
+        }
+
+
         showMessage(
-          "A função respondeu com erro. Verifique os Logs da create-student.",
+          functionErrorMessage
+            ?
+            "Não foi possível criar o mentorado: " +
+            functionErrorMessage
+            :
+            (
+              error.message
+                ?
+                "Não foi possível criar o mentorado: " +
+                error.message
+                :
+                "A função respondeu com erro. Verifique os Logs da create-student."
+            ),
           "error"
         );
 
