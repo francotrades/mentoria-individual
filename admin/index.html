@@ -6916,6 +6916,25 @@ function openExistingSession(
 
 async function saveSession() {
 
+  const previousSession =
+    editingStudentSessionId
+      ?
+      studentSessions.find(
+        item =>
+          Number(item.id) ===
+          Number(editingStudentSessionId)
+      )
+      :
+      null;
+
+
+  const previousTeamsUrl =
+    (
+      previousSession?.teams_url ||
+      ""
+    ).trim();
+
+
   const payload = {
 
     student_id:
@@ -6968,12 +6987,16 @@ async function saveSession() {
           "id",
           editingStudentSessionId
         )
+        .select("id")
+        .single()
 
       :
 
       await supabase
         .from("student_sessions")
-        .insert(payload);
+        .insert(payload)
+        .select("id")
+        .single();
 
 
   if (result.error) {
@@ -6988,8 +7011,86 @@ async function saveSession() {
   }
 
 
+  const savedSessionId =
+    result.data?.id ||
+    editingStudentSessionId;
+
+
+  const currentTeamsUrl =
+    (
+      payload.teams_url ||
+      ""
+    ).trim();
+
+
+  const shouldNotifyLiveLink =
+    Boolean(currentTeamsUrl) &&
+    currentTeamsUrl !==
+    previousTeamsUrl;
+
+
+  let notificationWarning =
+    "";
+
+
+  if (
+    shouldNotifyLiveLink &&
+    savedSessionId
+  ) {
+
+    const {
+      data: notificationData,
+      error: notificationError
+    } =
+      await supabase.functions.invoke(
+        "session-live-notification",
+        {
+          body: {
+            student_session_id:
+              Number(savedSessionId)
+          }
+        }
+      );
+
+
+    if (
+      notificationError ||
+      !notificationData?.sent
+    ) {
+
+      console.error(
+        "Erro ao enviar aviso da aula ao vivo:",
+        notificationError,
+        notificationData
+      );
+
+
+      notificationWarning =
+        " A sessão foi salva, mas o aviso por e-mail não pôde ser enviado.";
+
+    }
+
+  }
+
+
   showMessage(
-    "Sessão salva."
+    notificationWarning
+      ?
+      "Sessão salva." +
+      notificationWarning
+      :
+      (
+        shouldNotifyLiveLink
+          ?
+          "Sessão salva e aviso do link ao vivo enviado por e-mail."
+          :
+          "Sessão salva."
+      ),
+    notificationWarning
+      ?
+      "error"
+      :
+      "success"
   );
 
 
