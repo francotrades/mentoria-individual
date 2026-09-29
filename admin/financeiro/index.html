@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Financeiro | FrancoTrades</title>
+<style>
+:root{--bg:#050706;--card:#0c110e;--border:rgba(255,255,255,.08);--green:#43e290;--green2:#25c978;--muted:#8f9a94;--muted2:#626d67;--yellow:#f6c75b}
+*{box-sizing:border-box;margin:0;padding:0}body{min-height:100vh;font-family:Arial,Helvetica,sans-serif;color:#fff;background:radial-gradient(circle at 50% -10%,rgba(67,226,144,.09),transparent 30%),var(--bg)}
+header{min-height:72px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;border-bottom:1px solid var(--border);background:rgba(5,7,6,.92);position:sticky;top:0;backdrop-filter:blur(16px);z-index:5}
+.logo{font-weight:900;letter-spacing:1.3px;font-size:20px}.logo span{color:var(--green)}.nav{display:flex;gap:8px}.nav a,.nav button{border:1px solid var(--border);background:transparent;color:#fff;padding:10px 13px;border-radius:9px;text-decoration:none;font-weight:800;font-size:11px;cursor:pointer}
+.container{width:min(1120px,calc(100% - 32px));margin:auto;padding:42px 0 70px}.eyebrow{color:var(--green);font-size:10px;font-weight:900;letter-spacing:1.1px;text-transform:uppercase;margin-bottom:8px}h1{font-size:34px;margin-bottom:8px}.intro{color:var(--muted);font-size:13px;line-height:1.6;margin-bottom:24px}.panel{background:linear-gradient(180deg,rgba(255,255,255,.022),rgba(255,255,255,.008)),var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:18px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.stat{padding:14px;border:1px solid var(--border);border-radius:11px;background:rgba(255,255,255,.012)}.label{color:var(--muted2);font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}.value{font-size:20px;font-weight:900}.green{color:var(--green)}.yellow{color:var(--yellow)}
+.goal-top{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:11px;margin-bottom:9px}.goal-top strong{color:#fff}.bar{height:10px;border-radius:999px;background:#151b17;overflow:hidden}.fill{height:100%;width:0;background:linear-gradient(90deg,var(--green2),var(--green));border-radius:inherit}.rate{margin-top:9px;color:var(--muted2);font-size:10px}
+.list{display:grid;gap:10px}.card{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:rgba(255,255,255,.012)}.head{width:100%;border:0;background:transparent;color:#fff;padding:15px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;text-align:left;cursor:pointer}.head:hover{background:rgba(67,226,144,.025)}.name{font-size:13px;font-weight:900;margin-bottom:4px}.meta{font-size:10px;color:var(--muted);line-height:1.45}.vals{display:flex;gap:14px;text-align:right}.vals span{display:block;color:var(--muted2);font-size:8px;text-transform:uppercase;margin-bottom:3px}.vals strong{font-size:12px}.details{border-top:1px solid var(--border);padding:0 15px 15px}.notes{padding:12px 0;color:var(--muted);font-size:11px}.payments{display:grid;gap:7px}.payment{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:10px;border:1px solid var(--border);border-radius:9px;background:#090e0b}.payment input{width:18px;height:18px;accent-color:var(--green)}.ptitle{font-size:11px;font-weight:800;margin-bottom:3px}.pdate{font-size:9px;color:var(--muted2)}.pvalue{font-size:11px;font-weight:900}.pill{padding:5px 7px;border-radius:999px;border:1px solid var(--border);font-size:8px;font-weight:900;text-transform:uppercase}.pill.paid{color:#70e9aa;border-color:rgba(67,226,144,.18);background:rgba(67,226,144,.06)}.pill.pending{color:var(--yellow);border-color:rgba(246,199,91,.18);background:rgba(246,199,91,.05)}
+.loading,.empty{padding:20px;color:var(--muted);font-size:12px}.hidden{display:none!important}
+@media(max-width:800px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.head{grid-template-columns:1fr}.vals{text-align:left;justify-content:space-between}}@media(max-width:560px){.stats{grid-template-columns:1fr}.payment{grid-template-columns:auto minmax(0,1fr) auto}.pill{grid-column:2/-1;width:max-content}}
+</style>
+</head>
+<body>
+<header><div class="logo">FRANCO<span>TRADES</span></div><div class="nav"><a href="../">Painel do Mentor</a><button id="logout">Sair</button></div></header>
+<main class="container">
+<div class="eyebrow">Mentoria Individual</div>
+<h1>Financeiro</h1>
+<p class="intro">Acompanhe contratos, recebimentos, parcelas pendentes e a meta de faturamento.</p>
+<div id="loading" class="panel loading">Carregando dados financeiros...</div>
+<div id="content" class="hidden">
+<section class="panel"><div class="stats">
+<div class="stat"><div class="label">Contratado</div><div id="contracted" class="value green">R$ 0,00</div></div>
+<div class="stat"><div class="label">Recebido</div><div id="received" class="value">R$ 0,00</div></div>
+<div class="stat"><div class="label">A receber</div><div id="outstanding" class="value yellow">R$ 0,00</div></div>
+<div class="stat"><div class="label">Mentorias</div><div id="count" class="value">0</div></div>
+</div></section>
+<section class="panel"><div class="goal-top"><span>Meta de faturamento</span><strong id="goalText">R$ 0,00 de R$ 120.000,00</strong></div><div class="bar"><div id="goalFill" class="fill"></div></div><div id="rate" class="rate">USD/BRL: carregando...</div></section>
+<section class="panel"><div id="list" class="list"></div></section>
+</div>
+</main>
+<script type="module">
+import{createClient}from"https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+const supabase=createClient("https://vfnltuecpnuixemxvwvk.supabase.co","sb_publishable_nxgAFL2foBN8CuKMT5_2qQ_uDlaJ4Xc");
+const $=id=>document.getElementById(id);
+let financials=[],payments=[],settings=null,rate=null,expanded=new Set();
+function esc(v){return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
+function money(v,c="BRL"){return new Intl.NumberFormat(c==="BRL"?"pt-BR":"en-US",{style:"currency",currency:c}).format(Number(v||0))}
+function date(v){return v?new Date(v+"T12:00:00").toLocaleDateString("pt-BR"):"-"}
+function today(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+async function verify(){const{data:{session}}=await supabase.auth.getSession();if(!session){location.href="../../login/";return false}const{data:p}=await supabase.from("profiles").select("role").eq("id",session.user.id).single();if(p?.role!=="admin"){location.href="../../aluno/";return false}return true}
+async function fx(){try{const r=await fetch("https://api.frankfurter.app/latest?from=USD&to=BRL");const j=await r.json();rate=Number(j?.rates?.BRL)||null}catch{rate=null}}
+function brl(v,c){return c==="USD"?(rate?Number(v||0)*rate:0):Number(v||0)}
+async function load(){const[a,b,d]=await Promise.all([supabase.from("mentorship_financials").select("*").order("nome"),supabase.from("mentorship_payments").select("*").order("numero_parcela"),supabase.from("mentorship_settings").select("*").eq("id",1).maybeSingle()]);if(a.error||b.error||d.error)throw new Error("Erro ao carregar dados financeiros");financials=a.data||[];payments=b.data||[];settings=d.data||{meta_faturamento_brl:120000}}
+function totals(){let contracted=0,received=0;for(const m of financials){contracted+=brl(m.valor_total,m.moeda);for(const p of payments.filter(x=>x.mentorship_id===m.id&&x.paga))received+=brl(p.valor,m.moeda)}return{contracted,received,outstanding:Math.max(0,contracted-received)}}
+async function toggle(id,paid){const{error}=await supabase.from("mentorship_payments").update({paga:paid,data_pagamento:paid?today():null,updated_at:new Date().toISOString()}).eq("id",id);if(error){alert("Não foi possível atualizar a parcela.");return}await load();render()}
+function render(){const t=totals(),goal=Number(settings?.meta_faturamento_brl||120000);$("contracted").textContent=money(t.contracted);$("received").textContent=money(t.received);$("outstanding").textContent=money(t.outstanding);$("count").textContent=financials.length;$("goalText").textContent=money(t.contracted)+" de "+money(goal);$("goalFill").style.width=(goal?Math.min(100,Math.round(t.contracted/goal*100)):0)+"%";$("rate").textContent=rate?"USD/BRL: "+rate.toFixed(4)+" · cotação diária":"USD/BRL indisponível · valores em USD não entram na conversão";$("list").innerHTML="";if(!financials.length){$("list").innerHTML='<div class="empty">Nenhum dado financeiro cadastrado ainda.</div>';return}
+for(const m of financials){const ps=payments.filter(p=>p.mentorship_id===m.id).sort((a,b)=>a.numero_parcela-b.numero_parcela),paid=ps.filter(p=>p.paga).reduce((s,p)=>s+Number(p.valor||0),0),rem=Math.max(0,Number(m.valor_total||0)-paid),open=expanded.has(m.id),card=document.createElement("div");card.className="card";card.innerHTML='<button class="head" type="button"><div><div class="name">'+esc(m.nome)+'</div><div class="meta">'+esc(m.email)+' · '+(m.quantidade_sessoes||0)+' sessões · '+(m.sessoes_concluidas_importadas||0)+' concluídas</div></div><div class="vals"><div><span>Contrato</span><strong>'+money(m.valor_total,m.moeda)+'</strong></div><div><span>Recebido</span><strong>'+money(paid,m.moeda)+'</strong></div><div><span>Saldo</span><strong>'+money(rem,m.moeda)+'</strong></div></div></button>'+(open?'<div class="details">'+(m.observacoes?'<div class="notes">'+esc(m.observacoes)+'</div>':'')+'<div class="payments">'+(ps.length?ps.map(p=>'<div class="payment"><input class="paycheck" data-id="'+p.id+'" type="checkbox" '+(p.paga?'checked':'')+'><div><div class="ptitle">Parcela '+p.numero_parcela+'</div><div class="pdate">Vencimento: '+date(p.vencimento)+(p.paga&&p.data_pagamento?' · Pago em '+date(p.data_pagamento):'')+'</div></div><div class="pvalue">'+money(p.valor,m.moeda)+'</div><div class="pill '+(p.paga?'paid':'pending')+'">'+(p.paga?'Pago':'Pendente')+'</div></div>').join(""):'<div class="empty">Nenhuma parcela cadastrada.</div>')+'</div></div>':'');card.querySelector(".head").onclick=()=>{open?expanded.delete(m.id):expanded.add(m.id);render()};card.querySelectorAll(".paycheck").forEach(cb=>cb.onchange=async()=>{cb.disabled=true;await toggle(Number(cb.dataset.id),cb.checked)});$("list").appendChild(card)}}
+$("logout").onclick=async()=>{await supabase.auth.signOut();location.href="../../login/"};
+(async()=>{if(!await verify())return;try{await Promise.all([load(),fx()]);render();$("loading").classList.add("hidden");$("content").classList.remove("hidden")}catch(e){$("loading").textContent="Não foi possível carregar o financeiro. Verifique se o SQL de estrutura/importação foi executado."}})();
+</script>
+</body>
+</html>
