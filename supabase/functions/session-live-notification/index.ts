@@ -342,14 +342,21 @@ Deno.serve(async (request) => {
         </p>
 
         <a
+          href="${escapeHtml(studentSession.teams_url)}"
+          style="display:inline-block;background:#43e290;color:#04130c;text-decoration:none;font-weight:900;padding:13px 18px;border-radius:10px;margin-right:8px;margin-bottom:8px;"
+        >
+          Entrar na aula no Microsoft Teams
+        </a>
+
+        <a
           href="${STUDENT_AREA_URL}"
-          style="display:inline-block;background:#43e290;color:#04130c;text-decoration:none;font-weight:900;padding:13px 18px;border-radius:10px;"
+          style="display:inline-block;border:1px solid rgba(67,226,144,.35);color:#86efb8;text-decoration:none;font-weight:800;padding:12px 17px;border-radius:10px;margin-bottom:8px;"
         >
           Acessar Área do Aluno
         </a>
 
         <p style="color:#7f8a84;font-size:12px;line-height:1.55;margin:20px 0 0;">
-          Ao entrar na sua sessão, toque em “Entrar na aula ao vivo” para abrir o Microsoft Teams.
+          O botão principal abre diretamente o Microsoft Teams. A Área do Aluno continua disponível para gravações, progresso e demais informações da mentoria.
         </p>
       </div>
     </div>
