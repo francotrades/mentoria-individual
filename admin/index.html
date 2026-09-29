@@ -77,6 +77,11 @@
     }
 
     .page-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 20px;
+
       margin-bottom: 28px;
     }
 
@@ -102,7 +107,20 @@
       line-height: 1.5;
     }
 
-    /* DASHBOARD GERAL */
+    .new-student-button {
+      border: none;
+      border-radius: 9px;
+
+      background: #16c784;
+      color: #04130d;
+
+      padding: 13px 18px;
+
+      font-weight: 800;
+      cursor: pointer;
+
+      white-space: nowrap;
+    }
 
     .stats-grid {
       display: grid;
@@ -126,7 +144,6 @@
 
     .stat-label {
       color: #89939f;
-
       font-size: 12px;
       margin-bottom: 8px;
     }
@@ -140,7 +157,6 @@
       color: #68737f;
 
       font-size: 11px;
-
       margin-top: 7px;
     }
 
@@ -151,8 +167,6 @@
     .orange {
       color: #f59e0b;
     }
-
-    /* PAINÉIS */
 
     .panel {
       background: #10141b;
@@ -168,11 +182,8 @@
     .panel-title {
       font-size: 18px;
       font-weight: 700;
-
       margin-bottom: 20px;
     }
-
-    /* FORM */
 
     .form-grid {
       display: grid;
@@ -229,6 +240,14 @@
       line-height: 1.5;
     }
 
+    .hint {
+      margin-top: 7px;
+
+      color: #68737f;
+      font-size: 11px;
+      line-height: 1.4;
+    }
+
     .button-row {
       display: flex;
       gap: 10px;
@@ -283,7 +302,16 @@
       cursor: not-allowed;
     }
 
-    /* RESUMO DO MENTORADO */
+    .new-student-panel {
+      border-color: rgba(22, 199, 132, 0.35);
+    }
+
+    .new-student-intro {
+      color: #89939f;
+      font-size: 13px;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
 
     .student-summary {
       display: grid;
@@ -308,18 +336,14 @@
     .summary-label {
       color: #89939f;
       font-size: 11px;
-
       margin-bottom: 7px;
     }
 
     .summary-value {
       font-size: 15px;
       font-weight: 700;
-
       overflow-wrap: anywhere;
     }
-
-    /* PROGRESSO */
 
     .student-progress {
       margin-top: 22px;
@@ -338,7 +362,6 @@
       justify-content: space-between;
 
       gap: 20px;
-
       margin-bottom: 10px;
     }
 
@@ -357,7 +380,6 @@
       height: 11px;
 
       border-radius: 999px;
-
       background: #1c2530;
 
       overflow: hidden;
@@ -368,7 +390,6 @@
       width: 0%;
 
       background: #16c784;
-
       transition: width .25s ease;
     }
 
@@ -389,15 +410,12 @@
       background: #0e141c;
 
       border-radius: 9px;
-
       border: 1px solid #202833;
     }
 
     .mini-stat-label {
       color: #7e8995;
-
       font-size: 10px;
-
       margin-bottom: 5px;
     }
 
@@ -408,13 +426,11 @@
 
     .expiration-warning {
       margin-top: 14px;
-
       padding: 11px 13px;
 
       border-radius: 9px;
 
       border: 1px solid rgba(245, 158, 11, .35);
-
       background: rgba(245, 158, 11, .07);
 
       color: #fbbf24;
@@ -422,8 +438,6 @@
       font-size: 12px;
       line-height: 1.5;
     }
-
-    /* SESSÕES */
 
     .session-list {
       display: grid;
@@ -455,7 +469,6 @@
 
       font-size: 11px;
       font-weight: 800;
-
       letter-spacing: .8px;
 
       margin-bottom: 5px;
@@ -468,7 +481,6 @@
 
     .session-item-meta {
       color: #89939f;
-
       font-size: 12px;
       line-height: 1.5;
     }
@@ -484,7 +496,6 @@
       padding: 9px 13px;
 
       cursor: pointer;
-
       white-space: nowrap;
 
       font-weight: 700;
@@ -494,7 +505,6 @@
       display: inline-block;
 
       padding: 4px 8px;
-
       border-radius: 999px;
 
       font-size: 10px;
@@ -536,13 +546,10 @@
       cursor: pointer;
     }
 
-    /* MENSAGENS */
-
     .message {
       display: none;
 
       padding: 13px 15px;
-
       border-radius: 10px;
 
       margin-bottom: 20px;
@@ -570,9 +577,7 @@
 
     .loading {
       padding: 90px 20px;
-
       text-align: center;
-
       color: #89939f;
     }
 
@@ -587,36 +592,32 @@
       padding: 18px;
 
       color: #89939f;
-
       font-size: 13px;
     }
 
-    .hint {
-      margin-top: 7px;
-
-      color: #68737f;
-
-      font-size: 11px;
-      line-height: 1.4;
-    }
-
     @media (max-width: 900px) {
-
       .stats-grid,
       .student-summary {
         grid-template-columns:
           repeat(2, minmax(0, 1fr));
       }
-
     }
 
     @media (max-width: 700px) {
-
       .stats-grid,
       .student-summary,
       .form-grid,
       .mini-stats {
         grid-template-columns: 1fr;
+      }
+
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .new-student-button {
+        width: 100%;
       }
 
       .session-item {
@@ -639,7 +640,6 @@
       .area-button {
         display: none;
       }
-
     }
   </style>
 </head>
@@ -696,18 +696,156 @@
 
     <section class="page-header">
 
-      <div class="eyebrow">
-        FrancoTrades
+      <div>
+
+        <div class="eyebrow">
+          FrancoTrades
+        </div>
+
+        <h1>
+          Painel do Mentor
+        </h1>
+
+        <p>
+          Gerencie mentorados, sessões, gravações,
+          acesso e progresso em um único lugar.
+        </p>
+
       </div>
 
-      <h1>
-        Painel do Mentor
-      </h1>
 
-      <p>
-        Gerencie mentorados, sessões, gravações,
-        acesso e progresso em um único lugar.
+      <button
+        id="openNewStudentButton"
+        class="new-student-button"
+      >
+        + Novo mentorado
+      </button>
+
+    </section>
+
+
+    <!-- NOVO MENTORADO -->
+
+    <section
+      id="newStudentPanel"
+      class="panel new-student-panel hidden"
+    >
+
+      <div class="panel-title">
+        Novo mentorado
+      </div>
+
+      <p class="new-student-intro">
+        O aluno receberá um convite por e-mail para criar a própria senha.
+        Depois disso, poderá acessar normalmente a Área do Aluno.
       </p>
+
+
+      <div class="form-grid">
+
+        <div class="field">
+
+          <label for="newStudentName">
+            Nome
+          </label>
+
+          <input
+            id="newStudentName"
+            type="text"
+            placeholder="Nome do mentorado"
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="newStudentEmail">
+            E-mail
+          </label>
+
+          <input
+            id="newStudentEmail"
+            type="email"
+            placeholder="aluno@email.com"
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="newStudentStart">
+            Início da mentoria
+          </label>
+
+          <input
+            id="newStudentStart"
+            type="date"
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="newStudentEnd">
+            Acesso até
+          </label>
+
+          <input
+            id="newStudentEnd"
+            type="date"
+          >
+
+          <div class="hint">
+            Calculado automaticamente como 365 dias após o início.
+          </div>
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="newStudentSessions">
+            Quantidade de sessões
+          </label>
+
+          <select id="newStudentSessions">
+
+            <option value="12">
+              12 sessões
+            </option>
+
+            <option value="13">
+              13 sessões
+            </option>
+
+          </select>
+
+        </div>
+
+      </div>
+
+
+      <div class="button-row">
+
+        <button
+          id="createStudentButton"
+          class="primary-button"
+        >
+          Criar mentorado e enviar convite
+        </button>
+
+
+        <button
+          id="cancelNewStudentButton"
+          class="secondary-button"
+        >
+          Cancelar
+        </button>
+
+      </div>
 
     </section>
 
@@ -897,8 +1035,6 @@
         </div>
 
 
-        <!-- PROGRESSO -->
-
         <div class="student-progress">
 
           <div class="progress-top">
@@ -986,8 +1122,6 @@
 
         </div>
 
-
-        <!-- EDIÇÃO DO ALUNO -->
 
         <div
           class="form-grid"
@@ -1111,7 +1245,7 @@
     </section>
 
 
-    <!-- EDITOR DE SESSÃO -->
+    <!-- EDITOR -->
 
     <section
       id="sessionEditor"
@@ -1127,7 +1261,6 @@
 
 
       <div class="form-grid">
-
 
         <div class="field">
 
@@ -1181,11 +1314,6 @@
             placeholder="https://youtu.be/..."
           >
 
-          <div class="hint">
-            O aluno será direcionado ao YouTube e precisará usar
-            a conta Google autorizada por você no vídeo privado.
-          </div>
-
         </div>
 
 
@@ -1197,7 +1325,6 @@
 
           <textarea
             id="sessionNotes"
-            placeholder="Resumo do que foi trabalhado nesta sessão..."
           ></textarea>
 
         </div>
@@ -1288,6 +1415,34 @@ const $ =
 const loading = $("loading");
 const adminContent = $("adminContent");
 const message = $("message");
+
+const openNewStudentButton =
+  $("openNewStudentButton");
+
+const newStudentPanel =
+  $("newStudentPanel");
+
+const newStudentName =
+  $("newStudentName");
+
+const newStudentEmail =
+  $("newStudentEmail");
+
+const newStudentStart =
+  $("newStudentStart");
+
+const newStudentEnd =
+  $("newStudentEnd");
+
+const newStudentSessions =
+  $("newStudentSessions");
+
+const createStudentButton =
+  $("createStudentButton");
+
+const cancelNewStudentButton =
+  $("cancelNewStudentButton");
+
 
 const activeStudentsStat =
   $("activeStudentsStat");
@@ -1421,7 +1576,9 @@ let studentProgress = [];
 let editingStudentSessionId = null;
 
 
-/* UTILIDADES */
+/* ==========================
+   UTILIDADES
+========================== */
 
 function showMessage(
   text,
@@ -1451,7 +1608,7 @@ function showMessage(
         "message";
 
     },
-    4000
+    5000
   );
 
 }
@@ -1470,6 +1627,78 @@ function formatDate(
     value + "T12:00:00"
   ).toLocaleDateString(
     "pt-BR"
+  );
+
+}
+
+
+function dateToISO(
+  date
+) {
+
+  const year =
+    date.getFullYear();
+
+
+  const month =
+    String(
+      date.getMonth() + 1
+    ).padStart(
+      2,
+      "0"
+    );
+
+
+  const day =
+    String(
+      date.getDate()
+    ).padStart(
+      2,
+      "0"
+    );
+
+
+  return `${year}-${month}-${day}`;
+
+}
+
+
+function add365Days(
+  dateString
+) {
+
+  if (!dateString) {
+    return "";
+  }
+
+
+  const [
+    year,
+    month,
+    day
+  ] =
+    dateString
+      .split("-")
+      .map(Number);
+
+
+  const date =
+    new Date(
+      year,
+      month - 1,
+      day,
+      12
+    );
+
+
+  date.setDate(
+    date.getDate() +
+    365
+  );
+
+
+  return dateToISO(
+    date
   );
 
 }
@@ -1508,12 +1737,7 @@ function daysUntil(
       date.getTime() -
       today.getTime()
     ) /
-    (
-      1000 *
-      60 *
-      60 *
-      24
-    )
+    86400000
   );
 
 }
@@ -1542,7 +1766,9 @@ function escapeHTML(
 }
 
 
-/* SEGURANÇA */
+/* ==========================
+   ADMIN
+========================== */
 
 async function verifyAdmin() {
 
@@ -1606,7 +1832,272 @@ async function verifyAdmin() {
 }
 
 
-/* CARREGAMENTO GERAL */
+/* ==========================
+   NOVO MENTORADO
+========================== */
+
+function prepareNewStudentForm() {
+
+  const today =
+    new Date();
+
+
+  const todayISO =
+    dateToISO(
+      today
+    );
+
+
+  newStudentName.value =
+    "";
+
+  newStudentEmail.value =
+    "";
+
+  newStudentStart.value =
+    todayISO;
+
+  newStudentEnd.value =
+    add365Days(
+      todayISO
+    );
+
+  newStudentSessions.value =
+    "12";
+
+}
+
+
+openNewStudentButton
+  .addEventListener(
+    "click",
+    () => {
+
+      prepareNewStudentForm();
+
+
+      newStudentPanel.classList
+        .remove("hidden");
+
+
+      newStudentPanel.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+
+    }
+  );
+
+
+cancelNewStudentButton
+  .addEventListener(
+    "click",
+    () => {
+
+      newStudentPanel.classList
+        .add("hidden");
+
+    }
+  );
+
+
+newStudentStart
+  .addEventListener(
+    "change",
+    () => {
+
+      newStudentEnd.value =
+        add365Days(
+          newStudentStart.value
+        );
+
+    }
+  );
+
+
+createStudentButton
+  .addEventListener(
+    "click",
+    async () => {
+
+      const nome =
+        newStudentName.value
+          .trim();
+
+
+      const email =
+        newStudentEmail.value
+          .trim()
+          .toLowerCase();
+
+
+      const dataInicio =
+        newStudentStart.value;
+
+
+      const dataExpiracao =
+        newStudentEnd.value;
+
+
+      const numeroSessoes =
+        Number(
+          newStudentSessions.value
+        );
+
+
+      if (!nome) {
+
+        showMessage(
+          "Informe o nome do mentorado.",
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      if (
+        !email ||
+        !email.includes("@")
+      ) {
+
+        showMessage(
+          "Informe um e-mail válido.",
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      if (
+        !dataInicio ||
+        !dataExpiracao
+      ) {
+
+        showMessage(
+          "Informe as datas da mentoria.",
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      createStudentButton.disabled =
+        true;
+
+
+      createStudentButton.textContent =
+        "CRIANDO E ENVIANDO CONVITE...";
+
+
+      const {
+        data,
+        error
+      } =
+        await supabase.functions
+          .invoke(
+            "create-student",
+            {
+              body: {
+
+                nome,
+
+                email,
+
+                data_inicio:
+                  dataInicio,
+
+                data_expiracao:
+                  dataExpiracao,
+
+                numero_sessoes:
+                  numeroSessoes
+
+              }
+            }
+          );
+
+
+      createStudentButton.disabled =
+        false;
+
+
+      createStudentButton.textContent =
+        "Criar mentorado e enviar convite";
+
+
+      if (error) {
+
+        console.error(
+          error
+        );
+
+
+        showMessage(
+          "Não foi possível chamar o serviço de criação do mentorado.",
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      if (
+        !data?.success
+      ) {
+
+        showMessage(
+          data?.error ||
+          "Não foi possível criar o mentorado.",
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      showMessage(
+        "Mentorado criado e convite enviado por e-mail."
+      );
+
+
+      newStudentPanel.classList
+        .add("hidden");
+
+
+      await refreshData();
+
+
+      const createdId =
+        data.student?.id;
+
+
+      if (createdId) {
+
+        studentSelect.value =
+          createdId;
+
+
+        await selectStudent(
+          createdId
+        );
+
+      }
+
+    }
+  );
+
+
+/* ==========================
+   CARREGAMENTO
+========================== */
 
 async function loadBaseData() {
 
@@ -1723,12 +2214,31 @@ async function loadBaseData() {
 }
 
 
-/* ESTATÍSTICAS GERAIS */
+/* ==========================
+   ESTATÍSTICAS
+========================== */
 
 function renderGlobalStats() {
 
-  const activeStudents =
+  const actualStudents =
     profiles.filter(
+      profile =>
+        profile.role ===
+        "aluno"
+    );
+
+
+  const studentIds =
+    new Set(
+      actualStudents.map(
+        student =>
+          student.id
+      )
+    );
+
+
+  const activeStudents =
+    actualStudents.filter(
       profile =>
         profile.status ===
         "ativo"
@@ -1738,14 +2248,19 @@ function renderGlobalStats() {
   const completedSessions =
     allProgress.filter(
       progress =>
-        progress.concluida ===
-        true
+        progress.concluida === true &&
+        studentIds.has(
+          progress.student_id
+        )
     ).length;
 
 
   const recordings =
     allStudentSessions.filter(
       session =>
+        studentIds.has(
+          session.student_id
+        ) &&
         Boolean(
           session.youtube_url
         )
@@ -1753,7 +2268,7 @@ function renderGlobalStats() {
 
 
   const expiring =
-    profiles.filter(
+    actualStudents.filter(
       profile => {
 
         if (
@@ -1798,7 +2313,9 @@ function renderGlobalStats() {
 }
 
 
-/* LISTA DE ALUNOS */
+/* ==========================
+   LISTA DE PERFIS
+========================== */
 
 function renderStudentSelect() {
 
@@ -1830,7 +2347,11 @@ function renderStudentSelect() {
 
 
     option.textContent =
-      `${name} — ${profile.email}`;
+      profile.role === "admin"
+        ?
+        `${name} — ${profile.email} (ADMIN/TESTE)`
+        :
+        `${name} — ${profile.email}`;
 
 
     studentSelect
@@ -1843,7 +2364,9 @@ function renderStudentSelect() {
 }
 
 
-/* SELEÇÃO DO ALUNO */
+/* ==========================
+   SELEÇÃO DO ALUNO
+========================== */
 
 async function selectStudent(
   studentId
@@ -1965,7 +2488,9 @@ function renderStudentData() {
 }
 
 
-/* PROGRESSO */
+/* ==========================
+   PROGRESSO
+========================== */
 
 function renderStudentProgress() {
 
@@ -2084,7 +2609,9 @@ function renderStudentProgress() {
 }
 
 
-/* LISTA DE SESSÕES */
+/* ==========================
+   SESSÕES
+========================== */
 
 function renderStudentSessions() {
 
@@ -2276,7 +2803,9 @@ function renderStudentSessions() {
 }
 
 
-/* EDIÇÃO DO ALUNO */
+/* ==========================
+   SALVAR ALUNO
+========================== */
 
 async function saveStudent() {
 
@@ -2371,7 +2900,25 @@ async function saveStudent() {
 }
 
 
-/* NOVA SESSÃO */
+/* ==========================
+   NOVA SESSÃO
+========================== */
+
+function clearSessionForm() {
+
+  sessionDate.value = "";
+
+  sessionCustomTitle.value = "";
+
+  youtubeUrl.value = "";
+
+  sessionNotes.value = "";
+
+  sessionReleased.checked =
+    true;
+
+}
+
 
 function openNewSession() {
 
@@ -2477,23 +3024,9 @@ function openNewSession() {
 }
 
 
-function clearSessionForm() {
-
-  sessionDate.value = "";
-
-  sessionCustomTitle.value = "";
-
-  youtubeUrl.value = "";
-
-  sessionNotes.value = "";
-
-  sessionReleased.checked =
-    true;
-
-}
-
-
-/* EDITAR SESSÃO */
+/* ==========================
+   EDITAR SESSÃO
+========================== */
 
 function openExistingSession(
   studentSessionId
@@ -2600,7 +3133,9 @@ function openExistingSession(
 }
 
 
-/* SALVAR SESSÃO */
+/* ==========================
+   SALVAR SESSÃO
+========================== */
 
 async function saveSession() {
 
@@ -2744,7 +3279,9 @@ async function saveSession() {
 }
 
 
-/* REMOVER SESSÃO */
+/* ==========================
+   EXCLUIR SESSÃO
+========================== */
 
 async function deleteSession() {
 
@@ -2822,7 +3359,9 @@ async function deleteSession() {
 }
 
 
-/* ATUALIZA DADOS */
+/* ==========================
+   REFRESH
+========================== */
 
 async function refreshData() {
 
@@ -2849,7 +3388,9 @@ async function refreshData() {
 }
 
 
-/* EVENTOS */
+/* ==========================
+   EVENTOS
+========================== */
 
 studentSelect
   .addEventListener(
@@ -2920,7 +3461,9 @@ logoutButton
   );
 
 
-/* INICIALIZAÇÃO */
+/* ==========================
+   INICIALIZAÇÃO
+========================== */
 
 async function init() {
 
