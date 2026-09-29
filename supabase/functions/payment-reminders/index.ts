@@ -99,8 +99,8 @@ function reminderCopy(
 
   if (type === "5_days_before") {
     return {
-      subject: `Lembrete de pagamento — parcela ${installment}`,
-      headline: "Sua próxima parcela vence em 5 dias",
+      subject: `Lembrete da sua mentoria — parcela ${installment}`,
+      headline: "Lembrete da sua próxima parcela",
       intro:
         `${safeName}, passando para lembrar que a parcela ${installment} da sua mentoria vence em ${dueDate}.`,
       detail:
@@ -110,10 +110,10 @@ function reminderCopy(
 
   if (type === "1_day_before") {
     return {
-      subject: `Sua parcela ${installment} vence amanhã`,
-      headline: "Lembrete: vencimento amanhã",
+      subject: `Lembrete da sua mentoria — parcela ${installment}`,
+      headline: "Lembrete de vencimento",
       intro:
-        `${safeName}, sua parcela ${installment} da mentoria vence amanhã, ${dueDate}.`,
+        `${safeName}, passando para lembrar que a parcela ${installment} da sua mentoria vence amanhã, ${dueDate}.`,
       detail:
         `Valor da parcela: ${amount}.`,
     };
@@ -121,22 +121,22 @@ function reminderCopy(
 
   if (type === "due_today") {
     return {
-      subject: `Parcela ${installment} vence hoje`,
-      headline: "Sua parcela vence hoje",
+      subject: `Lembrete da sua mentoria — parcela ${installment}`,
+      headline: "Lembrete de vencimento",
       intro:
-        `${safeName}, a parcela ${installment} da sua mentoria vence hoje.`,
+        `${safeName}, passando para lembrar que a parcela ${installment} da sua mentoria vence hoje.`,
       detail:
         `Valor da parcela: ${amount}.`,
     };
   }
 
   return {
-    subject: `Parcela ${installment} pendente — Franco Trades`,
-    headline: "Pagamento pendente",
+    subject: `Lembrete sobre sua parcela ${installment} — Franco Trades`,
+    headline: "Lembrete de pagamento",
     intro:
-      `${safeName}, identificamos que a parcela ${installment}, com vencimento em ${dueDate}, continua marcada como pendente.`,
+      `${safeName}, passando apenas para lembrar que a parcela ${installment} da sua mentoria tinha vencimento em ${dueDate}.`,
     detail:
-      `Valor da parcela: ${amount}.`,
+      `Valor da parcela: ${amount}. Se o pagamento já tiver sido realizado, pode desconsiderar esta mensagem.`,
   };
 }
 
@@ -180,7 +180,7 @@ function emailHtml(
 
         <p style="color:#7f8a84;font-size:12px;line-height:1.6;margin:22px 0 0;">
           A chave PIX, o QR Code e o PIX Copia e Cola estão disponíveis na sua Área do Aluno.
-          Caso o pagamento já tenha sido realizado recentemente, desconsidere este lembrete.
+          Esta mensagem é apenas um lembrete automático. Caso o pagamento já tenha sido realizado, pode desconsiderá-la.
         </p>
       </div>
 
