@@ -1310,6 +1310,51 @@
       }
     }
 
+  
+    /* ==========================================
+       CADASTRO FINANCEIRO — ADMIN V7
+    ========================================== */
+
+    .financial-create-group {
+      grid-column: 1 / -1;
+      margin-top: 4px;
+      padding: 18px;
+      border-radius: 12px;
+      border: 1px solid rgba(67,226,144,.14);
+      background: rgba(67,226,144,.025);
+    }
+
+    .financial-create-title {
+      font-size: 13px;
+      font-weight: 900;
+      margin-bottom: 4px;
+    }
+
+    .financial-create-description {
+      color: var(--ft-muted);
+      font-size: 11px;
+      line-height: 1.5;
+      margin-bottom: 15px;
+    }
+
+    .financial-create-grid {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr .8fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 850px) {
+      .financial-create-grid {
+        grid-template-columns: repeat(2, minmax(0,1fr));
+      }
+    }
+
+    @media (max-width: 560px) {
+      .financial-create-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
   </style>
 </head>
 
@@ -1499,6 +1544,92 @@
 
         </div>
 
+
+        <div class="financial-create-group">
+
+          <div class="financial-create-title">
+            Financeiro da mentoria
+          </div>
+
+          <div class="financial-create-description">
+            O contrato e as parcelas serão criados automaticamente junto com o mentorado.
+          </div>
+
+
+          <div class="financial-create-grid">
+
+            <div class="field">
+
+              <label for="newStudentFee">
+                Valor total
+              </label>
+
+              <input
+                id="newStudentFee"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="Ex.: 12000"
+              >
+
+            </div>
+
+
+            <div class="field">
+
+              <label for="newStudentCurrency">
+                Moeda
+              </label>
+
+              <select id="newStudentCurrency">
+                <option value="BRL">BRL — Real</option>
+                <option value="USD">USD — Dólar</option>
+              </select>
+
+            </div>
+
+
+            <div class="field">
+
+              <label for="newStudentInstallments">
+                Parcelas
+              </label>
+
+              <select id="newStudentInstallments">
+                <option value="1">1 parcela</option>
+                <option value="2">2 parcelas</option>
+                <option value="3">3 parcelas</option>
+                <option value="4" selected>4 parcelas</option>
+                <option value="5">5 parcelas</option>
+                <option value="6">6 parcelas</option>
+                <option value="7">7 parcelas</option>
+                <option value="8">8 parcelas</option>
+                <option value="9">9 parcelas</option>
+                <option value="10">10 parcelas</option>
+                <option value="11">11 parcelas</option>
+                <option value="12">12 parcelas</option>
+              </select>
+
+            </div>
+
+
+            <div class="field">
+
+              <label for="newStudentFirstDue">
+                1º vencimento
+              </label>
+
+              <input
+                id="newStudentFirstDue"
+                type="date"
+              >
+
+            </div>
+
+          </div>
+
+        </div>
+
       </div>
 
 
@@ -1508,7 +1639,7 @@
           id="createStudentButton"
           class="primary-button"
         >
-          Criar mentorado e enviar convite
+          Criar mentorado, financeiro e enviar convite
         </button>
 
 
@@ -2207,6 +2338,18 @@ const newStudentEnd =
 const newStudentSessions =
   $("newStudentSessions");
 
+const newStudentFee =
+  $("newStudentFee");
+
+const newStudentCurrency =
+  $("newStudentCurrency");
+
+const newStudentInstallments =
+  $("newStudentInstallments");
+
+const newStudentFirstDue =
+  $("newStudentFirstDue");
+
 const createStudentButton =
   $("createStudentButton");
 
@@ -2622,6 +2765,77 @@ function add365Days(
 }
 
 
+function addMonthsISO(
+  dateString,
+  monthsToAdd
+) {
+
+  if (!dateString) {
+    return "";
+  }
+
+
+  const [
+    year,
+    month,
+    day
+  ] =
+    dateString
+      .split("-")
+      .map(Number);
+
+
+  const targetMonthIndex =
+    month - 1 +
+    monthsToAdd;
+
+
+  const targetYear =
+    year +
+    Math.floor(
+      targetMonthIndex /
+      12
+    );
+
+
+  const normalizedMonth =
+    (
+      (
+        targetMonthIndex %
+        12
+      ) +
+      12
+    ) %
+    12;
+
+
+  const lastDay =
+    new Date(
+      targetYear,
+      normalizedMonth + 1,
+      0
+    ).getDate();
+
+
+  const safeDay =
+    Math.min(
+      day,
+      lastDay
+    );
+
+
+  return dateToISO(
+    new Date(
+      targetYear,
+      normalizedMonth,
+      safeDay,
+      12
+    )
+  );
+
+}
+
+
 function daysUntil(
   dateValue
 ) {
@@ -2772,6 +2986,22 @@ function prepareNewStudentForm() {
   newStudentSessions.value =
     "12";
 
+
+  newStudentFee.value =
+    "";
+
+
+  newStudentCurrency.value =
+    "BRL";
+
+
+  newStudentInstallments.value =
+    "4";
+
+
+  newStudentFirstDue.value =
+    todayISO;
+
 }
 
 
@@ -2850,6 +3080,26 @@ createStudentButton
         );
 
 
+      const valorMentoria =
+        Number(
+          newStudentFee.value
+        );
+
+
+      const moedaMentoria =
+        newStudentCurrency.value;
+
+
+      const numeroParcelas =
+        Number(
+          newStudentInstallments.value
+        );
+
+
+      const primeiroVencimento =
+        newStudentFirstDue.value;
+
+
       if (!nome) {
 
         showMessage(
@@ -2877,12 +3127,56 @@ createStudentButton
       }
 
 
+      if (
+        !Number.isFinite(
+          valorMentoria
+        ) ||
+        valorMentoria <= 0
+      ) {
+
+        showMessage(
+          "Informe o valor total da mentoria.",
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      if (
+        !numeroParcelas ||
+        numeroParcelas < 1
+      ) {
+
+        showMessage(
+          "Informe a quantidade de parcelas.",
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      if (!primeiroVencimento) {
+
+        showMessage(
+          "Informe o vencimento da primeira parcela.",
+          "error"
+        );
+
+        return;
+
+      }
+
+
       createStudentButton.disabled =
         true;
 
 
       createStudentButton.textContent =
-        "CRIANDO E ENVIANDO CONVITE...";
+        "CRIANDO MENTORADO E FINANCEIRO...";
 
 
       /* =========================================
@@ -2959,7 +3253,7 @@ createStudentButton
 
 
       createStudentButton.textContent =
-        "Criar mentorado e enviar convite";
+        "Criar mentorado, financeiro e enviar convite";
 
 
       if (error) {
@@ -2995,8 +3289,209 @@ createStudentButton
       }
 
 
+      const createdId =
+        data.student?.id;
+
+
+      const {
+        data: financialRecord,
+        error: financialError
+      } =
+        await supabase
+          .from(
+            "mentorship_financials"
+          )
+          .upsert(
+            {
+              profile_id:
+                createdId ||
+                null,
+
+              nome,
+
+              email,
+
+              valor_total:
+                valorMentoria,
+
+              moeda:
+                moedaMentoria,
+
+              observacoes:
+                `${numeroSessoes} sessões`,
+
+              quantidade_sessoes:
+                numeroSessoes,
+
+              sessoes_concluidas_importadas:
+                0,
+
+              origem:
+                "painel-admin"
+            },
+            {
+              onConflict:
+                "email"
+            }
+          )
+          .select(
+            "id"
+          )
+          .single();
+
+
+      let financeWarning =
+        "";
+
+
+      if (
+        financialError ||
+        !financialRecord
+      ) {
+
+        console.error(
+          "Erro ao criar financeiro:",
+          financialError
+        );
+
+
+        financeWarning =
+          " O mentorado foi criado, mas houve erro ao cadastrar o financeiro.";
+
+      }
+
+      else {
+
+        await supabase
+          .from(
+            "mentorship_payments"
+          )
+          .delete()
+          .eq(
+            "mentorship_id",
+            financialRecord.id
+          );
+
+
+        const baseAmount =
+          Math.floor(
+            (
+              valorMentoria /
+              numeroParcelas
+            ) *
+            100
+          ) /
+          100;
+
+
+        const paymentRows =
+          [];
+
+
+        let allocated =
+          0;
+
+
+        for (
+          let index = 0;
+          index < numeroParcelas;
+          index++
+        ) {
+
+          const isLast =
+            index ===
+            numeroParcelas - 1;
+
+
+          const amount =
+            isLast
+              ?
+              Number(
+                (
+                  valorMentoria -
+                  allocated
+                ).toFixed(2)
+              )
+              :
+              baseAmount;
+
+
+          allocated =
+            Number(
+              (
+                allocated +
+                amount
+              ).toFixed(2)
+            );
+
+
+          paymentRows.push({
+            mentorship_id:
+              financialRecord.id,
+
+            numero_parcela:
+              index + 1,
+
+            valor:
+              amount,
+
+            vencimento:
+              addMonthsISO(
+                primeiroVencimento,
+                index
+              ),
+
+            paga:
+              false,
+
+            data_pagamento:
+              null
+          });
+
+        }
+
+
+        const {
+          error:
+            paymentsError
+        } =
+          await supabase
+            .from(
+              "mentorship_payments"
+            )
+            .insert(
+              paymentRows
+            );
+
+
+        if (paymentsError) {
+
+          console.error(
+            "Erro ao criar parcelas:",
+            paymentsError
+          );
+
+
+          financeWarning =
+            " O contrato foi criado, mas houve erro ao gerar as parcelas.";
+
+        }
+
+      }
+
+
       showMessage(
-        "Mentorado criado e convite enviado por e-mail."
+        financeWarning
+          ?
+          "Mentorado criado e convite enviado." +
+          financeWarning
+          :
+          "Mentorado, financeiro e parcelas criados. Convite enviado por e-mail.",
+        financeWarning
+          ?
+          "error"
+          :
+          "success"
       );
 
 
