@@ -2147,6 +2147,35 @@ function buildPixPayload({
 }
 
 
+function localDateISO(
+  date
+) {
+
+  const year =
+    date.getFullYear();
+
+  const month =
+    String(
+      date.getMonth() + 1
+    ).padStart(
+      2,
+      "0"
+    );
+
+  const day =
+    String(
+      date.getDate()
+    ).padStart(
+      2,
+      "0"
+    );
+
+
+  return `${year}-${month}-${day}`;
+
+}
+
+
 async function loadPaymentArea() {
 
   if (!currentUser) {
@@ -2336,12 +2365,46 @@ async function loadPaymentArea() {
       );
 
 
-    paymentStatusText.textContent =
-      pending.vencimento
-        ?
-        `Vence em ${formatDate(pending.vencimento)}`
-        :
+    if (pending.vencimento) {
+
+      const dueDays =
+        Math.round(
+          (
+            new Date(
+              pending.vencimento +
+              "T12:00:00"
+            ).getTime() -
+            new Date(
+              localDateISO(
+                new Date()
+              ) +
+              "T12:00:00"
+            ).getTime()
+          ) /
+          86400000
+        );
+
+
+      paymentStatusText.textContent =
+        dueDays < 0
+          ?
+          `Vencida em ${formatDate(pending.vencimento)}`
+          :
+          (
+            dueDays === 0
+              ?
+              "Vence hoje"
+              :
+              `Vence em ${formatDate(pending.vencimento)}`
+          );
+
+    }
+    else {
+
+      paymentStatusText.textContent =
         "Pagamento pendente";
+
+    }
 
 
     pixName.textContent =
@@ -2449,15 +2512,12 @@ function calculateDaysRemaining(
     );
 
 
-  return Math.max(
-    0,
-    Math.round(
-      (
-        expiration.getTime() -
-        today.getTime()
-      ) /
-      86400000
-    )
+  return Math.round(
+    (
+      expiration.getTime() -
+      today.getTime()
+    ) /
+    86400000
   );
 
 }
@@ -2683,6 +2743,41 @@ function updateNextSession() {
 
 
   if (
+    isLiveLinkAvailable(
+      next
+    )
+  ) {
+
+    nextDescription.textContent =
+      next.data_sessao
+        ?
+        (
+          "Aula ao vivo disponível para " +
+          formatDate(
+            next.data_sessao
+          ) +
+          (
+            next.session_time
+              ?
+              " às " +
+              String(
+                next.session_time
+              ).slice(0, 5)
+              :
+              ""
+          ) +
+          "."
+        )
+        :
+        "O link da sua próxima aula ao vivo já está disponível.";
+
+
+    nextBadge.textContent =
+      "Aula ao vivo";
+
+  }
+
+  else if (
     next.youtube_url
   ) {
 
@@ -3307,7 +3402,7 @@ async function loadDashboard() {
 
   if (
     daysRemaining !== null &&
-    daysRemaining <= 0
+    daysRemaining < 0
   ) {
 
     await supabase.auth
