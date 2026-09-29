@@ -10,16 +10,16 @@
     <style>
         :root {
             --bg-deep:    #06080d;
-            --bg-card:    #0b1020;
-            --bg-mid:     #0e1428;
-            --cyan:       #3af0ff;
-            --blue:       #5b9fff;
-            --blue-dark:  #2b6fd4;
-            --white:      #eaf4ff;
-            --muted:      #5a7aa0;
-            --border:     rgba(58,240,255,0.15);
-            --glow-cyan:  0 0 28px rgba(58,240,255,0.55);
-            --glow-blue:  0 0 28px rgba(91,159,255,0.55);
+            --bg-card:    #0c110e;
+            --bg-mid:     #101713;
+            --cyan:       #43e290;
+            --blue:       #25c978;
+            --blue-dark:  #15945a;
+            --white:      #f5f7f6;
+            --muted:      #8f9a94;
+            --border:     rgba(67,226,144,0.15);
+            --glow-cyan:  0 0 28px rgba(67,226,144,0.55);
+            --glow-blue:  0 0 28px rgba(37,201,120,0.55);
         }
         * { margin:0; padding:0; box-sizing:border-box; }
         html { scroll-behavior: smooth; }
@@ -73,6 +73,36 @@
         }
         .navbar .nav-cta:hover { background: var(--cyan); color: #06080d !important; box-shadow: var(--glow-cyan); }
 
+        .navbar .nav-login {
+            border: 1px solid rgba(67,226,144,.30);
+            color: var(--cyan) !important;
+            padding: 8px 14px;
+            border-radius: 5px;
+            font-weight: 700;
+            background: rgba(67,226,144,.04);
+        }
+        .navbar .nav-login:hover {
+            background: rgba(67,226,144,.10);
+            border-color: rgba(67,226,144,.55);
+            color: #8cf0ba !important;
+        }
+
+        .student-access-final {
+            margin-top: 22px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+        .student-access-final a {
+            color: var(--cyan);
+            font-weight: 700;
+            text-decoration: none;
+            border-bottom: 1px solid rgba(67,226,144,.25);
+        }
+        .student-access-final a:hover {
+            color: #8cf0ba;
+            border-bottom-color: rgba(67,226,144,.60);
+        }
+
         /* ─── HERO ───────────────────────────────── */
         .hero {
             min-height: 100vh;
@@ -118,8 +148,8 @@
             to   { text-shadow: 0 0 60px rgba(255,255,255,0.22); }
         }
         @keyframes glowCyan {
-            from { text-shadow: 0 0 20px rgba(58,240,255,0.35); }
-            to   { text-shadow: 0 0 60px rgba(58,240,255,0.85); }
+            from { text-shadow: 0 0 20px rgba(67,226,144,0.35); }
+            to   { text-shadow: 0 0 60px rgba(67,226,144,0.85); }
         }
         .hero-sub {
             font-size: clamp(16px, 2.2vw, 19px);
@@ -136,8 +166,8 @@
             display: inline-flex;
             align-items: center;
             gap: 10px;
-            background: rgba(58,240,255,0.06);
-            border: 1px solid rgba(58,240,255,0.2);
+            background: rgba(67,226,144,0.06);
+            border: 1px solid rgba(67,226,144,0.2);
             border-radius: 100px;
             padding: 8px 20px;
             font-size: 13px;
@@ -150,8 +180,8 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: rgba(91,159,255,0.1);
-            border: 1px solid rgba(91,159,255,0.3);
+            background: rgba(37,201,120,0.1);
+            border: 1px solid rgba(37,201,120,0.3);
             color: var(--blue);
             font-size: 13px;
             font-weight: 600;
@@ -163,7 +193,7 @@
             transition: all 0.3s;
             cursor: pointer;
         }
-        .badge-bonus:hover { background: rgba(91,159,255,0.2); box-shadow: var(--glow-blue); }
+        .badge-bonus:hover { background: rgba(37,201,120,0.2); box-shadow: var(--glow-blue); }
 
         /* Botões */
         .btn {
@@ -183,16 +213,16 @@
         .btn-primary {
             background: linear-gradient(135deg, var(--cyan), var(--blue));
             color: #06080d;
-            box-shadow: 0 4px 24px rgba(58,240,255,0.35);
+            box-shadow: 0 4px 24px rgba(67,226,144,0.35);
         }
         .btn-primary:hover {
             transform: translateY(-3px);
-            box-shadow: 0 8px 40px rgba(58,240,255,0.65);
+            box-shadow: 0 8px 40px rgba(67,226,144,0.65);
         }
         .btn-pulse { animation: btnPulse 2.2s infinite; }
         @keyframes btnPulse {
-            0%,100% { box-shadow: 0 4px 24px rgba(58,240,255,0.35); }
-            50%      { box-shadow: 0 4px 50px rgba(58,240,255,0.8); }
+            0%,100% { box-shadow: 0 4px 24px rgba(67,226,144,0.35); }
+            50%      { box-shadow: 0 4px 50px rgba(67,226,144,0.8); }
         }
 
         /* ─── STATS BAR ──────────────────────────── */
@@ -309,7 +339,7 @@
             font-size: 16px;
             transition: border-color 0.3s, box-shadow 0.3s;
         }
-        .check-list li:hover { border-color: var(--cyan); box-shadow: 0 0 16px rgba(58,240,255,0.08); }
+        .check-list li:hover { border-color: var(--cyan); box-shadow: 0 0 16px rgba(67,226,144,0.08); }
         .check-list li .icon { color: var(--cyan); font-size: 15px; flex-shrink: 0; margin-top: 3px; }
 
         /* ─── STEPS GRID ─────────────────────────── */
@@ -337,7 +367,7 @@
             opacity: 0;
             transition: opacity 0.3s;
         }
-        .step-card:hover { border-color: rgba(58,240,255,0.3); transform: translateY(-4px); }
+        .step-card:hover { border-color: rgba(67,226,144,0.3); transform: translateY(-4px); }
         .step-card:hover::after { opacity: 1; }
         .step-num { font-family: 'Orbitron', monospace; font-size: 10px; color: var(--cyan); letter-spacing: 3px; margin-bottom: 12px; }
         .step-card h3 { font-size: 16px; font-weight: 700; color: var(--white); margin-bottom: 8px; }
@@ -347,8 +377,8 @@
         .quote-block {
             max-width: 760px;
             margin: 60px auto 0;
-            background: rgba(58,240,255,0.04);
-            border: 1px solid rgba(58,240,255,0.18);
+            background: rgba(67,226,144,0.04);
+            border: 1px solid rgba(67,226,144,0.18);
             border-left: 4px solid var(--cyan);
             border-radius: 8px;
             padding: 36px 40px;
@@ -371,14 +401,14 @@
             text-align: left;
             transition: border-color 0.3s;
         }
-        .testimonial:hover { border-color: rgba(58,240,255,0.3); }
+        .testimonial:hover { border-color: rgba(67,226,144,0.3); }
         .testimonial .quote-mark { font-size: 36px; color: var(--cyan); line-height: 1; margin-bottom: 10px; opacity: 0.5; }
         .testimonial p { font-size: 15px; color: var(--muted); line-height: 1.7; margin-bottom: 16px; }
         .testimonial .author { font-family: 'Orbitron', monospace; font-size: 10px; color: var(--white); letter-spacing: 2px; }
         .testimonial .result-tag {
             display: inline-block;
-            background: rgba(58,240,255,0.08);
-            border: 1px solid rgba(58,240,255,0.2);
+            background: rgba(67,226,144,0.08);
+            border: 1px solid rgba(67,226,144,0.2);
             color: var(--cyan);
             font-size: 11px;
             font-weight: 700;
@@ -447,7 +477,7 @@
         .pricing-inner h2 span { color: var(--cyan); }
         .price-box {
             background: var(--bg-card);
-            border: 1px solid rgba(58,240,255,0.25);
+            border: 1px solid rgba(67,226,144,0.25);
             border-radius: 12px;
             padding: 44px 36px;
             margin: 36px auto 0;
@@ -466,7 +496,7 @@
             font-size: clamp(34px, 6vw, 52px);
             font-weight: 900;
             color: var(--white);
-            text-shadow: 0 0 30px rgba(58,240,255,0.2);
+            text-shadow: 0 0 30px rgba(67,226,144,0.2);
             margin-bottom: 8px;
         }
         .price-installment { font-size: 15px; color: var(--muted); margin-bottom: 6px; }
@@ -482,8 +512,8 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: rgba(58,240,255,0.07);
-            border: 1px solid rgba(58,240,255,0.25);
+            background: rgba(67,226,144,0.07);
+            border: 1px solid rgba(67,226,144,0.25);
             border-radius: 4px;
             padding: 10px 18px;
             font-size: 12px;
@@ -494,8 +524,8 @@
             animation: urgencyGlow 2s infinite;
         }
         @keyframes urgencyGlow {
-            0%,100% { box-shadow: 0 0 8px rgba(58,240,255,0.15); }
-            50%      { box-shadow: 0 0 22px rgba(58,240,255,0.45); }
+            0%,100% { box-shadow: 0 0 8px rgba(67,226,144,0.15); }
+            50%      { box-shadow: 0 0 22px rgba(67,226,144,0.45); }
         }
         .security-row {
             display: flex;
@@ -526,15 +556,15 @@
         .payment-btn-main {
             background: linear-gradient(135deg, var(--cyan), var(--blue));
             color: #06080d;
-            box-shadow: 0 4px 24px rgba(58,240,255,0.35);
+            box-shadow: 0 4px 24px rgba(67,226,144,0.35);
         }
-        .payment-btn-main:hover { transform: translateY(-2px); box-shadow: 0 8px 36px rgba(58,240,255,0.6); }
+        .payment-btn-main:hover { transform: translateY(-2px); box-shadow: 0 8px 36px rgba(67,226,144,0.6); }
         .payment-btn-sec {
             background: transparent;
-            border: 1px solid rgba(58,240,255,0.2);
+            border: 1px solid rgba(67,226,144,0.2);
             color: var(--muted);
         }
-        .payment-btn-sec:hover { border-color: var(--cyan); color: var(--white); background: rgba(58,240,255,0.06); }
+        .payment-btn-sec:hover { border-color: var(--cyan); color: var(--white); background: rgba(67,226,144,0.06); }
         .terms-note { font-size: 12px; color: var(--muted); margin-top: 18px; }
         .terms-note a { color: var(--cyan); }
 
@@ -547,7 +577,7 @@
         }
         .cta-section::before {
             content: ''; position: absolute; inset: 0;
-            background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(58,240,255,0.06) 0%, transparent 70%);
+            background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(67,226,144,0.06) 0%, transparent 70%);
             pointer-events: none;
         }
         .cta-section h2 {
@@ -607,7 +637,7 @@
             background: var(--cyan);
             border-radius: 2px;
             transition: all 0.3s;
-            box-shadow: 0 0 8px rgba(58,240,255,0.8);
+            box-shadow: 0 0 8px rgba(67,226,144,0.8);
         }
         .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
         .hamburger.open span:nth-child(2) { opacity: 0; }
@@ -651,7 +681,7 @@
             letter-spacing: 2px;
             text-transform: uppercase;
             padding: 14px 0;
-            border-bottom: 1px solid rgba(58,240,255,0.08);
+            border-bottom: 1px solid rgba(67,226,144,0.08);
             transition: color 0.2s;
         }
         .nav-drawer a:hover { color: var(--cyan); }
@@ -668,8 +698,8 @@
             font-weight: 900;
             letter-spacing: 2px;
             /* force glow even on mobile */
-            box-shadow: 0 0 24px rgba(58,240,255,0.6), 0 0 48px rgba(58,240,255,0.3) !important;
-            -webkit-box-shadow: 0 0 24px rgba(58,240,255,0.6), 0 0 48px rgba(58,240,255,0.3) !important;
+            box-shadow: 0 0 24px rgba(67,226,144,0.6), 0 0 48px rgba(67,226,144,0.3) !important;
+            -webkit-box-shadow: 0 0 24px rgba(67,226,144,0.6), 0 0 48px rgba(67,226,144,0.3) !important;
         }
 
         /* ─── RESPONSIVE ─────────────────────────── */
@@ -692,23 +722,23 @@
 
             /* Force glow on mobile for all primary buttons */
             .btn-primary, .btn-pulse {
-                box-shadow: 0 0 22px rgba(58,240,255,0.55), 0 0 44px rgba(58,240,255,0.25) !important;
-                -webkit-box-shadow: 0 0 22px rgba(58,240,255,0.55), 0 0 44px rgba(58,240,255,0.25) !important;
+                box-shadow: 0 0 22px rgba(67,226,144,0.55), 0 0 44px rgba(67,226,144,0.25) !important;
+                -webkit-box-shadow: 0 0 22px rgba(67,226,144,0.55), 0 0 44px rgba(67,226,144,0.25) !important;
             }
             .payment-btn-main {
-                box-shadow: 0 0 20px rgba(58,240,255,0.5), 0 0 40px rgba(58,240,255,0.2) !important;
-                -webkit-box-shadow: 0 0 20px rgba(58,240,255,0.5), 0 0 40px rgba(58,240,255,0.2) !important;
+                box-shadow: 0 0 20px rgba(67,226,144,0.5), 0 0 40px rgba(67,226,144,0.2) !important;
+                -webkit-box-shadow: 0 0 20px rgba(67,226,144,0.5), 0 0 40px rgba(67,226,144,0.2) !important;
             }
             .urgency-tag {
-                box-shadow: 0 0 16px rgba(58,240,255,0.35) !important;
-                -webkit-box-shadow: 0 0 16px rgba(58,240,255,0.35) !important;
+                box-shadow: 0 0 16px rgba(67,226,144,0.35) !important;
+                -webkit-box-shadow: 0 0 16px rgba(67,226,144,0.35) !important;
             }
             /* Glow text on headlines */
             .hero h1 .line2 {
-                text-shadow: 0 0 30px rgba(58,240,255,0.8), 0 0 60px rgba(58,240,255,0.4) !important;
+                text-shadow: 0 0 30px rgba(67,226,144,0.8), 0 0 60px rgba(67,226,144,0.4) !important;
             }
             .stat-num {
-                text-shadow: 0 0 20px rgba(58,240,255,0.7) !important;
+                text-shadow: 0 0 20px rgba(67,226,144,0.7) !important;
             }
             /* Badge bonus wrapping fix */
             .badge-bonus { font-size: 12px; padding: 10px 16px; text-align: center; }
@@ -728,6 +758,7 @@
     <a href="#how"            onclick="closeMenu()">Como Funciona</a>
     <a href="#testimonials"   onclick="closeMenu()">Resultados</a>
     <a href="#faq"            onclick="closeMenu()">Dúvidas</a>
+    <a href="./login/" onclick="closeMenu()"><i class="fas fa-user"></i> Área do Aluno</a>
     <a href="#open-enrollment" class="drawer-cta" onclick="closeMenu()">Quero Minha Vaga</a>
 </nav>
 
@@ -740,6 +771,7 @@
         <li><a href="#how">Como Funciona</a></li>
         <li><a href="#testimonials">Resultados</a></li>
         <li><a href="#faq">Dúvidas</a></li>
+        <li><a href="./login/" class="nav-login"><i class="fas fa-user"></i> Área do Aluno</a></li>
         <li><a href="#open-enrollment" class="nav-cta">Quero Minha Vaga</a></li>
     </ul>
     <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Menu">
@@ -1005,6 +1037,9 @@
     <h2>2026 Ainda Dá Tempo de Virar o Jogo</h2>
     <p>Mas não com os mesmos hábitos, os mesmos erros e sem ninguém do seu lado corrigindo. Essa é a diferença que a mentoria faz.</p>
     <a href="#open-enrollment" class="btn btn-primary btn-pulse">Quero Garantir Minha Vaga Agora</a>
+    <div class="student-access-final">
+        Já é mentorado? <a href="./login/"><i class="fas fa-user"></i> Acessar Área do Aluno</a>
+    </div>
 </section>
 
 <!-- DISCLAIMER -->
@@ -1099,8 +1134,8 @@ function draw() {
     const cw = canvas.width / CANDLES * 0.45;
     candles.forEach(c => {
         const bull = c.close >= c.open;
-        ctx.strokeStyle = bull ? 'rgba(58,240,255,0.75)' : 'rgba(91,159,255,0.75)';
-        ctx.fillStyle   = bull ? 'rgba(58,240,255,0.75)' : 'rgba(91,159,255,0.75)';
+        ctx.strokeStyle = bull ? 'rgba(67,226,144,0.75)' : 'rgba(37,201,120,0.75)';
+        ctx.fillStyle   = bull ? 'rgba(67,226,144,0.75)' : 'rgba(37,201,120,0.75)';
         ctx.lineWidth = 1.5;
         const x  = c.x;
         const oY = baseY - (c.open  - minP) * scale;
