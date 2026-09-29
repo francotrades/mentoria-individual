@@ -215,15 +215,7 @@ Deno.serve(async (request) => {
         session_id,
         teams_url,
         data_sessao,
-        titulo_personalizado,
-        profiles!student_sessions_student_id_fkey (
-          nome,
-          email
-        ),
-        sessions (
-          numero,
-          titulo
-        )
+        titulo_personalizado
       `)
       .eq("id", studentSessionId)
       .maybeSingle();
@@ -247,18 +239,44 @@ Deno.serve(async (request) => {
     );
   }
 
+  const [
+    profileResult,
+    sessionResult,
+  ] =
+    await Promise.all([
+      supabase
+        .from("profiles")
+        .select("nome,email")
+        .eq("id", studentSession.student_id)
+        .maybeSingle(),
+
+      supabase
+        .from("sessions")
+        .select("numero,titulo")
+        .eq("id", studentSession.session_id)
+        .maybeSingle(),
+    ]);
+
+  if (
+    profileResult.error ||
+    !profileResult.data
+  ) {
+    console.error(profileResult.error);
+
+    return jsonResponse(
+      { error: "Student profile not found" },
+      404,
+    );
+  }
+
   const profile =
-    Array.isArray(studentSession.profiles)
-      ? studentSession.profiles[0]
-      : studentSession.profiles;
+    profileResult.data;
 
   const session =
-    Array.isArray(studentSession.sessions)
-      ? studentSession.sessions[0]
-      : studentSession.sessions;
+    sessionResult.data ?? null;
 
   const recipient =
-    String(profile?.email ?? "").trim();
+    String(profile.email ?? "").trim();
 
   if (!recipient) {
     return jsonResponse(
