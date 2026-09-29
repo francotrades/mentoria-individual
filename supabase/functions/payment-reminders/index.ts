@@ -3,8 +3,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
-const REMINDER_FROM_EMAIL = Deno.env.get("REMINDER_FROM_EMAIL") ?? "";
+const GOOGLE_MAIL_WEBHOOK_URL = Deno.env.get("GOOGLE_MAIL_WEBHOOK_URL") ?? "";
+const GOOGLE_MAIL_SECRET = Deno.env.get("GOOGLE_MAIL_SECRET") ?? "";
 const REMINDER_CRON_SECRET = Deno.env.get("REMINDER_CRON_SECRET") ?? "";
 
 const STUDENT_AREA_URL =
@@ -199,27 +199,33 @@ async function sendEmail(
   html: string,
 ) {
   const response = await fetch(
-    "https://api.resend.com/emails",
+    GOOGLE_MAIL_WEBHOOK_URL,
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: REMINDER_FROM_EMAIL,
-        to: [to],
+        secret: GOOGLE_MAIL_SECRET,
+        to,
         subject,
         html,
       }),
     },
   );
 
-  const body = await response.json();
+  const raw = await response.text();
+  let body: Record<string, unknown> = {};
 
-  if (!response.ok) {
+  try {
+    body = raw ? JSON.parse(raw) : {};
+  } catch {
+    body = { raw };
+  }
+
+  if (!response.ok || body?.ok !== true) {
     throw new Error(
-      `Resend error ${response.status}: ${JSON.stringify(body)}`,
+      `Gmail webhook error ${response.status}: ${JSON.stringify(body)}`,
     );
   }
 
@@ -254,13 +260,13 @@ Deno.serve(async (request) => {
   if (
     !SUPABASE_URL ||
     !SERVICE_ROLE_KEY ||
-    !RESEND_API_KEY ||
-    !REMINDER_FROM_EMAIL
+    !GOOGLE_MAIL_WEBHOOK_URL ||
+    !GOOGLE_MAIL_SECRET
   ) {
     return new Response(
       JSON.stringify({
         error:
-          "Missing SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, RESEND_API_KEY or REMINDER_FROM_EMAIL",
+          "Missing SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, GOOGLE_MAIL_WEBHOOK_URL or GOOGLE_MAIL_SECRET",
       }),
       {
         status: 500,
