@@ -5682,11 +5682,7 @@ async function sendManualPaymentReminder(
     if (
       error ||
       !data ||
-      Number(data.sent || 0) < 1 ||
-      (
-        Array.isArray(data.errors) &&
-        data.errors.length > 0
-      )
+      Number(data.sent || 0) < 1
     ) {
       console.error(
         "Erro no lembrete manual:",
@@ -5702,9 +5698,24 @@ async function sendManualPaymentReminder(
     }
 
 
-    showMessage(
-      "Lembrete enviado por e-mail."
-    );
+    if (
+      Array.isArray(data.warnings) &&
+      data.warnings.length > 0
+    ) {
+      console.warn(
+        "Lembrete enviado com aviso:",
+        data.warnings
+      );
+
+      showMessage(
+        "Lembrete enviado por e-mail. O histórico pode demorar para aparecer."
+      );
+    }
+    else {
+      showMessage(
+        "Lembrete enviado por e-mail."
+      );
+    }
 
 
     await refreshData();
