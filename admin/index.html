@@ -785,6 +785,193 @@
       }
     }
 
+  
+    /* ==========================================
+       SESSÕES — ADMIN V3
+    ========================================== */
+
+    .sessions-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .sessions-header .panel-title {
+      margin-bottom: 4px;
+    }
+
+    .sessions-subtitle {
+      color: var(--ft-muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .sessions-summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(100px, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .sessions-summary-card {
+      padding: 12px 13px;
+      border-radius: 10px;
+      border: 1px solid var(--ft-border);
+      background: rgba(255,255,255,.014);
+    }
+
+    .sessions-summary-label {
+      color: var(--ft-muted-2);
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: .7px;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+
+    .sessions-summary-value {
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .session-item {
+      position: relative;
+      overflow: hidden;
+      transition: border-color .18s ease, transform .18s ease, background .18s ease;
+    }
+
+    .session-item:hover {
+      transform: translateY(-1px);
+      border-color: rgba(67,226,144,.18);
+      background: var(--ft-card-light);
+    }
+
+    .session-item.is-completed::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: var(--ft-green);
+    }
+
+    .session-item.is-blocked {
+      opacity: .78;
+    }
+
+    .session-title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 6px;
+    }
+
+    .session-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 9px;
+    }
+
+    .session-badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 0 8px;
+      border-radius: 999px;
+      border: 1px solid var(--ft-border);
+      background: rgba(255,255,255,.018);
+      color: var(--ft-muted);
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: .45px;
+      text-transform: uppercase;
+    }
+
+    .session-badge.done {
+      color: #70e9aa;
+      border-color: rgba(67,226,144,.18);
+      background: rgba(67,226,144,.07);
+    }
+
+    .session-badge.video {
+      color: #b9f3d4;
+      border-color: rgba(67,226,144,.15);
+      background: rgba(67,226,144,.04);
+    }
+
+    .session-badge.warning {
+      color: #f6c75b;
+      border-color: rgba(246,199,91,.20);
+      background: rgba(246,199,91,.06);
+    }
+
+    .session-badge.blocked {
+      color: #ff9b9b;
+      border-color: rgba(255,125,125,.18);
+      background: rgba(255,125,125,.05);
+    }
+
+    .session-actions-admin {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .session-video-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 0 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(67,226,144,.22);
+      background: rgba(67,226,144,.06);
+      color: var(--ft-green);
+      text-decoration: none;
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .session-video-link:hover {
+      background: rgba(67,226,144,.10);
+    }
+
+    .session-editor-context {
+      color: var(--ft-muted);
+      font-size: 12px;
+      line-height: 1.5;
+      margin-top: -10px;
+      margin-bottom: 18px;
+    }
+
+    @media (max-width: 700px) {
+      .sessions-header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .sessions-summary {
+        grid-template-columns: 1fr;
+      }
+
+      .session-actions-admin {
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      .session-actions-admin > * {
+        flex: 1;
+      }
+    }
+
   </style>
 </head>
 
@@ -1367,18 +1554,18 @@
       class="panel hidden"
     >
 
-      <div class="panel-title">
-        Sessões do mentorado
-      </div>
+      <div class="sessions-header">
 
+        <div>
+          <div class="panel-title">
+            Sessões do mentorado
+          </div>
 
-      <div
-        id="studentSessionsList"
-        class="session-list"
-      ></div>
+          <div class="sessions-subtitle">
+            Acompanhe realização, conclusão, gravações e liberação de cada sessão.
+          </div>
+        </div>
 
-
-      <div class="button-row">
 
         <button
           id="newSessionButton"
@@ -1388,6 +1575,53 @@
         </button>
 
       </div>
+
+
+      <div class="sessions-summary">
+
+        <div class="sessions-summary-card">
+          <div class="sessions-summary-label">
+            Liberadas
+          </div>
+          <div
+            id="sessionsReleasedSummary"
+            class="sessions-summary-value"
+          >
+            0
+          </div>
+        </div>
+
+        <div class="sessions-summary-card">
+          <div class="sessions-summary-label">
+            Concluídas
+          </div>
+          <div
+            id="sessionsCompletedSummary"
+            class="sessions-summary-value green"
+          >
+            0
+          </div>
+        </div>
+
+        <div class="sessions-summary-card">
+          <div class="sessions-summary-label">
+            Gravações
+          </div>
+          <div
+            id="sessionsRecordingSummary"
+            class="sessions-summary-value"
+          >
+            0
+          </div>
+        </div>
+
+      </div>
+
+
+      <div
+        id="studentSessionsList"
+        class="session-list"
+      ></div>
 
     </section>
 
@@ -1402,6 +1636,13 @@
         class="panel-title"
       >
         Gerenciar sessão
+      </div>
+
+      <div
+        id="sessionEditorContext"
+        class="session-editor-context"
+      >
+        Edite os detalhes desta sessão e salve as alterações.
       </div>
 
 
@@ -1669,6 +1910,15 @@ const sessionsPanel =
 const studentSessionsList =
   $("studentSessionsList");
 
+const sessionsReleasedSummary =
+  $("sessionsReleasedSummary");
+
+const sessionsCompletedSummary =
+  $("sessionsCompletedSummary");
+
+const sessionsRecordingSummary =
+  $("sessionsRecordingSummary");
+
 const newSessionButton =
   $("newSessionButton");
 
@@ -1678,6 +1928,9 @@ const sessionEditor =
 
 const sessionEditorTitle =
   $("sessionEditorTitle");
+
+const sessionEditorContext =
+  $("sessionEditorContext");
 
 const sessionSelect =
   $("sessionSelect");
@@ -2956,6 +3209,53 @@ function renderStudentSessions() {
     "";
 
 
+  const releasedSessions =
+    studentSessions.filter(
+      item =>
+        item.liberada === true
+    );
+
+
+  const completedIds =
+    new Set(
+      studentProgress
+        .filter(
+          item =>
+            item.concluida === true
+        )
+        .map(
+          item =>
+            Number(
+              item.session_id
+            )
+        )
+    );
+
+
+  sessionsReleasedSummary.textContent =
+    releasedSessions.length;
+
+
+  sessionsCompletedSummary.textContent =
+    releasedSessions.filter(
+      item =>
+        completedIds.has(
+          Number(
+            item.session_id
+          )
+        )
+    ).length;
+
+
+  sessionsRecordingSummary.textContent =
+    releasedSessions.filter(
+      item =>
+        Boolean(
+          item.youtube_url
+        )
+    ).length;
+
+
   if (
     studentSessions.length === 0
   ) {
@@ -2963,7 +3263,7 @@ function renderStudentSessions() {
     studentSessionsList.innerHTML =
       `
         <div class="empty">
-          Nenhuma sessão foi liberada para este mentorado.
+          Nenhuma sessão foi vinculada a este mentorado.
         </div>
       `;
 
@@ -2978,9 +3278,36 @@ function renderStudentSessions() {
         (
           a,
           b
-        ) =>
-          Number(a.session_id) -
-          Number(b.session_id)
+        ) => {
+
+          const aInfo =
+            allSessions.find(
+              session =>
+                Number(session.id) ===
+                Number(a.session_id)
+            );
+
+
+          const bInfo =
+            allSessions.find(
+              session =>
+                Number(session.id) ===
+                Number(b.session_id)
+            );
+
+
+          return (
+            Number(
+              aInfo?.numero ||
+              a.session_id
+            ) -
+            Number(
+              bInfo?.numero ||
+              b.session_id
+            )
+          );
+
+        }
       );
 
 
@@ -3007,6 +3334,24 @@ function renderStudentSessions() {
       `Sessão ${number}`;
 
 
+    const isCompleted =
+      completedIds.has(
+        Number(
+          item.session_id
+        )
+      );
+
+
+    const hasRecording =
+      Boolean(
+        item.youtube_url
+      );
+
+
+    const isReleased =
+      item.liberada === true;
+
+
     const element =
       document.createElement(
         "div"
@@ -3014,54 +3359,87 @@ function renderStudentSessions() {
 
 
     element.className =
-      "session-item";
+      `session-item ${isCompleted ? "is-completed" : ""} ${!isReleased ? "is-blocked" : ""}`;
+
+
+    const dateText =
+      item.data_sessao
+        ?
+        `Realizada em ${formatDate(item.data_sessao)}`
+        :
+        "Sem data definida";
 
 
     element.innerHTML =
       `
         <div class="session-item-main">
 
-          <div class="session-number">
-            SESSÃO ${String(number).padStart(2, "0")}
+          <div class="session-title-row">
+
+            <div class="session-number">
+              SESSÃO ${String(number).padStart(2, "0")}
+            </div>
+
           </div>
+
 
           <div class="session-item-title">
             ${escapeHTML(title)}
           </div>
 
+
           <div class="session-item-meta">
+            ${dateText}
+          </div>
 
-            ${
-              item.data_sessao
-                ?
-                "Data: " +
-                formatDate(
-                  item.data_sessao
-                )
-                :
-                "Sem data"
-            }
 
-            ·
+          <div class="session-badges">
 
-            ${
-              item.youtube_url
-                ?
-                "Gravação cadastrada"
-                :
-                "Sem gravação"
-            }
+            <span class="session-badge ${isReleased ? "done" : "blocked"}">
+              ${isReleased ? "Liberada" : "Bloqueada"}
+            </span>
+
+            <span class="session-badge ${isCompleted ? "done" : "warning"}">
+              ${isCompleted ? "Concluída" : "Pendente"}
+            </span>
+
+            <span class="session-badge ${hasRecording ? "video" : ""}">
+              ${hasRecording ? "Com gravação" : "Sem gravação"}
+            </span>
 
           </div>
 
         </div>
 
-        <button
-          class="session-edit"
-          data-id="${item.id}"
-        >
-          Editar
-        </button>
+
+        <div class="session-actions-admin">
+
+          ${
+            hasRecording
+              ?
+              `
+                <a
+                  class="session-video-link"
+                  href="${escapeHTML(item.youtube_url)}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  ▶ Ver gravação
+                </a>
+              `
+              :
+              ""
+          }
+
+
+          <button
+            class="session-edit"
+            data-id="${item.id}"
+          >
+            Editar
+          </button>
+
+        </div>
       `;
 
 
@@ -3225,12 +3603,40 @@ function openNewSession() {
     false;
 
 
+  if (
+    sessionSelect.options.length === 0
+  ) {
+
+    showMessage(
+      "Todas as sessões disponíveis já estão vinculadas a este mentorado.",
+      "error"
+    );
+
+    return;
+
+  }
+
+
+  sessionEditorTitle.textContent =
+    "Liberar nova sessão";
+
+
+  sessionEditorContext.textContent =
+    "Escolha a sessão, defina os detalhes e libere o conteúdo para o mentorado.";
+
+
   deleteSessionButton.classList
     .add("hidden");
 
 
   sessionEditor.classList
     .remove("hidden");
+
+
+  sessionEditor.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
 
 }
 
@@ -3294,12 +3700,41 @@ function openExistingSession(
     );
 
 
+  const sessionInfo =
+    allSessions.find(
+      session =>
+        Number(session.id) ===
+        Number(item.session_id)
+    );
+
+
+  const sessionNumber =
+    sessionInfo?.numero ||
+    item.session_id;
+
+
+  sessionEditorTitle.textContent =
+    `Editar sessão ${String(sessionNumber).padStart(2, "0")}`;
+
+
+  sessionEditorContext.textContent =
+    item.titulo_personalizado ||
+    sessionInfo?.titulo ||
+    "Edite os detalhes desta sessão.";
+
+
   deleteSessionButton.classList
     .remove("hidden");
 
 
   sessionEditor.classList
     .remove("hidden");
+
+
+  sessionEditor.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
 
 }
 
