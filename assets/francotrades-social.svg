@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <radialGradient id="bg" cx="18%" cy="50%" r="95%">
+      <stop offset="0" stop-color="#0b2b20"/>
+      <stop offset=".5" stop-color="#07100c"/>
+      <stop offset="1" stop-color="#030504"/>
+    </radialGradient>
+    <linearGradient id="green" x1="0" x2="1">
+      <stop offset="0" stop-color="#43e290"/>
+      <stop offset="1" stop-color="#25c978"/>
+    </linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="10" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <g opacity=".18" stroke="#43e290" stroke-width="2">
+    <line x1="0" y1="505" x2="1200" y2="505"/><line x1="0" y1="420" x2="1200" y2="420"/>
+    <line x1="0" y1="335" x2="1200" y2="335"/><line x1="0" y1="250" x2="1200" y2="250"/>
+  </g>
+  <g transform="translate(65 118)">
+    <circle cx="190" cy="190" r="178" fill="#07100c" stroke="#43e290" stroke-width="6" filter="url(#glow)"/>
+    <g opacity=".25" stroke="#43e290" stroke-width="3">
+      <line x1="64" y1="270" x2="64" y2="190"/><rect x="53" y="210" width="22" height="40" fill="#43e290"/>
+      <line x1="105" y1="235" x2="105" y2="145"/><rect x="94" y="165" width="22" height="45" fill="#43e290"/>
+      <line x1="276" y1="145" x2="276" y2="67"/><rect x="265" y="88" width="22" height="40" fill="#43e290"/>
+      <line x1="318" y1="115" x2="318" y2="40"/><rect x="307" y="57" width="22" height="42" fill="#43e290"/>
+    </g>
+    <path d="M88 88h142l-24 38h-70v55h78l-24 38h-54v78H88z" fill="#f5f7f6"/>
+    <path d="M176 183h139l-24 40h-45v81h-46v-81h-48z" fill="url(#green)"/>
+  </g>
+  <text x="500" y="265" font-family="Arial,Helvetica,sans-serif" font-size="72" font-weight="800" letter-spacing="3" fill="#f5f7f6">FRANCO<tspan fill="#43e290">TRADES</tspan></text>
+  <text x="504" y="325" font-family="Arial,Helvetica,sans-serif" font-size="25" font-weight="700" letter-spacing="5" fill="#43e290">MENTORIA INDIVIDUAL 1:1</text>
+  <text x="504" y="382" font-family="Arial,Helvetica,sans-serif" font-size="27" fill="#aeb8b2">Price Action • Processo • Consistência</text>
+  <line x1="504" y1="430" x2="1090" y2="430" stroke="#43e290" stroke-opacity=".35" stroke-width="2"/>
+  <text x="504" y="474" font-family="Arial,Helvetica,sans-serif" font-size="20" fill="#7f8b84">12 sessões individuais + 4 meses de acompanhamento</text>
+</svg>
