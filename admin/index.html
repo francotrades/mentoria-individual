@@ -3596,7 +3596,7 @@ createStudentButton
             "mentorship_financials"
           )
           .select(
-            "id, profile_id, nome, email, valor_total, moeda"
+            "id, profile_id, nome, email, valor_total, moeda, quantidade_sessoes, sessoes_concluidas_importadas, origem"
           )
           .ilike(
             "email",
@@ -4111,6 +4111,119 @@ createStudentButton
       }
 
 
+      let importedProgressWarning =
+        "";
+
+
+      let importedProgressRestored =
+        0;
+
+
+      if (
+        financeWasPreserved &&
+        existingFinancial &&
+        createdId
+      ) {
+
+        const importedCompleted =
+          Math.max(
+            0,
+            Number(
+              existingFinancial.sessoes_concluidas_importadas ||
+              0
+            )
+          );
+
+
+        if (
+          importedCompleted >
+          0
+        ) {
+
+          const completedSessionIds =
+            [...allSessions]
+              .sort(
+                (a, b) =>
+                  Number(a.numero || 0) -
+                  Number(b.numero || 0)
+              )
+              .slice(
+                0,
+                Math.min(
+                  importedCompleted,
+                  numeroSessoes
+                )
+              )
+              .map(
+                session =>
+                  session.id
+              );
+
+
+          if (
+            completedSessionIds.length >
+            0
+          ) {
+
+            const progressRows =
+              completedSessionIds.map(
+                sessionId => ({
+                  student_id:
+                    createdId,
+                  session_id:
+                    sessionId,
+                  concluida:
+                    true
+                })
+              );
+
+
+            const {
+              error:
+                importedProgressError
+            } =
+              await supabase
+                .from(
+                  "student_progress"
+                )
+                .upsert(
+                  progressRows,
+                  {
+                    onConflict:
+                      "student_id,session_id"
+                  }
+                );
+
+
+            if (
+              importedProgressError
+            ) {
+
+              console.error(
+                "Erro ao restaurar progresso importado:",
+                importedProgressError
+              );
+
+
+              importedProgressWarning =
+                " O financeiro foi preservado, mas não foi possível restaurar automaticamente o progresso histórico das sessões.";
+
+            }
+
+            else {
+
+              importedProgressRestored =
+                completedSessionIds.length;
+
+            }
+
+          }
+
+        }
+
+      }
+
+
       const inviteWarning =
         data?.email_sent === false
           ?
@@ -4131,6 +4244,7 @@ createStudentButton
 
       const finalWarning =
         financeWarning +
+        importedProgressWarning +
         inviteWarning;
 
 
@@ -4143,7 +4257,15 @@ createStudentButton
           (
             financeWasPreserved
               ?
-              "Mentorado criado, financeiro existente preservado e e-mail de acesso enviado."
+              (
+                importedProgressRestored > 0
+                  ?
+                  "Mentorado criado, financeiro existente preservado, " +
+                  importedProgressRestored +
+                  " sessões históricas marcadas como concluídas e e-mail de acesso enviado."
+                  :
+                  "Mentorado criado, financeiro existente preservado e e-mail de acesso enviado."
+              )
               :
               "Mentorado, financeiro e parcelas criados. E-mail de acesso enviado."
           ),
@@ -4317,7 +4439,10 @@ async function loadBaseData() {
             email,
             valor_total,
             moeda,
-            observacoes
+            observacoes,
+            quantidade_sessoes,
+            sessoes_concluidas_importadas,
+            origem
           `),
 
         supabase
