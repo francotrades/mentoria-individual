@@ -972,6 +972,152 @@
       }
     }
 
+  
+    /* ==========================================
+       MENTORADOS EM CARDS — ADMIN V4
+    ========================================== */
+
+    .student-select-field {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .students-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+      margin-bottom: 10px;
+    }
+
+    .student-card {
+      width: 100%;
+      text-align: left;
+      padding: 16px;
+      border-radius: 13px;
+      border: 1px solid var(--ft-border);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.018), rgba(255,255,255,.006)),
+        #090e0b;
+      color: #fff;
+      cursor: pointer;
+      transition: transform .18s ease, border-color .18s ease, background .18s ease;
+    }
+
+    .student-card:hover {
+      transform: translateY(-1px);
+      border-color: rgba(67,226,144,.22);
+      background: var(--ft-card-light);
+    }
+
+    .student-card.selected {
+      border-color: rgba(67,226,144,.42);
+      box-shadow: 0 0 0 1px rgba(67,226,144,.08) inset;
+      background: rgba(67,226,144,.035);
+    }
+
+    .student-card-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .student-card-name {
+      font-size: 15px;
+      font-weight: 900;
+      line-height: 1.25;
+      margin-bottom: 4px;
+    }
+
+    .student-card-email {
+      color: var(--ft-muted);
+      font-size: 11px;
+      overflow-wrap: anywhere;
+    }
+
+    .student-card-status {
+      flex: 0 0 auto;
+      padding: 5px 8px;
+      border-radius: 999px;
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+      border: 1px solid var(--ft-border);
+      color: var(--ft-muted);
+    }
+
+    .student-card-status.active {
+      color: #70e9aa;
+      border-color: rgba(67,226,144,.18);
+      background: rgba(67,226,144,.07);
+    }
+
+    .student-card-status.warning {
+      color: #f6c75b;
+      border-color: rgba(246,199,91,.20);
+      background: rgba(246,199,91,.06);
+    }
+
+    .student-card-status.inactive {
+      color: #ff9b9b;
+      border-color: rgba(255,125,125,.18);
+      background: rgba(255,125,125,.05);
+    }
+
+    .student-card-progress-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 7px;
+      color: var(--ft-muted);
+      font-size: 10px;
+    }
+
+    .student-card-progress {
+      height: 7px;
+      border-radius: 999px;
+      background: #151b17;
+      overflow: hidden;
+    }
+
+    .student-card-progress > div {
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--ft-green-strong), var(--ft-green));
+    }
+
+    .student-card-footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 10px;
+      color: var(--ft-muted-2);
+      font-size: 10px;
+    }
+
+    .student-list-empty {
+      grid-column: 1 / -1;
+      padding: 20px;
+      border: 1px dashed var(--ft-border);
+      border-radius: 12px;
+      color: var(--ft-muted);
+      font-size: 12px;
+    }
+
+    @media (max-width: 760px) {
+      .students-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
   </style>
 </head>
 
@@ -1327,24 +1473,25 @@
       </div>
 
 
-      <div class="field">
-
-        <label for="studentSelect">
-          Escolha o mentorado
-        </label>
-
-        <select id="studentSelect">
+      <div class="student-select-field" aria-hidden="true">
+        <select id="studentSelect" tabindex="-1">
           <option value="">
             Selecione um mentorado...
           </option>
         </select>
-
-        <div class="student-select-meta">
-          <span id="studentFilterCount">0 mentorados encontrados</span>
-          <span id="studentFilterHint">Filtro: ativos</span>
-        </div>
-
       </div>
+
+
+      <div class="student-select-meta">
+        <span id="studentFilterCount">0 mentorados encontrados</span>
+        <span id="studentFilterHint">Filtro: ativos</span>
+      </div>
+
+
+      <div
+        id="studentsGrid"
+        class="students-grid"
+      ></div>
 
 
       <div
@@ -1850,6 +1997,9 @@ const studentFilterCount =
 
 const studentFilterHint =
   $("studentFilterHint");
+
+const studentsGrid =
+  $("studentsGrid");
 
 const studentFilterButtons =
   [...document.querySelectorAll("[data-student-filter]")];
@@ -2821,9 +2971,83 @@ function getFilteredStudents() {
 }
 
 
+function getStudentCardMetrics(
+  profile
+) {
+
+  const linkedSessions =
+    allStudentSessions.filter(
+      item =>
+        item.student_id ===
+        profile.id &&
+        item.liberada === true
+    );
+
+
+  const linkedIds =
+    new Set(
+      linkedSessions.map(
+        item =>
+          Number(
+            item.session_id
+          )
+      )
+    );
+
+
+  const completed =
+    allProgress.filter(
+      item =>
+        item.student_id ===
+        profile.id &&
+        item.concluida === true &&
+        linkedIds.has(
+          Number(
+            item.session_id
+          )
+        )
+    ).length;
+
+
+  const total =
+    linkedSessions.length;
+
+
+  const percent =
+    total > 0
+      ?
+      Math.round(
+        completed /
+        total *
+        100
+      )
+      :
+      0;
+
+
+  const recordings =
+    linkedSessions.filter(
+      item =>
+        Boolean(
+          item.youtube_url
+        )
+    ).length;
+
+
+  return {
+    total,
+    completed,
+    percent,
+    recordings
+  };
+
+}
+
+
 function renderStudentSelect() {
 
   const previousValue =
+    selectedStudent?.id ||
     studentSelect.value;
 
 
@@ -2837,6 +3061,10 @@ function renderStudentSelect() {
         Selecione um mentorado...
       </option>
     `;
+
+
+  studentsGrid.innerHTML =
+    "";
 
 
   for (
@@ -2853,9 +3081,13 @@ function renderStudentSelect() {
       profile.id;
 
 
-    const name =
-      profile.nome ||
-      "Sem nome";
+    option.textContent =
+      `${profile.nome || "Sem nome"} — ${profile.email || "sem e-mail"}`;
+
+
+    studentSelect.appendChild(
+      option
+    );
 
 
     const days =
@@ -2864,41 +3096,170 @@ function renderStudentSelect() {
       );
 
 
-    let suffix =
-      "";
-
-
-    if (
-      profile.status !== "ativo" ||
-      (
-        days !== null &&
-        days < 0
-      )
-    ) {
-
-      suffix =
-        " — INATIVO";
-
-    }
-
-    else if (
+    const accessExpired =
       days !== null &&
-      days <= 30
-    ) {
-
-      suffix =
-        ` — EXPIRA EM ${days}D`;
-
-    }
+      days < 0;
 
 
-    option.textContent =
-      `${name} — ${profile.email || "sem e-mail"}${suffix}`;
+    const active =
+      profile.status === "ativo" &&
+      !accessExpired;
 
 
-    studentSelect.appendChild(
-      option
+    const expiring =
+      active &&
+      days !== null &&
+      days <= 30;
+
+
+    const metrics =
+      getStudentCardMetrics(
+        profile
+      );
+
+
+    const card =
+      document.createElement(
+        "button"
+      );
+
+
+    card.type =
+      "button";
+
+
+    card.dataset.studentId =
+      profile.id;
+
+
+    card.className =
+      `student-card ${previousValue === profile.id ? "selected" : ""}`;
+
+
+    const statusClass =
+      !active
+        ?
+        "inactive"
+        :
+        (
+          expiring
+            ?
+            "warning"
+            :
+            "active"
+        );
+
+
+    const statusText =
+      !active
+        ?
+        (
+          accessExpired ||
+          profile.status === "expirado"
+            ?
+            "Expirado"
+            :
+            "Inativo"
+        )
+        :
+        (
+          expiring
+            ?
+            `Expira em ${days}d`
+            :
+            "Ativo"
+        );
+
+
+    const accessText =
+      profile.data_expiracao
+        ?
+        `Acesso até ${formatDate(profile.data_expiracao)}`
+        :
+        "Sem data de expiração";
+
+
+    card.innerHTML =
+      `
+        <div class="student-card-top">
+
+          <div>
+            <div class="student-card-name">
+              ${escapeHTML(profile.nome || "Sem nome")}
+            </div>
+
+            <div class="student-card-email">
+              ${escapeHTML(profile.email || "Sem e-mail")}
+            </div>
+          </div>
+
+          <span class="student-card-status ${statusClass}">
+            ${statusText}
+          </span>
+
+        </div>
+
+
+        <div class="student-card-progress-row">
+          <span>Progresso</span>
+          <strong>${metrics.completed}/${metrics.total} · ${metrics.percent}%</strong>
+        </div>
+
+
+        <div class="student-card-progress">
+          <div style="width:${metrics.percent}%"></div>
+        </div>
+
+
+        <div class="student-card-footer">
+          <span>${accessText}</span>
+          <span>${metrics.recordings} gravaç${metrics.recordings === 1 ? "ão" : "ões"}</span>
+        </div>
+      `;
+
+
+    card.addEventListener(
+      "click",
+      async () => {
+
+        studentSelect.value =
+          profile.id;
+
+
+        await selectStudent(
+          profile.id
+        );
+
+
+        renderStudentSelect();
+
+
+        studentArea.scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+
+      }
     );
+
+
+    studentsGrid.appendChild(
+      card
+    );
+
+  }
+
+
+  if (
+    filteredStudents.length === 0
+  ) {
+
+    studentsGrid.innerHTML =
+      `
+        <div class="student-list-empty">
+          Nenhum mentorado encontrado com os filtros atuais.
+        </div>
+      `;
 
   }
 
@@ -3005,6 +3366,22 @@ async function selectStudent(
 
   sessionEditor.classList
     .add("hidden");
+
+
+  for (
+    const card of
+    studentsGrid.querySelectorAll(
+      ".student-card"
+    )
+  ) {
+
+    card.classList.toggle(
+      "selected",
+      card.dataset.studentId ===
+      selectedStudent.id
+    );
+
+  }
 
 }
 
