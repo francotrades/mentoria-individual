@@ -1204,6 +1204,27 @@
       }
     }
 
+  
+    .live-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      border: 1px solid rgba(67,226,144,.35);
+      border-radius: 9px;
+      background: rgba(67,226,144,.10);
+      color: #86efb8;
+      padding: 11px 14px;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .live-button:hover {
+      background: rgba(67,226,144,.16);
+    }
+
   </style>
 </head>
 
@@ -2886,6 +2907,12 @@ function renderSessions() {
       );
 
 
+    const hasLive =
+      Boolean(
+        item.teams_url
+      );
+
+
     const card =
       document.createElement(
         "article"
@@ -2977,6 +3004,24 @@ function renderSessions() {
 
 
         <div class="session-actions">
+
+
+          ${ 
+            hasLive
+              ?
+              `
+                <a
+                  class="live-button"
+                  href="${escapeHTML(item.teams_url)}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Entrar na aula ao vivo
+                </a>
+              `
+              :
+              ""
+          }
 
 
           ${
@@ -3277,6 +3322,7 @@ async function loadDashboard() {
         id,
         session_id,
         youtube_url,
+        teams_url,
         data_sessao,
         observacoes,
         titulo_personalizado,
