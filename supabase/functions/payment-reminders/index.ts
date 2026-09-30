@@ -29,8 +29,7 @@ const supabase = createClient(
 );
 
 type ReminderType =
-  | "5_days_before"
-  | "1_day_before"
+  | "3_days_before"
   | "due_today"
   | "3_days_overdue"
   | "manual";
@@ -62,8 +61,7 @@ function dateDiffDays(dueDate: string, todayISO: string) {
 }
 
 function reminderTypeForDiff(diff: number): ReminderType | null {
-  if (diff === 5) return "5_days_before";
-  if (diff === 1) return "1_day_before";
+  if (diff === 3) return "3_days_before";
   if (diff === 0) return "due_today";
   if (diff === -3) return "3_days_overdue";
   return null;
@@ -116,23 +114,12 @@ function reminderCopy(
     };
   }
 
-  if (type === "5_days_before") {
+  if (type === "3_days_before") {
     return {
       subject: `Lembrete da sua mentoria — parcela ${installment}`,
       headline: "Lembrete da sua próxima parcela",
       intro:
-        `${safeName}, passando para lembrar que a parcela ${installment} da sua mentoria vence em ${dueDate}.`,
-      detail:
-        `Valor da parcela: ${amount}.`,
-    };
-  }
-
-  if (type === "1_day_before") {
-    return {
-      subject: `Lembrete da sua mentoria — parcela ${installment}`,
-      headline: "Lembrete de vencimento",
-      intro:
-        `${safeName}, passando para lembrar que a parcela ${installment} da sua mentoria vence amanhã, ${dueDate}.`,
+        `${safeName}, passando para lembrar que a parcela ${installment} da sua mentoria vence em 3 dias, em ${dueDate}.`,
       detail:
         `Valor da parcela: ${amount}.`,
     };
