@@ -661,8 +661,12 @@ async function initialize() {
 
   if (
     tokenHash &&
-    authType ===
-      "invite"
+    (
+      authType ===
+        "invite" ||
+      authType ===
+        "recovery"
+    )
   ) {
 
     const {
@@ -674,20 +678,24 @@ async function initialize() {
           token_hash:
             tokenHash,
           type:
-            "invite"
+            authType
         });
 
 
     if (verifyError) {
 
       console.error(
-        "Erro ao validar convite:",
+        "Erro ao validar link:",
         verifyError
       );
 
 
       blockPage(
-        "Este link de convite é inválido, já foi utilizado ou expirou. Peça um novo convite à Franco Trades."
+        authType === "invite"
+          ?
+          "Este link de convite é inválido, já foi utilizado ou expirou. Peça um novo convite à Franco Trades."
+          :
+          "Este link de acesso é inválido, já foi utilizado ou expirou. Solicite um novo link à Franco Trades."
       );
 
       return;
