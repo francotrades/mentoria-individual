@@ -2707,6 +2707,14 @@
           </button>
 
           <button
+            id="resendStudentAccessButton"
+            class="secondary-button"
+            type="button"
+          >
+            Reenviar acesso
+          </button>
+
+          <button
             id="deleteTestStudentButton"
             class="danger-button"
             type="button"
@@ -3145,6 +3153,9 @@ const studentStatusSelect =
 
 const saveStudentButton =
   $("saveStudentButton");
+
+const resendStudentAccessButton =
+  $("resendStudentAccessButton");
 
 const deleteTestStudentButton =
   $("deleteTestStudentButton");
@@ -7749,6 +7760,116 @@ async function saveStudent() {
 }
 
 
+async function resendStudentAccess() {
+
+  if (!selectedStudent) {
+    return;
+  }
+
+
+  const email =
+    (
+      selectedStudent.email ||
+      ""
+    )
+      .trim()
+      .toLowerCase();
+
+
+  if (!email) {
+
+    showMessage(
+      "Este mentorado não possui um e-mail válido.",
+      "error"
+    );
+
+    return;
+
+  }
+
+
+  const confirmed =
+    confirm(
+      "Gerar e enviar um novo link de acesso para " +
+      email +
+      "?\n\nO mentorado poderá definir ou redefinir a senha por esse novo link."
+    );
+
+
+  if (!confirmed) {
+    return;
+  }
+
+
+  resendStudentAccessButton.disabled =
+    true;
+
+  resendStudentAccessButton.textContent =
+    "ENVIANDO...";
+
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabase.functions.invoke(
+        "resend-student-access",
+        {
+          body: {
+            student_id:
+              selectedStudent.id
+          }
+        }
+      );
+
+
+    if (
+      error ||
+      !data?.success ||
+      data?.email_sent !==
+        true
+    ) {
+
+      console.error(
+        "Erro ao reenviar acesso:",
+        error,
+        data
+      );
+
+
+      showMessage(
+        data?.error ||
+        "Não foi possível reenviar o acesso.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    showMessage(
+      "Novo link de acesso enviado para " +
+      email +
+      "."
+    );
+
+  }
+  finally {
+
+    resendStudentAccessButton.disabled =
+      false;
+
+    resendStudentAccessButton.textContent =
+      "Reenviar acesso";
+
+  }
+
+}
+
+
 /* SESSÕES */
 
 function clearSessionForm() {
@@ -8360,6 +8481,12 @@ studentSelect.addEventListener(
 saveStudentButton.addEventListener(
   "click",
   saveStudent
+);
+
+
+resendStudentAccessButton.addEventListener(
+  "click",
+  resendStudentAccess
 );
 
 
