@@ -160,6 +160,53 @@
       margin-bottom: 20px;
     }
 
+    .panel-collapse-control {
+      display: flex;
+      justify-content: flex-end;
+      margin: -4px 0 14px;
+    }
+
+    .panel-collapse-button {
+      border: 1px solid #2a3440;
+      border-radius: 9px;
+      background: #0b1016;
+      color: #b8c1cb;
+      padding: 8px 12px;
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: border-color .2s ease, color .2s ease, background .2s ease;
+    }
+
+    .panel-collapse-button:hover {
+      border-color: rgba(67,226,144,.45);
+      color: #43e290;
+      background: rgba(67,226,144,.05);
+    }
+
+    .panel.is-collapsed {
+      padding-top: 14px;
+      padding-bottom: 14px;
+    }
+
+    .panel.is-collapsed > :not(.panel-collapse-control) {
+      display: none !important;
+    }
+
+    .panel.is-collapsed .panel-collapse-control {
+      justify-content: flex-start;
+      margin: 0;
+    }
+
+    .panel.is-collapsed .panel-collapse-button {
+      width: 100%;
+      text-align: left;
+      border-color: rgba(67,226,144,.18);
+      color: #e7ece9;
+      background: rgba(67,226,144,.035);
+      padding: 11px 13px;
+    }
+
     .form-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2259,7 +2306,10 @@
     </section>
 
 
-    <section class="panel">
+    <section
+      id="mentorsPanel"
+      class="panel"
+    >
 
       <div class="panel-title-row">
         <div>
@@ -3302,6 +3352,194 @@ let studentProgress = [];
 let editingStudentSessionId = null;
 
 let studentFilter = "ativos";
+
+
+const collapsiblePanels = [
+  {
+    id: "attentionPanel",
+    label: "Atenção necessária"
+  },
+  {
+    id: "tradeReviewPanel",
+    label: "Revisão dos Trades"
+  },
+  {
+    id: "mentorsPanel",
+    label: "Mentorados"
+  },
+  {
+    id: "sessionsPanel",
+    label: "Sessões do mentorado"
+  }
+];
+
+
+function setPanelCollapsed(
+  panel,
+  label,
+  collapsed
+) {
+
+  panel.classList.toggle(
+    "is-collapsed",
+    collapsed
+  );
+
+
+  const button =
+    panel.querySelector(
+      ":scope > .panel-collapse-control .panel-collapse-button"
+    );
+
+
+  if (button) {
+
+    button.textContent =
+      collapsed
+        ?
+        "＋ " + label
+        :
+        "− Minimizar";
+
+
+    button.setAttribute(
+      "aria-expanded",
+      collapsed
+        ?
+        "false"
+        :
+        "true"
+    );
+
+  }
+
+
+  try {
+
+    localStorage.setItem(
+      "francotrades-admin-panel-" +
+      panel.id,
+      collapsed
+        ?
+        "collapsed"
+        :
+        "expanded"
+    );
+
+  }
+  catch {
+    // O painel continua funcionando mesmo se o navegador bloquear storage.
+  }
+
+}
+
+
+function setupCollapsiblePanels() {
+
+  for (
+    const config of
+    collapsiblePanels
+  ) {
+
+    const panel =
+      document.getElementById(
+        config.id
+      );
+
+
+    if (
+      !panel ||
+      panel.querySelector(
+        ":scope > .panel-collapse-control"
+      )
+    ) {
+      continue;
+    }
+
+
+    const control =
+      document.createElement(
+        "div"
+      );
+
+
+    control.className =
+      "panel-collapse-control";
+
+
+    const button =
+      document.createElement(
+        "button"
+      );
+
+
+    button.type =
+      "button";
+
+    button.className =
+      "panel-collapse-button";
+
+    button.setAttribute(
+      "aria-controls",
+      config.id
+    );
+
+
+    let collapsed =
+      false;
+
+
+    try {
+
+      collapsed =
+        localStorage.getItem(
+          "francotrades-admin-panel-" +
+          config.id
+        ) ===
+        "collapsed";
+
+    }
+    catch {
+      collapsed =
+        false;
+    }
+
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        setPanelCollapsed(
+          panel,
+          config.label,
+          !panel.classList.contains(
+            "is-collapsed"
+          )
+        );
+
+      }
+    );
+
+
+    control.appendChild(
+      button
+    );
+
+
+    panel.prepend(
+      control
+    );
+
+
+    setPanelCollapsed(
+      panel,
+      config.label,
+      collapsed
+    );
+
+  }
+
+}
 
 
 /* UTILIDADES */
@@ -8763,6 +9001,9 @@ logoutButton.addEventListener(
 
 
 /* INIT */
+
+setupCollapsiblePanels();
+
 
 async function init() {
 
