@@ -3937,55 +3937,57 @@ async function loadTradeReviews() {
    RENDERIZAR SESSÕES
 ========================================== */
 
-function isLiveLinkAvailable(
+function getLiveLinkExpiration(
   item
 ) {
 
-  if (!item.teams_url) {
-    return false;
-  }
-
-
   if (
-    !item.data_sessao ||
-    !item.session_time
+    !item.teams_url ||
+    !item.teams_url_added_at
   ) {
-    return true;
+    return null;
   }
 
 
-  const time =
-    String(
-      item.session_time
-    ).slice(
-      0,
-      5
-    );
-
-
-  const scheduledAt =
+  const addedAt =
     new Date(
-      `${item.data_sessao}T${time}:00-03:00`
+      item.teams_url_added_at
     );
 
 
   if (
     Number.isNaN(
-      scheduledAt.getTime()
+      addedAt.getTime()
     )
   ) {
-    return true;
+    return null;
   }
 
 
+  return new Date(
+    addedAt.getTime() +
+    60 * 60 * 1000
+  );
+
+}
+
+
+function isLiveLinkAvailable(
+  item
+) {
+
   const expiresAt =
-    new Date(
-      scheduledAt.getTime() +
-      60 * 60 * 1000
+    getLiveLinkExpiration(
+      item
     );
 
 
-  return new Date() <=
+  if (!expiresAt) {
+    return false;
+  }
+
+
+  return new Date() <
     expiresAt;
 
 }
@@ -4250,6 +4252,45 @@ function renderSessions() {
 
   }
 
+
+  const expirations =
+    currentSessions
+      .map(
+        getLiveLinkExpiration
+      )
+      .filter(
+        date =>
+          date &&
+          date.getTime() >
+          Date.now()
+      )
+      .sort(
+        (a, b) =>
+          a.getTime() -
+          b.getTime()
+      );
+
+
+  if (
+    expirations.length > 0
+  ) {
+
+    const delay =
+      Math.max(
+        0,
+        expirations[0].getTime() -
+        Date.now() +
+        250
+      );
+
+
+    setTimeout(
+      renderSessions,
+      delay
+    );
+
+  }
+
 }
 
 
@@ -4478,6 +4519,7 @@ async function loadDashboard() {
         session_id,
         youtube_url,
         teams_url,
+        teams_url_added_at,
         data_sessao,
         session_time,
         observacoes,
