@@ -2,9 +2,9 @@
 -- Execute este arquivo uma única vez no SQL Editor do Supabase.
 --
 -- Permite ao mentor liberar individualmente as duas áreas de revisão antes
--- das 8 primeiras aulas. A liberação antecipada NÃO altera:
+-- das gravações das 8 primeiras aulas. A liberação antecipada NÃO altera:
 --   • exigência de acesso geral ativo;
---   • encerramento das análises com imagem ao liberar a última sessão;
+--   • encerramento das análises com imagem ao cadastrar a gravação da última sessão;
 --   • duração normal das revisões em vídeo.
 
 create table if not exists public.trade_review_access_overrides (
@@ -69,7 +69,7 @@ as $$
           join public.sessions s
             on s.id = ss.session_id
           where ss.student_id = p.id
-            and ss.liberada = true
+            and nullif(btrim(coalesce(ss.youtube_url, '')), '') is not null
             and s.numero between 1 and 8
         ) = 8
       )
@@ -115,7 +115,7 @@ as $$
           join public.sessions s
             on s.id = ss.session_id
           where ss.student_id = p.id
-            and ss.liberada = true
+            and nullif(btrim(coalesce(ss.youtube_url, '')), '') is not null
             and s.numero between 1 and 8
         ) = 8
       )
@@ -125,7 +125,7 @@ as $$
         join public.sessions s_last
           on s_last.id = ss_last.session_id
         where ss_last.student_id = p.id
-          and ss_last.liberada = true
+          and nullif(btrim(coalesce(ss_last.youtube_url, '')), '') is not null
           and s_last.numero = greatest(
             12,
             coalesce(
