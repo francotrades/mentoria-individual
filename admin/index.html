@@ -5078,6 +5078,810 @@ createStudentButton
 
 /* REVISÃO DOS TRADES */
 
+function setTradeReviewAdminTab(
+  tab
+) {
+
+  const isAnalysis =
+    tab === "analysis";
+
+
+  tradeAnalysisTabContent.classList
+    .toggle(
+      "hidden",
+      !isAnalysis
+    );
+
+
+  tradeVideoTabContent.classList
+    .toggle(
+      "hidden",
+      isAnalysis
+    );
+
+
+  for (
+    const button of
+    tradeReviewTabButtons
+  ) {
+
+    const active =
+      button.dataset.tradeReviewTab ===
+      tab;
+
+
+    button.classList.toggle(
+      "active",
+      active
+    );
+
+
+    button.setAttribute(
+      "aria-selected",
+      active
+        ?
+        "true"
+        :
+        "false"
+    );
+
+  }
+
+}
+
+
+function resetTradeAnalysisForm() {
+
+  editingTradeAnalysisReviewId =
+    null;
+
+  tradeAnalysisTitle.value =
+    "";
+
+  tradeAnalysisImage.value =
+    "";
+
+  tradeAnalysisExplanation.value =
+    "";
+
+  tradeAnalysisActive.checked =
+    true;
+
+  tradeAnalysisCurrentImage.textContent =
+    "";
+
+  tradeAnalysisCurrentImage.classList
+    .add("hidden");
+
+  saveTradeAnalysisButton.textContent =
+    "Adicionar análise";
+
+  cancelTradeAnalysisButton.classList
+    .add("hidden");
+
+}
+
+
+async function signedTradeAnalysisImage(
+  imagePath,
+  expiresIn = 3600
+) {
+
+  const {
+    data,
+    error
+  } =
+    await supabase.storage
+      .from(
+        "trade-review-images"
+      )
+      .createSignedUrl(
+        imagePath,
+        expiresIn
+      );
+
+
+  if (error) {
+    console.error(
+      "Não foi possível assinar a imagem:",
+      error
+    );
+
+    return "";
+  }
+
+
+  return data?.signedUrl ||
+    "";
+
+}
+
+
+async function renderTradeAnalysisReviews() {
+
+  tradeAnalysisList.innerHTML =
+    "";
+
+
+  if (
+    allTradeAnalysisReviews.length ===
+    0
+  ) {
+
+    tradeAnalysisList.innerHTML =
+      `
+        <div class="reminder-empty">
+          Nenhuma análise com imagem publicada ainda.
+        </div>
+      `;
+
+    return;
+
+  }
+
+
+  for (
+    const item of
+    allTradeAnalysisReviews
+  ) {
+
+    const row =
+      document.createElement(
+        "div"
+      );
+
+
+    row.className =
+      "trade-review-item";
+
+
+    const published =
+      item.published_at
+        ?
+        new Date(
+          item.published_at
+        ).toLocaleDateString(
+          "pt-BR"
+        )
+        :
+        "-";
+
+
+    const signedUrl =
+      await signedTradeAnalysisImage(
+        item.image_path,
+        1800
+      );
+
+
+    row.innerHTML =
+      `
+        <div class="trade-analysis-item-main">
+          ${
+            signedUrl
+              ?
+              `
+                <img
+                  class="trade-analysis-thumb"
+                  src="${escapeHTML(signedUrl)}"
+                  alt="Imagem da análise ${escapeHTML(item.titulo)}"
+                >
+              `
+              :
+              `
+                <div class="trade-analysis-thumb"></div>
+              `
+          }
+
+          <div>
+            <div class="trade-review-item-title">
+              ${escapeHTML(item.titulo)}
+              <span class="trade-review-badge ${item.ativo ? "" : "off"}">
+                ${item.ativo ? "Publicado" : "Oculto"}
+              </span>
+            </div>
+
+            <div class="trade-review-item-meta">
+              Publicado em ${published}
+            </div>
+
+            <div class="trade-review-item-description">
+              ${escapeHTML(item.explicacao)}
+            </div>
+          </div>
+        </div>
+
+        <div class="trade-review-item-actions">
+          ${
+            signedUrl
+              ?
+              `
+                <a
+                  class="area-button"
+                  href="${escapeHTML(signedUrl)}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Ver imagem
+                </a>
+              `
+              :
+              ""
+          }
+
+          <button
+            type="button"
+            class="secondary-button"
+            data-edit-trade-analysis="${item.id}"
+          >
+            Editar
+          </button>
+
+          <button
+            type="button"
+            class="danger-button"
+            data-delete-trade-analysis="${item.id}"
+          >
+            Excluir
+          </button>
+        </div>
+      `;
+
+
+    tradeAnalysisList.appendChild(
+      row
+    );
+
+  }
+
+}
+
+
+async function loadTradeAnalysisReviews() {
+
+  const {
+    data,
+    error
+  } =
+    await supabase
+      .from(
+        "trade_analysis_reviews"
+      )
+      .select(`
+        id,
+        titulo,
+        explicacao,
+        image_path,
+        ativo,
+        published_at
+      `)
+      .order(
+        "published_at",
+        {
+          ascending: false
+        }
+      );
+
+
+  if (error) {
+
+    console.error(
+      "Análises de Trades não carregadas:",
+      error
+    );
+
+
+    tradeAnalysisList.innerHTML =
+      `
+        <div class="reminder-empty">
+          A área de análises com imagem ainda não está disponível.
+          Execute o arquivo supabase/trade_analysis_reviews.sql no Supabase.
+        </div>
+      `;
+
+    return;
+
+  }
+
+
+  allTradeAnalysisReviews =
+    data ||
+    [];
+
+
+  await renderTradeAnalysisReviews();
+
+}
+
+
+async function saveTradeAnalysisReview() {
+
+  const title =
+    tradeAnalysisTitle.value
+      .trim();
+
+
+  const explanation =
+    tradeAnalysisExplanation.value
+      .trim();
+
+
+  const file =
+    tradeAnalysisImage.files?.[0] ||
+    null;
+
+
+  const existing =
+    editingTradeAnalysisReviewId
+      ?
+      allTradeAnalysisReviews.find(
+        item =>
+          Number(item.id) ===
+          Number(
+            editingTradeAnalysisReviewId
+          )
+      )
+      :
+      null;
+
+
+  if (
+    !title ||
+    !explanation
+  ) {
+
+    showMessage(
+      "Preencha o título e a explicação do trade.",
+      "error"
+    );
+
+    return;
+
+  }
+
+
+  if (
+    !existing &&
+    !file
+  ) {
+
+    showMessage(
+      "Selecione a imagem do trade.",
+      "error"
+    );
+
+    return;
+
+  }
+
+
+  if (file) {
+
+    const allowedTypes =
+      new Set([
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+        "image/gif"
+      ]);
+
+
+    if (
+      !allowedTypes.has(
+        file.type
+      )
+    ) {
+
+      showMessage(
+        "Use uma imagem JPG, PNG, WEBP ou GIF.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    if (
+      file.size >
+      5 * 1024 * 1024
+    ) {
+
+      showMessage(
+        "A imagem precisa ter no máximo 5 MB.",
+        "error"
+      );
+
+      return;
+
+    }
+
+  }
+
+
+  saveTradeAnalysisButton.disabled =
+    true;
+
+  saveTradeAnalysisButton.textContent =
+    editingTradeAnalysisReviewId
+      ?
+      "SALVANDO..."
+      :
+      "ADICIONANDO...";
+
+
+  let uploadedPath =
+    "";
+
+
+  try {
+
+    let imagePath =
+      existing?.image_path ||
+      "";
+
+
+    if (file) {
+
+      const safeName =
+        file.name
+          .normalize("NFD")
+          .replace(
+            /[\u0300-\u036f]/g,
+            ""
+          )
+          .replace(
+            /[^A-Za-z0-9._-]/g,
+            "-"
+          )
+          .slice(
+            -90
+          );
+
+
+      uploadedPath =
+        "analises/" +
+        Date.now() +
+        "-" +
+        crypto.randomUUID() +
+        "-" +
+        safeName;
+
+
+      const {
+        error: uploadError
+      } =
+        await supabase.storage
+          .from(
+            "trade-review-images"
+          )
+          .upload(
+            uploadedPath,
+            file,
+            {
+              cacheControl:
+                "3600",
+              upsert:
+                false,
+              contentType:
+                file.type
+            }
+          );
+
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+
+      imagePath =
+        uploadedPath;
+
+    }
+
+
+    const payload = {
+      titulo:
+        title,
+      explicacao:
+        explanation,
+      image_path:
+        imagePath,
+      ativo:
+        tradeAnalysisActive.checked
+    };
+
+
+    const result =
+      editingTradeAnalysisReviewId
+
+        ?
+
+        await supabase
+          .from(
+            "trade_analysis_reviews"
+          )
+          .update(
+            payload
+          )
+          .eq(
+            "id",
+            editingTradeAnalysisReviewId
+          )
+
+        :
+
+        await supabase
+          .from(
+            "trade_analysis_reviews"
+          )
+          .insert(
+            payload
+          );
+
+
+    if (result.error) {
+      throw result.error;
+    }
+
+
+    if (
+      uploadedPath &&
+      existing?.image_path &&
+      existing.image_path !==
+      uploadedPath
+    ) {
+
+      const {
+        error: removeOldError
+      } =
+        await supabase.storage
+          .from(
+            "trade-review-images"
+          )
+          .remove([
+            existing.image_path
+          ]);
+
+
+      if (removeOldError) {
+        console.warn(
+          "Imagem antiga não removida:",
+          removeOldError
+        );
+      }
+
+    }
+
+
+    showMessage(
+      editingTradeAnalysisReviewId
+        ?
+        "Análise atualizada."
+        :
+        "Análise publicada para todos os mentorados elegíveis."
+    );
+
+
+    resetTradeAnalysisForm();
+
+    await loadTradeAnalysisReviews();
+
+  }
+  catch (
+    saveError
+  ) {
+
+    console.error(
+      "Erro ao salvar análise:",
+      saveError
+    );
+
+
+    if (uploadedPath) {
+
+      await supabase.storage
+        .from(
+          "trade-review-images"
+        )
+        .remove([
+          uploadedPath
+        ]);
+
+    }
+
+
+    showMessage(
+      "Não foi possível salvar a análise. Verifique se o SQL e o Storage foram configurados.",
+      "error"
+    );
+
+  }
+  finally {
+
+    saveTradeAnalysisButton.disabled =
+      false;
+
+
+    saveTradeAnalysisButton.textContent =
+      editingTradeAnalysisReviewId
+        ?
+        "Salvar alterações"
+        :
+        "Adicionar análise";
+
+  }
+
+}
+
+
+function editTradeAnalysisReview(
+  id
+) {
+
+  const item =
+    allTradeAnalysisReviews.find(
+      review =>
+        Number(review.id) ===
+        Number(id)
+    );
+
+
+  if (!item) {
+    return;
+  }
+
+
+  setTradeReviewAdminTab(
+    "analysis"
+  );
+
+
+  editingTradeAnalysisReviewId =
+    item.id;
+
+
+  tradeAnalysisTitle.value =
+    item.titulo ||
+    "";
+
+
+  tradeAnalysisImage.value =
+    "";
+
+
+  tradeAnalysisExplanation.value =
+    item.explicacao ||
+    "";
+
+
+  tradeAnalysisActive.checked =
+    item.ativo ===
+    true;
+
+
+  tradeAnalysisCurrentImage.textContent =
+    "Imagem atual preservada. Selecione outro arquivo somente se quiser substituí-la.";
+
+
+  tradeAnalysisCurrentImage.classList
+    .remove("hidden");
+
+
+  saveTradeAnalysisButton.textContent =
+    "Salvar alterações";
+
+
+  cancelTradeAnalysisButton.classList
+    .remove("hidden");
+
+
+  tradeReviewPanel.scrollIntoView({
+    behavior:
+      "smooth",
+    block:
+      "start"
+  });
+
+}
+
+
+async function deleteTradeAnalysisReview(
+  id
+) {
+
+  const item =
+    allTradeAnalysisReviews.find(
+      review =>
+        Number(review.id) ===
+        Number(id)
+    );
+
+
+  if (!item) {
+    return;
+  }
+
+
+  const confirmed =
+    confirm(
+      "Excluir a análise “" +
+      item.titulo +
+      "”?\n\nA imagem e a explicação deixarão de aparecer para todos os mentorados."
+    );
+
+
+  if (!confirmed) {
+    return;
+  }
+
+
+  const {
+    error
+  } =
+    await supabase
+      .from(
+        "trade_analysis_reviews"
+      )
+      .delete()
+      .eq(
+        "id",
+        id
+      );
+
+
+  if (error) {
+
+    showMessage(
+      "Não foi possível excluir a análise.",
+      "error"
+    );
+
+    return;
+
+  }
+
+
+  const {
+    error: storageError
+  } =
+    await supabase.storage
+      .from(
+        "trade-review-images"
+      )
+      .remove([
+        item.image_path
+      ]);
+
+
+  if (storageError) {
+    console.warn(
+      "Registro excluído, mas a imagem não pôde ser removida do Storage:",
+      storageError
+    );
+  }
+
+
+  if (
+    Number(
+      editingTradeAnalysisReviewId
+    ) ===
+    Number(id)
+  ) {
+    resetTradeAnalysisForm();
+  }
+
+
+  await loadTradeAnalysisReviews();
+
+
+  showMessage(
+    "Análise excluída."
+  );
+
+}
+
+
 function resetTradeReviewForm() {
 
   editingTradeReviewId =
@@ -5384,6 +6188,11 @@ async function saveTradeReview() {
 function editTradeReview(
   id
 ) {
+
+  setTradeReviewAdminTab(
+    "video"
+  );
+
 
   const item =
     allTradeReviews.find(
@@ -5775,7 +6584,10 @@ async function loadBaseData() {
 
   renderStudentSelect();
 
-  await loadTradeReviews();
+  await Promise.all([
+    loadTradeReviews(),
+    loadTradeAnalysisReviews()
+  ]);
 
 }
 
