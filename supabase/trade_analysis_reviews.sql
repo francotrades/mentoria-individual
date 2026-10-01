@@ -2,9 +2,9 @@
 -- Execute este arquivo uma única vez no SQL Editor do Supabase.
 -- Regras:
 -- 1) Mentor administra uma biblioteca global de análises com imagem.
--- 2) Aluno só acessa após as 8 primeiras aulas estarem liberadas.
--- 3) O acesso às análises em imagem termina no momento em que a última sessão
---    contratada (12ª ou 13ª) for liberada.
+-- 2) Aluno só acessa após existirem gravações das 8 primeiras aulas.
+-- 3) O acesso às análises em imagem termina no momento em que a gravação da
+--    última sessão contratada (12ª ou 13ª) for cadastrada.
 -- 4) As imagens ficam em bucket PRIVADO e respeitam a mesma regra de elegibilidade.
 
 create or replace function public.can_access_trade_analysis_reviews()
@@ -30,7 +30,7 @@ as $$
         join public.sessions s
           on s.id = ss.session_id
         where ss.student_id = p.id
-          and ss.liberada = true
+          and nullif(btrim(coalesce(ss.youtube_url, '')), '') is not null
           and s.numero between 1 and 8
       ) = 8
       and not exists (
@@ -39,7 +39,7 @@ as $$
         join public.sessions s_last
           on s_last.id = ss_last.session_id
         where ss_last.student_id = p.id
-          and ss_last.liberada = true
+          and nullif(btrim(coalesce(ss_last.youtube_url, '')), '') is not null
           and s_last.numero = greatest(
             12,
             coalesce(
