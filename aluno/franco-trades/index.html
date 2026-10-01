@@ -342,8 +342,7 @@ $("tradeList").addEventListener("click",async e=>{
 });
 
 function detectDelimiter(text){
-  const line=(text.split(/?
-/)[0]||"");
+  const line=(text.split(/\\r?\\n/)[0]||"");
   return (line.match(/;/g)||[]).length>(line.match(/,/g)||[]).length?";":",";
 }
 function parseCsv(text){
@@ -362,23 +361,23 @@ function parseCsv(text){
   const headers=rows[0].map(h=>h.trim());
   return rows.slice(1).map(r=>Object.fromEntries(headers.map((h,i)=>[h,(r[i]??"").trim()])));
 }
-function nh(s){return String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]/g,"");}
+function nh(s){return String(s||"").normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]/g,"");}
 function pick(row,aliases){
   const map=Object.fromEntries(Object.entries(row).map(([k,v])=>[nh(k),v]));
   for(const a of aliases){if(map[nh(a)]!==undefined&&map[nh(a)]!=="")return map[nh(a)]} return "";
 }
 function parseNumber(v){
-  let s=String(v??"").trim().replace(/[$R€£s]/g,"");
+  let s=String(v??"").trim().replace(/[$R€£\\s]/g,"");
   if(!s)return null;
-  if(s.includes(",")&&s.includes(".")){if(s.lastIndexOf(",")>s.lastIndexOf("."))s=s.replace(/./g,"").replace(",",".");else s=s.replace(/,/g,"");}
+  if(s.includes(",")&&s.includes(".")){if(s.lastIndexOf(",")>s.lastIndexOf("."))s=s.replace(/\\./g,"").replace(",",".");else s=s.replace(/,/g,"");}
   else if(s.includes(","))s=s.replace(",",".");
   s=s.replace(/[^0-9.+-]/g,"");
   const n=Number(s);return Number.isFinite(n)?n:null;
 }
 function parseDate(v){
   const s=String(v||"").trim(); if(!s)return null;
-  const iso=s.match(/^(d{4})[-/](d{1,2})[-/](d{1,2})/); if(iso)return iso[1]+"-"+iso[2].padStart(2,"0")+"-"+iso[3].padStart(2,"0");
-  const br=s.match(/^(d{1,2})[/-](d{1,2})[/-](d{2,4})/); if(br){let y=br[3];if(y.length===2)y="20"+y;return y+"-"+br[2].padStart(2,"0")+"-"+br[1].padStart(2,"0")}
+  const iso=s.match(/^(\\d{4})[-/](\\d{1,2})[-/](\\d{1,2})/); if(iso)return iso[1]+"-"+iso[2].padStart(2,"0")+"-"+iso[3].padStart(2,"0");
+  const br=s.match(/^(\\d{1,2})[/-](\\d{1,2})[/-](\\d{2,4})/); if(br){let y=br[3];if(y.length===2)y="20"+y;return y+"-"+br[2].padStart(2,"0")+"-"+br[1].padStart(2,"0")}
   const d=new Date(s); return Number.isNaN(d.getTime())?null:d.toISOString().slice(0,10);
 }
 function normalizeCsvTrade(row){
@@ -423,7 +422,7 @@ async function init(){
   if(profile.role==="admin"){window.location.href="../../admin/performance/";return}
   const expired=profile.data_expiracao&&profile.data_expiracao<today();
   if(profile.status!=="ativo"||expired){await supabase.auth.signOut();window.location.href="../../login/?reason="+(expired||profile.status==="expirado"?"expired":"inactive");return}
-  $("welcomeTitle").textContent="Franco Trades · "+(profile.nome?.split(/s+/)[0]||"Mentorado");
+  $("welcomeTitle").textContent="Franco Trades · "+(profile.nome?.split(/\\s+/)[0]||"Mentorado");
   $("tradeDate").value=today();
   await loadData();
   $("loading").classList.add("hidden");$("app").classList.remove("hidden");
