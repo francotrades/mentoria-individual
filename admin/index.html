@@ -1828,6 +1828,71 @@
       min-width: 0;
     }
 
+    .trade-analysis-paste-zone {
+      display: grid;
+      gap: 4px;
+      padding: 18px 14px;
+      margin-bottom: 9px;
+      border: 1px dashed rgba(67,226,144,.35);
+      border-radius: 11px;
+      background: rgba(67,226,144,.035);
+      color: #dbe6df;
+      cursor: text;
+      outline: none;
+    }
+
+    .trade-analysis-paste-zone:focus,
+    .trade-analysis-paste-zone.is-ready {
+      border-color: #43e290;
+      background: rgba(67,226,144,.07);
+    }
+
+    .trade-analysis-paste-zone strong {
+      color: #8cf0ba;
+      font-size: 12px;
+    }
+
+    .trade-analysis-paste-zone span {
+      color: var(--ft-muted, #89939f);
+      font-size: 10px;
+    }
+
+    .trade-analysis-clipboard-preview {
+      display: grid;
+      grid-template-columns: 96px minmax(0,1fr) auto;
+      gap: 11px;
+      align-items: center;
+      margin-top: 10px;
+      padding: 10px;
+      border: 1px solid var(--ft-border, #202833);
+      border-radius: 10px;
+      background: #090e0b;
+    }
+
+    .trade-analysis-clipboard-preview img {
+      width: 96px;
+      height: 62px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid #202833;
+      background: #050706;
+    }
+
+    .trade-analysis-clipboard-preview strong,
+    .trade-analysis-clipboard-preview span {
+      display: block;
+    }
+
+    .trade-analysis-clipboard-preview strong {
+      font-size: 11px;
+      margin-bottom: 3px;
+    }
+
+    .trade-analysis-clipboard-preview span {
+      color: var(--ft-muted, #89939f);
+      font-size: 9px;
+    }
+
     @media (max-width: 760px) {
       .trade-review-form,
       .trade-review-item,
@@ -1843,6 +1908,20 @@
 
       .trade-review-item-actions {
         justify-content: flex-start;
+      }
+
+      .trade-analysis-clipboard-preview {
+        grid-template-columns: 72px minmax(0,1fr);
+      }
+
+      .trade-analysis-clipboard-preview img {
+        width: 72px;
+        height: 52px;
+      }
+
+      .trade-analysis-clipboard-preview button {
+        grid-column: 1 / -1;
+        width: 100%;
       }
     }
 
@@ -2337,6 +2416,16 @@
               Imagem do trade
             </label>
 
+            <div
+              id="tradeAnalysisPasteZone"
+              class="trade-analysis-paste-zone"
+              tabindex="0"
+              title="Clique aqui e use Ctrl+V para colar uma captura"
+            >
+              <strong>Ctrl+V para colar uma captura</strong>
+              <span>ou escolha um arquivo abaixo</span>
+            </div>
+
             <input
               id="tradeAnalysisImage"
               type="file"
@@ -2344,7 +2433,30 @@
             >
 
             <div class="hint">
-              JPG, PNG, WEBP ou GIF. Máximo de 5 MB.
+              Capturas coladas são otimizadas automaticamente. Arquivos: JPG, PNG, WEBP ou GIF. Máximo de 5 MB.
+            </div>
+
+            <div
+              id="tradeAnalysisClipboardPreview"
+              class="trade-analysis-clipboard-preview hidden"
+            >
+              <img
+                id="tradeAnalysisClipboardPreviewImage"
+                alt="Prévia da captura colada"
+              >
+              <div>
+                <strong id="tradeAnalysisClipboardPreviewName">
+                  Captura pronta
+                </strong>
+                <span id="tradeAnalysisClipboardPreviewMeta"></span>
+              </div>
+              <button
+                id="clearTradeAnalysisClipboardButton"
+                type="button"
+                class="secondary-button"
+              >
+                Remover captura
+              </button>
             </div>
 
             <div
@@ -3375,6 +3487,24 @@ const tradeAnalysisTitle =
 const tradeAnalysisImage =
   $("tradeAnalysisImage");
 
+const tradeAnalysisPasteZone =
+  $("tradeAnalysisPasteZone");
+
+const tradeAnalysisClipboardPreview =
+  $("tradeAnalysisClipboardPreview");
+
+const tradeAnalysisClipboardPreviewImage =
+  $("tradeAnalysisClipboardPreviewImage");
+
+const tradeAnalysisClipboardPreviewName =
+  $("tradeAnalysisClipboardPreviewName");
+
+const tradeAnalysisClipboardPreviewMeta =
+  $("tradeAnalysisClipboardPreviewMeta");
+
+const clearTradeAnalysisClipboardButton =
+  $("clearTradeAnalysisClipboardButton");
+
 const tradeAnalysisCurrentImage =
   $("tradeAnalysisCurrentImage");
 
@@ -3584,6 +3714,8 @@ let allTradeAnalysisReviews = [];
 
 let editingTradeReviewId = null;
 let editingTradeAnalysisReviewId = null;
+let pastedTradeAnalysisFile = null;
+let pastedTradeAnalysisPreviewUrl = "";
 
 let selectedStudent = null;
 let studentSessions = [];
@@ -5130,6 +5262,342 @@ function setTradeReviewAdminTab(
 }
 
 
+function revokeTradeAnalysisPreview() {
+
+  if (pastedTradeAnalysisPreviewUrl) {
+
+    URL.revokeObjectURL(
+      pastedTradeAnalysisPreviewUrl
+    );
+
+  }
+
+
+  pastedTradeAnalysisPreviewUrl =
+    "";
+
+}
+
+
+function clearPastedTradeAnalysisImage() {
+
+  revokeTradeAnalysisPreview();
+
+  pastedTradeAnalysisFile =
+    null;
+
+  tradeAnalysisClipboardPreviewImage
+    .removeAttribute(
+      "src"
+    );
+
+  tradeAnalysisClipboardPreview.classList
+    .add("hidden");
+
+  tradeAnalysisPasteZone.classList
+    .remove("is-ready");
+
+}
+
+
+function humanFileSize(
+  bytes
+) {
+
+  if (
+    !Number.isFinite(bytes) ||
+    bytes <= 0
+  ) {
+    return "0 KB";
+  }
+
+
+  if (
+    bytes >=
+    1024 * 1024
+  ) {
+
+    return (
+      bytes /
+      (1024 * 1024)
+    ).toFixed(2) +
+      " MB";
+
+  }
+
+
+  return (
+    bytes /
+    1024
+  ).toFixed(0) +
+    " KB";
+
+}
+
+
+async function optimizePastedTradeImage(
+  sourceFile
+) {
+
+  const bitmap =
+    await createImageBitmap(
+      sourceFile
+    );
+
+
+  const maxWidth =
+    1800;
+
+
+  const scale =
+    Math.min(
+      1,
+      maxWidth /
+      bitmap.width
+    );
+
+
+  const width =
+    Math.max(
+      1,
+      Math.round(
+        bitmap.width *
+        scale
+      )
+    );
+
+
+  const height =
+    Math.max(
+      1,
+      Math.round(
+        bitmap.height *
+        scale
+      )
+    );
+
+
+  const canvas =
+    document.createElement(
+      "canvas"
+    );
+
+
+  canvas.width =
+    width;
+
+  canvas.height =
+    height;
+
+
+  const context =
+    canvas.getContext(
+      "2d"
+    );
+
+
+  context.drawImage(
+    bitmap,
+    0,
+    0,
+    width,
+    height
+  );
+
+
+  bitmap.close?.();
+
+
+  const blob =
+    await new Promise(
+      resolve =>
+        canvas.toBlob(
+          resolve,
+          "image/webp",
+          0.9
+        )
+    );
+
+
+  if (!blob) {
+
+    return new File(
+      [sourceFile],
+      "captura-trade.png",
+      {
+        type:
+          sourceFile.type ||
+          "image/png"
+      }
+    );
+
+  }
+
+
+  return new File(
+    [blob],
+    "captura-trade-" +
+    Date.now() +
+    ".webp",
+    {
+      type:
+        "image/webp"
+    }
+  );
+
+}
+
+
+function showPastedTradeAnalysisPreview(
+  file
+) {
+
+  clearPastedTradeAnalysisImage();
+
+  pastedTradeAnalysisFile =
+    file;
+
+
+  pastedTradeAnalysisPreviewUrl =
+    URL.createObjectURL(
+      file
+    );
+
+
+  tradeAnalysisClipboardPreviewImage.src =
+    pastedTradeAnalysisPreviewUrl;
+
+
+  tradeAnalysisClipboardPreviewName.textContent =
+    "Captura pronta para publicar";
+
+
+  tradeAnalysisClipboardPreviewMeta.textContent =
+    humanFileSize(
+      file.size
+    ) +
+    " · otimizada automaticamente";
+
+
+  tradeAnalysisClipboardPreview.classList
+    .remove("hidden");
+
+
+  tradeAnalysisPasteZone.classList
+    .add("is-ready");
+
+
+  tradeAnalysisPasteZone.querySelector(
+    "strong"
+  ).textContent =
+    "✓ Captura colada";
+
+}
+
+
+async function handleTradeAnalysisPaste(
+  event
+) {
+
+  const items =
+    [
+      ...(
+        event.clipboardData?.items ||
+        []
+      )
+    ];
+
+
+  const imageItem =
+    items.find(
+      item =>
+        item.type?.startsWith(
+          "image/"
+        )
+    );
+
+
+  if (!imageItem) {
+    return;
+  }
+
+
+  event.preventDefault();
+
+
+  const rawFile =
+    imageItem.getAsFile();
+
+
+  if (!rawFile) {
+    return;
+  }
+
+
+  tradeAnalysisPasteZone.querySelector(
+    "strong"
+  ).textContent =
+    "Otimizando captura...";
+
+
+  try {
+
+    const optimized =
+      await optimizePastedTradeImage(
+        rawFile
+      );
+
+
+    if (
+      optimized.size >
+      5 * 1024 * 1024
+    ) {
+
+      clearPastedTradeAnalysisImage();
+
+
+      showMessage(
+        "A captura ficou maior que 5 MB mesmo após a otimização.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    tradeAnalysisImage.value =
+      "";
+
+
+    showPastedTradeAnalysisPreview(
+      optimized
+    );
+
+  }
+  catch (
+    pasteError
+  ) {
+
+    console.error(
+      "Erro ao processar captura colada:",
+      pasteError
+    );
+
+
+    clearPastedTradeAnalysisImage();
+
+
+    showMessage(
+      "Não foi possível processar a captura colada.",
+      "error"
+    );
+
+  }
+
+}
+
+
 function resetTradeAnalysisForm() {
 
   editingTradeAnalysisReviewId =
@@ -5140,6 +5608,13 @@ function resetTradeAnalysisForm() {
 
   tradeAnalysisImage.value =
     "";
+
+  clearPastedTradeAnalysisImage();
+
+  tradeAnalysisPasteZone.querySelector(
+    "strong"
+  ).textContent =
+    "Ctrl+V para colar uma captura";
 
   tradeAnalysisExplanation.value =
     "";
@@ -5407,6 +5882,7 @@ async function saveTradeAnalysisReview() {
 
 
   const file =
+    pastedTradeAnalysisFile ||
     tradeAnalysisImage.files?.[0] ||
     null;
 
@@ -5748,6 +6224,13 @@ function editTradeAnalysisReview(
 
   tradeAnalysisImage.value =
     "";
+
+  clearPastedTradeAnalysisImage();
+
+  tradeAnalysisPasteZone.querySelector(
+    "strong"
+  ).textContent =
+    "Ctrl+V para colar uma captura";
 
 
   tradeAnalysisExplanation.value =
@@ -9621,6 +10104,92 @@ for (
   );
 
 }
+
+
+tradeAnalysisPasteZone.addEventListener(
+  "paste",
+  handleTradeAnalysisPaste
+);
+
+
+tradeAnalysisPasteZone.addEventListener(
+  "click",
+  () =>
+    tradeAnalysisPasteZone.focus()
+);
+
+
+document.addEventListener(
+  "paste",
+  async event => {
+
+    if (
+      tradeAnalysisTabContent.classList
+        .contains("hidden") ||
+      event.defaultPrevented
+    ) {
+      return;
+    }
+
+
+    const hasImage =
+      [
+        ...(
+          event.clipboardData?.items ||
+          []
+        )
+      ].some(
+        item =>
+          item.type?.startsWith(
+            "image/"
+          )
+      );
+
+
+    if (hasImage) {
+      await handleTradeAnalysisPaste(
+        event
+      );
+    }
+
+  }
+);
+
+
+clearTradeAnalysisClipboardButton.addEventListener(
+  "click",
+  () => {
+
+    clearPastedTradeAnalysisImage();
+
+    tradeAnalysisPasteZone.querySelector(
+      "strong"
+    ).textContent =
+      "Ctrl+V para colar uma captura";
+
+  }
+);
+
+
+tradeAnalysisImage.addEventListener(
+  "change",
+  () => {
+
+    if (
+      tradeAnalysisImage.files?.length
+    ) {
+
+      clearPastedTradeAnalysisImage();
+
+      tradeAnalysisPasteZone.querySelector(
+        "strong"
+      ).textContent =
+        "Arquivo selecionado";
+
+    }
+
+  }
+);
 
 
 saveTradeAnalysisButton.addEventListener(
