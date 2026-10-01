@@ -1,4 +1,4 @@
--- FrancoTrades Mentoria — Diário privado de performance dos mentorados
+-- FrancoTrades Mentoria — Diário de Trade privado dos mentorados
 -- Execute UMA VEZ no SQL Editor do Supabase.
 --
 -- Objetivos:
@@ -58,6 +58,16 @@ create table if not exists public.student_trade_accounts (
   currency text not null default 'USD'
     check (currency in ('USD','BRL')),
   starting_balance numeric(18,2) not null default 0,
+  account_size numeric(18,2),
+  account_stage text not null default 'new'
+    check (account_stage in ('new','existing')),
+  current_balance numeric(18,2),
+  drawdown_remaining numeric(18,2),
+  max_drawdown numeric(18,2),
+  profit_target numeric(18,2),
+  daily_loss_limit numeric(18,2),
+  consistency_rule numeric(8,2),
+  rules jsonb not null default '{}'::jsonb,
   active boolean not null default true,
   notes text,
   created_at timestamptz not null default now(),
