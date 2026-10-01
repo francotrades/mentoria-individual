@@ -3310,6 +3310,58 @@ async function toggleSessionProgress(
    REVISÃO DOS TRADES
 ========================================== */
 
+function setStudentTradeReviewTab(
+  tab
+) {
+
+  const isAnalysis =
+    tab === "analysis";
+
+
+  tradeAnalysisTabContent.classList
+    .toggle(
+      "hidden",
+      !isAnalysis
+    );
+
+
+  tradeVideoTabContent.classList
+    .toggle(
+      "hidden",
+      isAnalysis
+    );
+
+
+  for (
+    const button of
+    tradeReviewTabButtons
+  ) {
+
+    const active =
+      button.dataset.studentTradeReviewTab ===
+      tab;
+
+
+    button.classList.toggle(
+      "active",
+      active
+    );
+
+
+    button.setAttribute(
+      "aria-selected",
+      active
+        ?
+        "true"
+        :
+        "false"
+    );
+
+  }
+
+}
+
+
 function countFirstEightReleased() {
 
   const releasedNumbers =
@@ -3335,11 +3387,12 @@ function countFirstEightReleased() {
 }
 
 
-function renderTradeReviewsLocked(
+function renderLockedTradeContent(
+  target,
   releasedCount
 ) {
 
-  tradeReviewsList.innerHTML =
+  target.innerHTML =
     `
       <div class="trade-reviews-locked">
         <strong>
@@ -3347,7 +3400,7 @@ function renderTradeReviewsLocked(
         </strong>
 
         <p>
-          A Revisão dos Trades é liberada automaticamente quando as
+          Esta área é liberada automaticamente quando as
           8 primeiras aulas da mentoria estiverem disponíveis para você.
           Nesse momento, você já terá a base necessária para aproveitar
           melhor as análises.
@@ -3358,6 +3411,326 @@ function renderTradeReviewsLocked(
         </div>
       </div>
     `;
+
+}
+
+
+function renderTradeAnalysisClosed() {
+
+  tradeAnalysisList.innerHTML =
+    `
+      <div class="trade-reviews-locked">
+        <strong>
+          Ciclo de análises concluído
+        </strong>
+
+        <p>
+          A área de Revisão dos Trades com imagem e explicação fica disponível
+          entre a liberação da 8ª aula e a liberação da última sessão da sua
+          mentoria. Como sua última sessão já foi liberada, este ciclo foi
+          encerrado automaticamente.
+        </p>
+      </div>
+    `;
+
+}
+
+
+async function signedStudentTradeImage(
+  imagePath
+) {
+
+  const {
+    data,
+    error
+  } =
+    await supabase.storage
+      .from(
+        "trade-review-images"
+      )
+      .createSignedUrl(
+        imagePath,
+        3600
+      );
+
+
+  if (error) {
+
+    console.error(
+      "Erro ao abrir imagem da análise:",
+      error
+    );
+
+    return "";
+
+  }
+
+
+  return data?.signedUrl ||
+    "";
+
+}
+
+
+async function renderTradeAnalysisReviews() {
+
+  tradeAnalysisList.innerHTML =
+    "";
+
+
+  if (
+    tradeAnalysisReviews.length ===
+    0
+  ) {
+
+    tradeAnalysisList.innerHTML =
+      `
+        <div class="empty">
+          Nenhuma análise com imagem foi publicada ainda.
+          Novos estudos aparecerão aqui automaticamente.
+        </div>
+      `;
+
+    return;
+
+  }
+
+
+  for (
+    const item of
+    tradeAnalysisReviews
+  ) {
+
+    const signedUrl =
+      await signedStudentTradeImage(
+        item.image_path
+      );
+
+
+    const card =
+      document.createElement(
+        "article"
+      );
+
+
+    card.className =
+      "trade-analysis-card";
+
+
+    const publishedDate =
+      item.published_at
+        ?
+        new Date(
+          item.published_at
+        ).toLocaleDateString(
+          "pt-BR"
+        )
+        :
+        "";
+
+
+    const explanation =
+      escapeHTML(
+        item.explicacao ||
+        ""
+      )
+        .replace(
+          /\n/g,
+          "<br>"
+        );
+
+
+    card.innerHTML =
+      `
+        ${
+          signedUrl
+            ?
+            `
+              <a
+                class="trade-analysis-image-link"
+                href="${escapeHTML(signedUrl)}"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img
+                  class="trade-analysis-image"
+                  src="${escapeHTML(signedUrl)}"
+                  alt="Imagem da análise ${escapeHTML(item.titulo)}"
+                  loading="lazy"
+                >
+              </a>
+            `
+            :
+            ""
+        }
+
+        <div class="trade-analysis-body">
+          <div class="trade-review-kicker">
+            Revisão de operação
+          </div>
+
+          <div class="trade-review-title">
+            ${escapeHTML(item.titulo)}
+          </div>
+
+          ${
+            publishedDate
+              ?
+              `
+                <div class="trade-review-meta">
+                  Publicado em ${publishedDate}
+                </div>
+              `
+              :
+              ""
+          }
+
+          <div class="trade-analysis-text">
+            ${explanation}
+          </div>
+        </div>
+      `;
+
+
+    tradeAnalysisList.appendChild(
+      card
+    );
+
+  }
+
+}
+
+
+async function loadTradeAnalysisReviews() {
+
+  const releasedCount =
+    countFirstEightReleased();
+
+
+  if (
+    releasedCount < 8
+  ) {
+
+    tradeAnalysisReviews =
+      [];
+
+
+    renderLockedTradeContent(
+      tradeAnalysisList,
+      releasedCount
+    );
+
+    return;
+
+  }
+
+
+  tradeAnalysisList.innerHTML =
+    `
+      <div class="empty">
+        Carregando análises...
+      </div>
+    `;
+
+
+  const {
+    data: eligibility,
+    error: eligibilityError
+  } =
+    await supabase.rpc(
+      "can_access_trade_analysis_reviews"
+    );
+
+
+  if (eligibilityError) {
+
+    console.error(
+      "Não foi possível verificar o acesso às análises:",
+      eligibilityError
+    );
+
+
+    tradeAnalysisList.innerHTML =
+      `
+        <div class="empty">
+          A Revisão dos Trades está temporariamente indisponível.
+        </div>
+      `;
+
+    return;
+
+  }
+
+
+  if (
+    eligibility !== true
+  ) {
+
+    tradeAnalysisReviews =
+      [];
+
+
+    renderTradeAnalysisClosed();
+
+    return;
+
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabase
+      .from(
+        "trade_analysis_reviews"
+      )
+      .select(`
+        id,
+        titulo,
+        explicacao,
+        image_path,
+        published_at
+      `)
+      .eq(
+        "ativo",
+        true
+      )
+      .order(
+        "published_at",
+        {
+          ascending:
+            false
+        }
+      );
+
+
+  if (error) {
+
+    console.error(
+      "Erro ao carregar análises em imagem:",
+      error
+    );
+
+
+    tradeAnalysisList.innerHTML =
+      `
+        <div class="empty">
+          A Revisão dos Trades está temporariamente indisponível.
+        </div>
+      `;
+
+    return;
+
+  }
+
+
+  tradeAnalysisReviews =
+    data ||
+    [];
+
+
+  await renderTradeAnalysisReviews();
 
 }
 
@@ -3376,7 +3749,7 @@ function renderTradeReviews() {
     tradeReviewsList.innerHTML =
       `
         <div class="empty">
-          Nenhuma revisão foi publicada ainda.
+          Nenhuma revisão em vídeo foi publicada ainda.
           Novos estudos aparecerão aqui automaticamente.
         </div>
       `;
@@ -3416,7 +3789,7 @@ function renderTradeReviews() {
       `
         <div>
           <div class="trade-review-kicker">
-            Revisão de operação
+            Revisão em vídeo
           </div>
 
           <div class="trade-review-title">
@@ -3483,7 +3856,9 @@ async function loadTradeReviews() {
     tradeReviews =
       [];
 
-    renderTradeReviewsLocked(
+
+    renderLockedTradeContent(
+      tradeReviewsList,
       releasedCount
     );
 
@@ -3495,7 +3870,7 @@ async function loadTradeReviews() {
   tradeReviewsList.innerHTML =
     `
       <div class="empty">
-        Carregando revisões...
+        Carregando revisões em vídeo...
       </div>
     `;
 
@@ -3505,7 +3880,9 @@ async function loadTradeReviews() {
     error
   } =
     await supabase
-      .from("trade_reviews")
+      .from(
+        "trade_reviews"
+      )
       .select(`
         id,
         titulo,
@@ -3520,7 +3897,8 @@ async function loadTradeReviews() {
       .order(
         "published_at",
         {
-          ascending: false
+          ascending:
+            false
         }
       );
 
@@ -3528,7 +3906,7 @@ async function loadTradeReviews() {
   if (error) {
 
     console.error(
-      "Erro ao carregar Revisão dos Trades:",
+      "Erro ao carregar revisões em vídeo:",
       error
     );
 
@@ -3536,7 +3914,7 @@ async function loadTradeReviews() {
     tradeReviewsList.innerHTML =
       `
         <div class="empty">
-          A Revisão dos Trades está temporariamente indisponível.
+          A Revisão em Vídeo está temporariamente indisponível.
         </div>
       `;
 
@@ -3546,7 +3924,8 @@ async function loadTradeReviews() {
 
 
   tradeReviews =
-    data || [];
+    data ||
+    [];
 
 
   renderTradeReviews();
@@ -4208,7 +4587,10 @@ async function loadDashboard() {
 
   renderSessions();
 
-  await loadTradeReviews();
+  await Promise.all([
+    loadTradeAnalysisReviews(),
+    loadTradeReviews()
+  ]);
 
   await loadPaymentArea();
 
@@ -4219,6 +4601,23 @@ async function loadDashboard() {
 
   content.classList
     .remove("hidden");
+
+}
+
+
+for (
+  const button of
+  tradeReviewTabButtons
+) {
+
+  button.addEventListener(
+    "click",
+    () =>
+      setStudentTradeReviewTab(
+        button.dataset
+          .studentTradeReviewTab
+      )
+  );
 
 }
 
