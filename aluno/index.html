@@ -422,6 +422,63 @@
     }
 
 
+    .review-progress-block {
+      margin-top: 24px;
+      padding-top: 22px;
+      border-top: 1px solid var(--border);
+    }
+
+    .review-progress-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 14px;
+    }
+
+    .review-progress-title {
+      font-size: 17px;
+      font-weight: 800;
+    }
+
+    .student-section-heading {
+      align-items: center;
+    }
+
+    .student-collapse-button {
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: rgba(255,255,255,.015);
+      color: var(--muted);
+      padding: 9px 12px;
+      font-size: 10px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .student-collapse-button:hover {
+      color: var(--green);
+      border-color: var(--border-green);
+      background: rgba(67,226,144,.04);
+    }
+
+    .student-collapsible-section.is-collapsed {
+      margin-bottom: 24px;
+    }
+
+    .trade-review-card.completed,
+    .trade-analysis-card.completed {
+      border-color: rgba(67,226,144,.24);
+    }
+
+    .trade-review-complete-row {
+      display: flex;
+      gap: 9px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
     /* ==========================================
        PRÓXIMA ETAPA
     ========================================== */
@@ -1462,6 +1519,19 @@
       .trade-analysis-body {
         padding: 17px;
       }
+
+      .review-progress-header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .review-progress-header .progress-number {
+        text-align: left;
+      }
+
+      .student-section-heading {
+        align-items: flex-start;
+      }
     }
 
   </style>
@@ -1609,6 +1679,45 @@
 
       </div>
 
+      <div class="review-progress-block">
+        <div class="review-progress-header">
+          <div>
+            <div class="section-kicker">
+              Revisões de Trades
+            </div>
+            <div class="review-progress-title">
+              Progresso das revisões
+            </div>
+          </div>
+
+          <div class="progress-number">
+            <strong id="reviewProgressPercent">
+              0%
+            </strong>
+            <span id="reviewProgressText">
+              0 de 0 revisões concluídas
+            </span>
+          </div>
+        </div>
+
+        <div class="progress-bar">
+          <div
+            id="reviewProgressFill"
+            class="progress-fill"
+          ></div>
+        </div>
+
+        <div class="progress-footer">
+          <span>
+            Marque cada nova revisão como concluída após estudá-la.
+          </span>
+
+          <span id="reviewProgressRemaining">
+            -
+          </span>
+        </div>
+      </div>
+
     </section>
 
 
@@ -1660,9 +1769,12 @@
          SESSÕES
     ======================================= -->
 
-    <section>
+    <section
+      id="studentSessionsSection"
+      class="student-collapsible-section"
+    >
 
-      <div class="section-heading">
+      <div class="section-heading student-section-heading">
 
         <div>
 
@@ -1678,17 +1790,24 @@
         </div>
 
 
-        <p>
-          Revise sempre que necessário.
-        </p>
+        <button
+          id="toggleStudentSessionsButton"
+          class="student-collapse-button"
+          type="button"
+          aria-expanded="true"
+        >
+          − Minimizar
+        </button>
 
       </div>
 
 
-      <div
-        id="sessionsList"
-        class="sessions"
-      ></div>
+      <div id="studentSessionsSectionBody">
+        <div
+          id="sessionsList"
+          class="sessions"
+        ></div>
+      </div>
 
     </section>
 
@@ -1699,10 +1818,10 @@
 
     <section
       id="tradeReviewsSection"
-      class="trade-reviews-section"
+      class="trade-reviews-section student-collapsible-section"
     >
 
-      <div class="section-heading">
+      <div class="section-heading student-section-heading">
         <div>
           <div class="section-kicker">
             Conteúdo complementar
@@ -1713,11 +1832,17 @@
           </h2>
         </div>
 
-        <p>
-          Estudos práticos selecionados.
-        </p>
+        <button
+          id="toggleTradeReviewsButton"
+          class="student-collapse-button"
+          type="button"
+          aria-expanded="true"
+        >
+          − Minimizar
+        </button>
       </div>
 
+      <div id="tradeReviewsSectionBody">
 
       <div class="trade-reviews-intro">
         <p>
@@ -1791,6 +1916,8 @@
           id="tradeReviewsList"
           class="trade-reviews-list"
         ></div>
+      </div>
+
       </div>
 
     </section>
@@ -2113,6 +2240,36 @@ const progressFill =
 const progressRemaining =
   $("progressRemaining");
 
+const reviewProgressPercent =
+  $("reviewProgressPercent");
+
+const reviewProgressText =
+  $("reviewProgressText");
+
+const reviewProgressFill =
+  $("reviewProgressFill");
+
+const reviewProgressRemaining =
+  $("reviewProgressRemaining");
+
+const toggleStudentSessionsButton =
+  $("toggleStudentSessionsButton");
+
+const studentSessionsSection =
+  $("studentSessionsSection");
+
+const studentSessionsSectionBody =
+  $("studentSessionsSectionBody");
+
+const toggleTradeReviewsButton =
+  $("toggleTradeReviewsButton");
+
+const tradeReviewsSection =
+  $("tradeReviewsSection");
+
+const tradeReviewsSectionBody =
+  $("tradeReviewsSectionBody");
+
 
 const nextTitle =
   $("nextTitle");
@@ -2213,6 +2370,9 @@ let tradeReviews =
 
 let tradeAnalysisReviews =
   [];
+
+let tradeReviewProgressMap =
+  new Map();
 
 
 let progressMap =
@@ -2938,6 +3098,307 @@ function showMessage(
 }
 
 
+function reviewProgressKey(
+  type,
+  id
+) {
+
+  return type + ":" + id;
+
+}
+
+
+function setupStudentCollapsibleSection(
+  section,
+  body,
+  button,
+  storageKey
+) {
+
+  if (
+    !section ||
+    !body ||
+    !button
+  ) {
+    return;
+  }
+
+
+  let collapsed =
+    false;
+
+
+  try {
+    collapsed =
+      localStorage.getItem(
+        storageKey
+      ) ===
+      "collapsed";
+  }
+  catch {
+    collapsed =
+      false;
+  }
+
+
+  const applyState =
+    value => {
+
+      collapsed =
+        value;
+
+      section.classList.toggle(
+        "is-collapsed",
+        collapsed
+      );
+
+      body.classList.toggle(
+        "hidden",
+        collapsed
+      );
+
+      button.textContent =
+        collapsed
+          ?
+          "+ Expandir"
+          :
+          "− Minimizar";
+
+      button.setAttribute(
+        "aria-expanded",
+        collapsed
+          ?
+          "false"
+          :
+          "true"
+      );
+
+
+      try {
+        localStorage.setItem(
+          storageKey,
+          collapsed
+            ?
+            "collapsed"
+            :
+            "expanded"
+        );
+      }
+      catch {
+        // Continua funcionando mesmo sem localStorage.
+      }
+
+    };
+
+
+  applyState(
+    collapsed
+  );
+
+
+  button.addEventListener(
+    "click",
+    () =>
+      applyState(
+        !collapsed
+      )
+  );
+
+}
+
+
+function updateReviewProgressUI() {
+
+  const allVisibleReviews =
+    [
+      ...tradeAnalysisReviews.map(
+        item => ({
+          type:
+            "analysis",
+          id:
+            item.id
+        })
+      ),
+      ...tradeReviews.map(
+        item => ({
+          type:
+            "video",
+          id:
+            item.id
+        })
+      )
+    ];
+
+
+  const total =
+    allVisibleReviews.length;
+
+
+  const completed =
+    allVisibleReviews.filter(
+      item =>
+        tradeReviewProgressMap.get(
+          reviewProgressKey(
+            item.type,
+            item.id
+          )
+        ) ===
+        true
+    ).length;
+
+
+  const percentage =
+    total > 0
+      ?
+      Math.round(
+        completed /
+        total *
+        100
+      )
+      :
+      0;
+
+
+  reviewProgressPercent.textContent =
+    percentage +
+    "%";
+
+
+  reviewProgressText.textContent =
+    completed +
+    " de " +
+    total +
+    " revisões concluídas";
+
+
+  reviewProgressFill.style.width =
+    percentage +
+    "%";
+
+
+  const remaining =
+    Math.max(
+      0,
+      total -
+      completed
+    );
+
+
+  reviewProgressRemaining.textContent =
+    total === 0
+      ?
+      "Nenhuma revisão disponível"
+      :
+      (
+        remaining === 1
+          ?
+          "1 revisão restante"
+          :
+          remaining +
+          " revisões restantes"
+      );
+
+}
+
+
+async function toggleTradeReviewProgress(
+  type,
+  reviewId
+) {
+
+  if (!currentUser) {
+    return;
+  }
+
+
+  const key =
+    reviewProgressKey(
+      type,
+      reviewId
+    );
+
+
+  const completed =
+    tradeReviewProgressMap.get(
+      key
+    ) ===
+    true;
+
+
+  const {
+    error
+  } =
+    await supabase
+      .from(
+        "trade_review_progress"
+      )
+      .upsert(
+        {
+          student_id:
+            currentUser.id,
+          review_type:
+            type,
+          review_id:
+            Number(
+              reviewId
+            ),
+          concluida:
+            !completed,
+          updated_at:
+            new Date()
+              .toISOString()
+        },
+        {
+          onConflict:
+            "student_id,review_type,review_id"
+        }
+      );
+
+
+  if (error) {
+
+    console.error(
+      error
+    );
+
+
+    showMessage(
+      "Não foi possível atualizar o progresso da revisão.",
+      "error"
+    );
+
+    return;
+
+  }
+
+
+  tradeReviewProgressMap.set(
+    key,
+    !completed
+  );
+
+
+  updateReviewProgressUI();
+
+  await Promise.all([
+    renderTradeAnalysisReviews(),
+    Promise.resolve(
+      renderTradeReviews()
+    )
+  ]);
+
+
+  showMessage(
+    !completed
+      ?
+      "Revisão concluída."
+      :
+      "Revisão marcada como pendente."
+  );
+
+}
+
+
 /* ==========================================
    PROGRESSO
 ========================================== */
@@ -3503,6 +3964,8 @@ async function renderTradeAnalysisReviews() {
         </div>
       `;
 
+    updateReviewProgressUI();
+
     return;
 
   }
@@ -3519,6 +3982,16 @@ async function renderTradeAnalysisReviews() {
       );
 
 
+    const completed =
+      tradeReviewProgressMap.get(
+        reviewProgressKey(
+          "analysis",
+          item.id
+        )
+      ) ===
+      true;
+
+
     const card =
       document.createElement(
         "article"
@@ -3526,7 +3999,14 @@ async function renderTradeAnalysisReviews() {
 
 
     card.className =
-      "trade-analysis-card";
+      "trade-analysis-card" +
+      (
+        completed
+          ?
+          " completed"
+          :
+          ""
+      );
 
 
     const publishedDate =
@@ -3600,6 +4080,17 @@ async function renderTradeAnalysisReviews() {
           <div class="trade-analysis-text">
             ${explanation}
           </div>
+
+          <div class="trade-review-complete-row">
+            <button
+              type="button"
+              class="complete-button ${completed ? "completed" : ""}"
+              data-review-progress-type="analysis"
+              data-review-progress-id="${item.id}"
+            >
+              ${completed ? "✓ Revisão concluída" : "Marcar revisão como concluída"}
+            </button>
+          </div>
         </div>
       `;
 
@@ -3609,6 +4100,9 @@ async function renderTradeAnalysisReviews() {
     );
 
   }
+
+
+  updateReviewProgressUI();
 
 }
 
@@ -3764,6 +4258,8 @@ function renderTradeReviews() {
         </div>
       `;
 
+    updateReviewProgressUI();
+
     return;
 
   }
@@ -3774,13 +4270,30 @@ function renderTradeReviews() {
     tradeReviews
   ) {
 
+    const completed =
+      tradeReviewProgressMap.get(
+        reviewProgressKey(
+          "video",
+          item.id
+        )
+      ) ===
+      true;
+
+
     const card =
       document.createElement(
         "article"
       );
 
     card.className =
-      "trade-review-card";
+      "trade-review-card" +
+      (
+        completed
+          ?
+          " completed"
+          :
+          ""
+      );
 
 
     const publishedDate =
@@ -3840,6 +4353,17 @@ function renderTradeReviews() {
           >
             ▶ Assistir revisão
           </a>
+
+          <div class="trade-review-complete-row">
+            <button
+              type="button"
+              class="complete-button ${completed ? "completed" : ""}"
+              data-review-progress-type="video"
+              data-review-progress-id="${item.id}"
+            >
+              ${completed ? "✓ Revisão concluída" : "Marcar como concluída"}
+            </button>
+          </div>
         </div>
       `;
 
@@ -3849,6 +4373,9 @@ function renderTradeReviews() {
     );
 
   }
+
+
+  updateReviewProgressUI();
 
 }
 
@@ -4668,10 +5195,68 @@ async function loadDashboard() {
 
   renderSessions();
 
+
+  const {
+    data: reviewProgressData,
+    error: reviewProgressError
+  } =
+    await supabase
+      .from(
+        "trade_review_progress"
+      )
+      .select(`
+        review_type,
+        review_id,
+        concluida
+      `)
+      .eq(
+        "student_id",
+        currentUser.id
+      );
+
+
+  tradeReviewProgressMap =
+    new Map();
+
+
+  if (reviewProgressError) {
+
+    console.error(
+      "Progresso das revisões não carregado:",
+      reviewProgressError
+    );
+
+  }
+
+  else {
+
+    for (
+      const item of
+      reviewProgressData ||
+      []
+    ) {
+
+      tradeReviewProgressMap.set(
+        reviewProgressKey(
+          item.review_type,
+          item.review_id
+        ),
+        item.concluida ===
+          true
+      );
+
+    }
+
+  }
+
+
   await Promise.all([
     loadTradeAnalysisReviews(),
     loadTradeReviews()
   ]);
+
+
+  updateReviewProgressUI();
 
   await loadPaymentArea();
 
@@ -4701,6 +5286,82 @@ for (
   );
 
 }
+
+
+tradeAnalysisList.addEventListener(
+  "click",
+  async event => {
+
+    const button =
+      event.target.closest(
+        "[data-review-progress-type]"
+      );
+
+
+    if (!button) {
+      return;
+    }
+
+
+    button.disabled =
+      true;
+
+
+    await toggleTradeReviewProgress(
+      button.dataset
+        .reviewProgressType,
+      button.dataset
+        .reviewProgressId
+    );
+
+  }
+);
+
+
+tradeReviewsList.addEventListener(
+  "click",
+  async event => {
+
+    const button =
+      event.target.closest(
+        "[data-review-progress-type]"
+      );
+
+
+    if (!button) {
+      return;
+    }
+
+
+    button.disabled =
+      true;
+
+
+    await toggleTradeReviewProgress(
+      button.dataset
+        .reviewProgressType,
+      button.dataset
+        .reviewProgressId
+    );
+
+  }
+);
+
+
+setupStudentCollapsibleSection(
+  studentSessionsSection,
+  studentSessionsSectionBody,
+  toggleStudentSessionsButton,
+  "francotrades-aluno-sessoes"
+);
+
+
+setupStudentCollapsibleSection(
+  tradeReviewsSection,
+  tradeReviewsSectionBody,
+  toggleTradeReviewsButton,
+  "francotrades-aluno-revisoes"
+);
 
 
 copyPixButton.addEventListener(
