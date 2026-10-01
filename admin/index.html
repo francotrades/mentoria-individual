@@ -6850,6 +6850,7 @@ async function loadBaseData() {
           session_id,
           youtube_url,
           teams_url,
+          teams_url_added_at,
           data_sessao,
           session_time,
           observacoes,
@@ -9889,6 +9890,16 @@ async function saveSession() {
     ).trim();
 
 
+  const currentTeamsUrlInput =
+    teamsUrl.value
+      .trim();
+
+
+  const teamsUrlChanged =
+    currentTeamsUrlInput !==
+    previousTeamsUrl;
+
+
   const payload = {
 
     student_id:
@@ -9918,9 +9929,24 @@ async function saveSession() {
       null,
 
     teams_url:
-      teamsUrl.value
-        .trim() ||
+      currentTeamsUrlInput ||
       null,
+
+    teams_url_added_at:
+      teamsUrlChanged
+        ?
+        (
+          currentTeamsUrlInput
+            ?
+            new Date().toISOString()
+            :
+            null
+        )
+        :
+        (
+          previousSession?.teams_url_added_at ||
+          null
+        ),
 
     observacoes:
       sessionNotes.value
@@ -9983,8 +10009,7 @@ async function saveSession() {
 
   const shouldNotifyLiveLink =
     Boolean(currentTeamsUrl) &&
-    currentTeamsUrl !==
-    previousTeamsUrl;
+    teamsUrlChanged;
 
 
   let notificationWarning =
