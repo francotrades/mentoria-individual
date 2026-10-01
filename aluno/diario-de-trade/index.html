@@ -653,7 +653,7 @@ async function init(){
   currentUser=session.user;
   const {data:profile,error}=await supabase.from("profiles").select("nome,status,role,data_expiracao").eq("id",currentUser.id).single();
   if(error||!profile){window.location.href="../../login/?reason=profile";return}
-  if(profile.role==="admin"){window.location.href="../../admin/performance/";return}
+  if(profile.role==="admin"){window.location.href="../../admin/diario-de-trade/";return}
   const expired=profile.data_expiracao&&profile.data_expiracao<today();
   if(profile.status!=="ativo"||expired){await supabase.auth.signOut();window.location.href="../../login/?reason="+(expired||profile.status==="expirado"?"expired":"inactive");return}
   $("welcomeTitle").textContent="Diário de Trade · "+(profile.nome?.split(/\\s+/)[0]||"Mentorado");
