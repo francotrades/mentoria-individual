@@ -3607,24 +3607,6 @@ async function loadTradeAnalysisReviews() {
     countFirstEightReleased();
 
 
-  if (
-    releasedCount < 8
-  ) {
-
-    tradeAnalysisReviews =
-      [];
-
-
-    renderLockedTradeContent(
-      tradeAnalysisList,
-      releasedCount
-    );
-
-    return;
-
-  }
-
-
   tradeAnalysisList.innerHTML =
     `
       <div class="empty">
@@ -3670,7 +3652,23 @@ async function loadTradeAnalysisReviews() {
       [];
 
 
-    renderTradeAnalysisClosed();
+    if (
+      releasedCount < 8
+    ) {
+
+      renderLockedTradeContent(
+        tradeAnalysisList,
+        releasedCount
+      );
+
+    }
+
+    else {
+
+      renderTradeAnalysisClosed();
+
+    }
+
 
     return;
 
@@ -3849,8 +3847,45 @@ async function loadTradeReviews() {
     countFirstEightReleased();
 
 
+  tradeReviewsList.innerHTML =
+    `
+      <div class="empty">
+        Carregando revisões em vídeo...
+      </div>
+    `;
+
+
+  const {
+    data: eligibility,
+    error: eligibilityError
+  } =
+    await supabase.rpc(
+      "can_access_trade_video_reviews"
+    );
+
+
+  if (eligibilityError) {
+
+    console.error(
+      "Não foi possível verificar o acesso às revisões em vídeo:",
+      eligibilityError
+    );
+
+
+    tradeReviewsList.innerHTML =
+      `
+        <div class="empty">
+          A Revisão em Vídeo está temporariamente indisponível.
+        </div>
+      `;
+
+    return;
+
+  }
+
+
   if (
-    releasedCount < 8
+    eligibility !== true
   ) {
 
     tradeReviews =
@@ -3865,14 +3900,6 @@ async function loadTradeReviews() {
     return;
 
   }
-
-
-  tradeReviewsList.innerHTML =
-    `
-      <div class="empty">
-        Carregando revisões em vídeo...
-      </div>
-    `;
 
 
   const {
