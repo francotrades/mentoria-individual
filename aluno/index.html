@@ -1157,6 +1157,15 @@
       align-items: start;
     }
 
+    .payment-grid-paid {
+      grid-template-columns: 1fr;
+    }
+
+    .payment-grid-paid .payment-summary {
+      max-width: 720px;
+    }
+
+
     .payment-summary {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1938,7 +1947,7 @@
 
       <div class="section-heading" style="margin-bottom:0;">
         <div>
-          <h2>
+          <h2 id="paymentTitle">
             Sua próxima parcela
           </h2>
         </div>
@@ -1949,7 +1958,10 @@
       </div>
 
 
-      <div class="payment-grid">
+      <div
+        id="paymentGrid"
+        class="payment-grid"
+      >
 
         <div>
 
@@ -2001,7 +2013,10 @@
         </div>
 
 
-        <div class="pix-box">
+        <div
+          id="paymentPixBox"
+          class="pix-box"
+        >
 
           <div
             id="pixName"
@@ -2324,6 +2339,15 @@ const accessWarning =
 
 const paymentPanel =
   $("paymentPanel");
+
+const paymentTitle =
+  $("paymentTitle");
+
+const paymentGrid =
+  $("paymentGrid");
+
+const paymentPixBox =
+  $("paymentPixBox");
 
 const paymentStatusText =
   $("paymentStatusText");
@@ -2796,9 +2820,47 @@ async function loadPaymentArea() {
 
     if (!pending) {
 
-      paymentPanel.classList
+      paymentTitle.textContent =
+        "Situação financeira";
+
+
+      paymentStatusText.textContent =
+        "Tudo em dia";
+
+
+      paymentInstallment.textContent =
+        "—";
+
+
+      paymentDueDate.textContent =
+        "—";
+
+
+      paymentAmount.textContent =
+        "Quitado";
+
+
+      paymentAmount.classList
+        .remove(
+          "pending"
+        );
+
+
+      paymentAmount.classList
+        .add(
+          "paid"
+        );
+
+
+      paymentPixBox.classList
         .add(
           "hidden"
+        );
+
+
+      paymentGrid.classList
+        .add(
+          "payment-grid-paid"
         );
 
 
@@ -2810,9 +2872,31 @@ async function loadPaymentArea() {
         "";
 
 
+      paymentPanel.classList
+        .remove(
+          "hidden"
+        );
+
+
       return;
 
     }
+
+
+    paymentTitle.textContent =
+      "Sua próxima parcela";
+
+
+    paymentPixBox.classList
+      .remove(
+        "hidden"
+      );
+
+
+    paymentGrid.classList
+      .remove(
+        "payment-grid-paid"
+      );
 
 
     const settings =
