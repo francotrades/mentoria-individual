@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Performance dos Mentorados | FrancoTrades</title>
+  <style>
+    :root{
+      --bg:#050706;--card:#0c110e;--card2:#101713;--border:rgba(255,255,255,.08);
+      --green:#43e290;--green2:#25c978;--text:#f1f5f2;--muted:#8f9a94;--muted2:#626d67;--red:#ff8d8d
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Inter,Arial,sans-serif;background:radial-gradient(circle at 50% -10%,rgba(67,226,144,.09),transparent 30%),var(--bg);color:var(--text);min-height:100vh}
+    header{position:sticky;top:0;z-index:20;display:flex;justify-content:space-between;align-items:center;gap:14px;padding:18px 28px;border-bottom:1px solid var(--border);background:rgba(5,7,6,.94);backdrop-filter:blur(14px)}
+    .logo{font-weight:900;letter-spacing:1.4px;font-size:20px}.logo span{color:var(--green)}
+    .actions{display:flex;gap:8px;flex-wrap:wrap}.btn,.link-btn{border:1px solid var(--border);background:rgba(255,255,255,.015);color:var(--text);border-radius:9px;padding:10px 13px;font-size:12px;font-weight:800;text-decoration:none;cursor:pointer}.btn.primary{background:var(--green);color:#04130c;border-color:var(--green)}
+    .container{width:min(1260px,calc(100% - 32px));margin:0 auto;padding:34px 0 70px}.eyebrow{color:var(--green);font-size:11px;font-weight:900;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:8px}
+    h1{font-size:clamp(30px,4vw,44px);letter-spacing:-1.4px;margin-bottom:8px}.hero p{color:var(--muted);line-height:1.6}.hero{margin-bottom:22px}
+    .panel,.stat{border:1px solid var(--border);background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.008)),var(--card);border-radius:14px}
+    .panel{padding:20px;margin-bottom:18px}.stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:18px}.stat{padding:16px}.stat-label{color:var(--muted2);font-size:9px;text-transform:uppercase;font-weight:900;letter-spacing:.7px;margin-bottom:6px}.stat-value{font-size:23px;font-weight:900}
+    .toolbar{display:grid;grid-template-columns:1fr 220px;gap:12px;margin-bottom:16px}.field label{display:block;color:#bdc7c1;font-size:11px;font-weight:800;margin-bottom:6px}.field input,.field select,.field textarea{width:100%;background:#090e0b;color:#fff;border:1px solid var(--border);border-radius:9px;padding:11px 12px;outline:none}.field textarea{min-height:90px;resize:vertical}.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--green)}
+    .student-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.student-card{border:1px solid var(--border);background:#090e0b;border-radius:11px;padding:13px;cursor:pointer}.student-card:hover,.student-card.selected{border-color:rgba(67,226,144,.3)}.student-name{font-weight:900}.meta{color:var(--muted);font-size:11px;line-height:1.5;margin-top:4px}.pill{display:inline-flex;padding:4px 7px;border-radius:999px;border:1px solid var(--border);font-size:9px;font-weight:900;text-transform:uppercase;color:var(--muted)}.pill.green{color:var(--green);border-color:rgba(67,226,144,.2)}
+    .section-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-end;margin-bottom:14px}.section-title{font-size:18px;font-weight:900}.section-sub{color:var(--muted);font-size:11px;margin-top:4px}
+    .trade-list{display:grid;gap:9px}.trade-row{border:1px solid var(--border);background:#090e0b;border-radius:11px;padding:13px}.trade-main{display:grid;grid-template-columns:110px 90px 90px 1fr 120px auto;gap:10px;align-items:center}.pnl.win{color:var(--green)}.pnl.loss{color:var(--red)}
+    .detail{margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}.detail-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.detail-item{background:rgba(255,255,255,.014);border:1px solid var(--border);border-radius:9px;padding:10px}.detail-label{color:var(--muted2);font-size:9px;text-transform:uppercase;font-weight:900;margin-bottom:4px}
+    .screens{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}.screen-card{border:1px solid var(--border);border-radius:10px;overflow:hidden;background:#080b09}.screen-card img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}.screen-card a{display:block;padding:8px;color:var(--green);font-size:10px;text-decoration:none}
+    .comment{border-left:3px solid var(--green);background:rgba(67,226,144,.035);padding:10px 12px;border-radius:8px;margin-top:8px}.comment small{color:var(--muted2)}.empty,.loading{color:var(--muted);padding:18px;border:1px dashed var(--border);border-radius:10px;text-align:center;font-size:12px}.hidden{display:none!important}.message{display:none;margin-bottom:14px;padding:11px 13px;border-radius:9px;font-size:12px}.message.success{display:block;color:#72e8ab;border:1px solid rgba(67,226,144,.22);background:rgba(67,226,144,.06)}.message.error{display:block;color:#ffaaaa;border:1px solid rgba(255,125,125,.2);background:rgba(255,125,125,.06)}
+    @media(max-width:950px){.student-list{grid-template-columns:repeat(2,1fr)}.stats{grid-template-columns:repeat(2,1fr)}.trade-main{grid-template-columns:1fr 1fr}.detail-grid{grid-template-columns:repeat(2,1fr)}.screens{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:650px){header{padding:14px}.container{width:min(100% - 20px,1260px)}.toolbar,.student-list{grid-template-columns:1fr}.trade-main{grid-template-columns:1fr}.screens,.detail-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<header>
+  <div class="logo">FRANCO<span>TRADES</span></div>
+  <div class="actions">
+    <a class="link-btn" href="../">Painel do Mentor</a>
+    <button id="logoutButton" class="btn">Sair</button>
+  </div>
+</header>
+
+<main class="container">
+  <div id="loading" class="loading">Verificando acesso administrativo...</div>
+  <div id="app" class="hidden">
+    <div id="message" class="message"></div>
+    <section class="hero">
+      <div class="eyebrow">Mentoria · Performance</div>
+      <h1>Performance dos mentorados</h1>
+      <p>Visualize o histórico individual, inclusive de mentorados inativos, e deixe feedback diretamente nas operações. Seu diário pessoal não aparece aqui.</p>
+    </section>
+
+    <section class="panel">
+      <div class="toolbar">
+        <div class="field"><label>Buscar mentorado</label><input id="studentSearch" placeholder="Nome ou e-mail"></div>
+        <div class="field"><label>Filtro</label><select id="studentStatusFilter"><option value="all">Todos</option><option value="active">Ativos</option><option value="inactive">Inativos / expirados</option></select></div>
+      </div>
+      <div id="studentList" class="student-list"></div>
+    </section>
+
+    <div id="studentPerformance" class="hidden">
+      <section class="stats">
+        <div class="stat"><div class="stat-label">Trades</div><div id="statTrades" class="stat-value">0</div></div>
+        <div class="stat"><div class="stat-label">P&L líquido</div><div id="statPnl" class="stat-value">$0</div></div>
+        <div class="stat"><div class="stat-label">Win rate</div><div id="statWin" class="stat-value">0%</div></div>
+        <div class="stat"><div class="stat-label">Profit factor</div><div id="statPf" class="stat-value">0.00</div></div>
+        <div class="stat"><div class="stat-label">Contas</div><div id="statAccounts" class="stat-value">0</div></div>
+      </section>
+
+      <section class="panel">
+        <div class="section-head">
+          <div><div id="selectedStudentTitle" class="section-title">Operações</div><div class="section-sub">Histórico preservado mesmo após o encerramento do acesso.</div></div>
+          <div class="field"><select id="accountFilter"><option value="">Todas as contas</option></select></div>
+        </div>
+        <div id="tradeList" class="trade-list"></div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+const supabase=createClient("https://vfnltuecpnuixemxvwvk.supabase.co","sb_publishable_nxgAFL2foBN8CuKMT5_2qQ_uDlaJ4Xc");
+const $=id=>document.getElementById(id);
+let adminUser=null,profiles=[],selectedStudent=null,accounts=[],trades=[],attachments=[],comments=[];
+const esc=v=>String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+const money=(v,c="USD")=>new Intl.NumberFormat(c==="BRL"?"pt-BR":"en-US",{style:"currency",currency:c}).format(Number(v||0));
+const isActive=p=>p.status==="ativo"&&(!p.data_expiracao||p.data_expiracao>=new Date().toISOString().slice(0,10));
+function showMessage(text,type="success"){const e=$("message");e.textContent=text;e.className="message "+type;setTimeout(()=>{e.textContent="";e.className="message"},3500)}
+function accountById(id){return accounts.find(a=>String(a.id)===String(id));}
+
+function renderStudents(){
+  const q=$("studentSearch").value.trim().toLowerCase(),f=$("studentStatusFilter").value;
+  const list=profiles.filter(p=>p.role==="aluno").filter(p=>{
+    const match=!q||String(p.nome||"").toLowerCase().includes(q)||String(p.email||"").toLowerCase().includes(q);
+    const active=isActive(p); const status=f==="all"||f==="active"&&active||f==="inactive"&&!active;
+    return match&&status;
+  });
+  $("studentList").innerHTML=list.length?list.map(p=>'<div class="student-card '+(selectedStudent?.id===p.id?'selected':'')+'" data-student="'+p.id+'"><div class="student-name">'+esc(p.nome||"Sem nome")+'</div><div class="meta">'+esc(p.email||"")+'</div><div style="margin-top:8px"><span class="pill '+(isActive(p)?'green':'')+'">'+(isActive(p)?'Ativo':'Histórico')+'</span></div></div>').join(""):'<div class="empty">Nenhum mentorado encontrado.</div>';
+}
+
+function calculateStats(){
+  const wins=trades.filter(t=>Number(t.pnl)>0),losses=trades.filter(t=>Number(t.pnl)<0);
+  const grossWin=wins.reduce((s,t)=>s+Number(t.pnl||0),0),grossLoss=Math.abs(losses.reduce((s,t)=>s+Number(t.pnl||0),0));
+  const net=trades.reduce((s,t)=>s+Number(t.pnl||0)-Number(t.fees||0),0);
+  $("statTrades").textContent=trades.length;$("statPnl").textContent=money(net,"USD");$("statPnl").style.color=net<0?"var(--red)":"var(--green)";
+  $("statWin").textContent=trades.length?Math.round(wins.length/trades.length*100)+"%":"0%";
+  $("statPf").textContent=grossLoss>0?(grossWin/grossLoss).toFixed(2):(grossWin>0?"∞":"0.00");$("statAccounts").textContent=accounts.length;
+}
+
+async function signedUrl(path){const {data,error}=await supabase.storage.from("trade-journal-screenshots").createSignedUrl(path,3600);if(error)return"";return data?.signedUrl||""}
+
+async function renderTrades(){
+  const filter=$("accountFilter").value;
+  const list=trades.filter(t=>!filter||String(t.account_id)===filter);
+  const box=$("tradeList"); if(!list.length){box.innerHTML='<div class="empty">Nenhum trade registrado para este mentorado.</div>';return;}
+  box.innerHTML="";
+  for(const t of list){
+    const a=accountById(t.account_id),net=Number(t.pnl||0)-Number(t.fees||0);
+    const row=document.createElement("div");row.className="trade-row";
+    row.innerHTML='<div class="trade-main"><div><strong>'+esc(t.trade_date)+'</strong><div class="meta">'+esc(a?.name||"Sem conta")+'</div></div><div><strong>'+esc(t.symbol)+'</strong><div class="meta">'+esc(t.side)+'</div></div><div>'+esc(t.quantity??"-")+'</div><div>'+esc(t.setup||"Sem setup")+'</div><div class="pnl '+(net>=0?'win':'loss')+'"><strong>'+money(net,a?.currency||"USD")+'</strong></div><button class="btn" data-detail="'+t.id+'">Analisar</button></div><div id="detail-'+t.id+'" class="detail hidden"></div>';
+    box.appendChild(row);
+  }
+}
+
+async function openDetail(id){
+  const t=trades.find(x=>String(x.id)===String(id));if(!t)return;
+  const d=$("detail-"+id);if(!d.classList.contains("hidden")){d.classList.add("hidden");return}d.classList.remove("hidden");d.innerHTML='<div class="loading">Carregando...</div>';
+  const files=attachments.filter(x=>String(x.trade_id)===String(id)),cards=[];
+  for(const f of files){const url=await signedUrl(f.storage_path);if(url)cards.push('<div class="screen-card"><img src="'+esc(url)+'" alt="'+esc(f.file_name)+'"><a href="'+esc(url)+'" target="_blank" rel="noopener">Abrir print</a></div>')}
+  const cs=comments.filter(c=>String(c.trade_id)===String(id));
+  d.innerHTML='<div class="detail-grid">'+
+    '<div class="detail-item"><div class="detail-label">Entrada</div>'+esc(t.entry_price??"-")+'</div>'+
+    '<div class="detail-item"><div class="detail-label">Saída</div>'+esc(t.exit_price??"-")+'</div>'+
+    '<div class="detail-item"><div class="detail-label">R:R</div>'+esc(t.rr??"-")+'</div>'+
+    '<div class="detail-item"><div class="detail-label">Nota</div>'+esc(t.grade??"-")+'</div>'+
+    '<div class="detail-item"><div class="detail-label">MFE</div>'+esc(t.mfe??"-")+'</div>'+
+    '<div class="detail-item"><div class="detail-label">MAE</div>'+esc(t.mae??"-")+'</div>'+
+    '<div class="detail-item"><div class="detail-label">Emocional</div>'+esc(t.emotion||"-")+'</div>'+
+    '<div class="detail-item"><div class="detail-label">Origem</div>'+esc(t.source)+'</div>'+
+  '</div>'+
+  (t.notes?'<div class="meta" style="white-space:pre-wrap;margin-top:12px">'+esc(t.notes)+'</div>':'')+
+  '<div class="screens">'+cards.join("")+'</div>'+
+  '<div style="margin-top:14px"><strong>Comentários do mentor</strong>'+ (cs.length?cs.map(c=>'<div class="comment">'+esc(c.comment)+'<br><small>'+new Date(c.created_at).toLocaleString("pt-BR")+'</small></div>').join(""):'<div class="meta">Nenhum comentário ainda.</div>')+'</div>'+
+  '<div class="field" style="margin-top:14px"><label>Novo comentário</label><textarea id="comment-'+id+'" placeholder="Feedback sobre execução, risco, leitura, psicológico..."></textarea></div>'+
+  '<div class="actions" style="margin-top:10px"><button class="btn primary" data-comment="'+id+'">Publicar comentário</button></div>';
+}
+
+async function selectStudent(id){
+  selectedStudent=profiles.find(p=>p.id===id);if(!selectedStudent)return;
+  renderStudents();$("selectedStudentTitle").textContent=(selectedStudent.nome||"Mentorado")+" · Operações";
+  const [a,t,att,com]=await Promise.all([
+    supabase.from("student_trade_accounts").select("*").eq("student_id",id).order("created_at",{ascending:false}),
+    supabase.from("student_trades").select("*").eq("student_id",id).order("trade_date",{ascending:false}).order("id",{ascending:false}),
+    supabase.from("student_trade_attachments").select("*").eq("student_id",id).order("created_at",{ascending:false}),
+    supabase.from("student_trade_comments").select("*").eq("student_id",id).order("created_at",{ascending:true})
+  ]);
+  if(a.error||t.error){console.error(a.error,t.error);showMessage("Não foi possível carregar a performance.","error");return}
+  accounts=a.data||[];trades=t.data||[];attachments=att.data||[];comments=com.data||[];
+  $("accountFilter").innerHTML='<option value="">Todas as contas</option>'+accounts.map(x=>'<option value="'+x.id+'">'+esc(x.name)+'</option>').join("");
+  calculateStats();await renderTrades();$("studentPerformance").classList.remove("hidden");
+}
+
+$("studentList").addEventListener("click",e=>{const c=e.target.closest("[data-student]");if(c)selectStudent(c.dataset.student)});
+$("studentSearch").addEventListener("input",renderStudents);$("studentStatusFilter").addEventListener("change",renderStudents);$("accountFilter").addEventListener("change",renderTrades);
+$("tradeList").addEventListener("click",async e=>{
+  const b=e.target.closest("[data-detail]");if(b){await openDetail(b.dataset.detail);return}
+  const cb=e.target.closest("[data-comment]");if(cb){
+    const id=Number(cb.dataset.comment),text=$("comment-"+id)?.value.trim();if(!text){showMessage("Escreva o comentário.","error");return}
+    const {error}=await supabase.from("student_trade_comments").insert({student_id:selectedStudent.id,trade_id:id,author_id:adminUser.id,comment:text});
+    if(error){console.error(error);showMessage("Não foi possível publicar o comentário.","error");return}
+    const {data}=await supabase.from("student_trade_comments").select("*").eq("student_id",selectedStudent.id).order("created_at",{ascending:true});comments=data||[];
+    await openDetail(id);await openDetail(id);showMessage("Comentário publicado.");
+  }
+});
+
+$("logoutButton").addEventListener("click",async()=>{await supabase.auth.signOut();window.location.href="../../login/"});
+
+async function init(){
+  const {data:{session}}=await supabase.auth.getSession();if(!session){window.location.href="../../login/";return}
+  adminUser=session.user;
+  const {data:me,error:meError}=await supabase.from("profiles").select("role").eq("id",adminUser.id).single();
+  if(meError||me?.role!=="admin"){window.location.href="../../aluno/";return}
+  const {data,error}=await supabase.from("profiles").select("id,nome,email,status,data_expiracao,role").eq("role","aluno").order("nome",{ascending:true});
+  if(error){console.error(error);$("loading").textContent="Não foi possível carregar os mentorados.";return}
+  profiles=data||[];renderStudents();$("loading").classList.add("hidden");$("app").classList.remove("hidden");
+}
+init();
+</script>
+</body>
+</html>
