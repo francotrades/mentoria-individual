@@ -1769,10 +1769,76 @@
       justify-content: flex-end;
     }
 
+    .trade-review-tabs {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 9px;
+      margin-bottom: 16px;
+    }
+
+    .trade-review-tab {
+      border: 1px solid var(--ft-border, #202833);
+      border-radius: 11px;
+      background: #090e0b;
+      color: #d8dfdb;
+      padding: 12px 14px;
+      text-align: left;
+      font: inherit;
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .trade-review-tab span {
+      display: block;
+      margin-top: 3px;
+      color: var(--ft-muted, #89939f);
+      font-size: 9px;
+      font-weight: 700;
+    }
+
+    .trade-review-tab.active {
+      border-color: rgba(67,226,144,.38);
+      background: rgba(67,226,144,.075);
+      color: #78ebb0;
+    }
+
+    .trade-review-tab.active span {
+      color: #9cefc3;
+    }
+
+    .trade-review-tab-content.hidden {
+      display: none !important;
+    }
+
+    .trade-analysis-thumb {
+      width: 138px;
+      max-height: 92px;
+      object-fit: cover;
+      border-radius: 9px;
+      border: 1px solid var(--ft-border, #202833);
+      background: #050706;
+    }
+
+    .trade-analysis-item-main {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 14px;
+      align-items: center;
+      min-width: 0;
+    }
+
     @media (max-width: 760px) {
       .trade-review-form,
-      .trade-review-item {
+      .trade-review-item,
+      .trade-review-tabs,
+      .trade-analysis-item-main {
         grid-template-columns: 1fr;
+      }
+
+      .trade-analysis-thumb {
+        width: 100%;
+        max-height: 220px;
       }
 
       .trade-review-item-actions {
@@ -2203,104 +2269,243 @@
           </div>
 
           <div class="trade-review-description">
-            Biblioteca global de análises em vídeo de operações selecionadas
-            por você por terem valor didático para os mentorados. Um único
-            cadastro disponibiliza o vídeo automaticamente para todos os
-            alunos elegíveis.
+            Gerencie os estudos práticos da mentoria em dois formatos:
+            análises com imagem e explicação escrita, e revisões completas em vídeo.
+            Cada publicação é global e aparece automaticamente para todos os
+            mentorados que cumprirem as regras de acesso.
           </div>
 
           <div class="trade-review-rule">
-            🔒 Os vídeos ficam visíveis somente para mentorados com acesso
-            ativo e com as 8 primeiras aulas já liberadas.
+            🔒 Ambos os formatos são liberados após as 8 primeiras aulas.
+            A aba com imagem e explicação encerra automaticamente quando a última
+            sessão contratada do mentorado (12ª ou 13ª) for liberada. Os vídeos
+            permanecem disponíveis enquanto o acesso geral estiver ativo.
           </div>
         </div>
       </div>
 
 
-      <div class="trade-review-form">
+      <div
+        class="trade-review-tabs"
+        role="tablist"
+        aria-label="Tipos de revisão"
+      >
+        <button
+          type="button"
+          class="trade-review-tab active"
+          data-trade-review-tab="analysis"
+          aria-selected="true"
+        >
+          Revisão dos Trades
+          <span>Imagem + explicação</span>
+        </button>
 
-        <div class="field">
-          <label for="tradeReviewTitle">
-            Título da revisão
-          </label>
-
-          <input
-            id="tradeReviewTitle"
-            type="text"
-            placeholder="Ex.: Rompimento falso no suporte"
-          >
-        </div>
-
-
-        <div class="field">
-          <label for="tradeReviewUrl">
-            Link do vídeo no YouTube
-          </label>
-
-          <input
-            id="tradeReviewUrl"
-            type="url"
-            placeholder="https://youtube.com/..."
-          >
-        </div>
-
-
-        <div class="field full">
-          <label for="tradeReviewDescription">
-            Descrição
-          </label>
-
-          <textarea
-            id="tradeReviewDescription"
-            placeholder="Explique brevemente o contexto ou o principal aprendizado desta revisão."
-            style="min-height:74px;"
-          ></textarea>
-        </div>
+        <button
+          type="button"
+          class="trade-review-tab"
+          data-trade-review-tab="video"
+          aria-selected="false"
+        >
+          Revisão em Vídeo
+          <span>Vídeo comentado</span>
+        </button>
+      </div>
 
 
-        <div class="field full">
-          <div class="checkbox-row">
+      <div
+        id="tradeAnalysisTabContent"
+        class="trade-review-tab-content"
+      >
+
+        <div class="trade-review-form">
+
+          <div class="field">
+            <label for="tradeAnalysisTitle">
+              Título da análise
+            </label>
+
             <input
-              id="tradeReviewActive"
-              type="checkbox"
-              checked
+              id="tradeAnalysisTitle"
+              type="text"
+              placeholder="Ex.: Rompimento falso no suporte"
+            >
+          </div>
+
+
+          <div class="field">
+            <label for="tradeAnalysisImage">
+              Imagem do trade
+            </label>
+
+            <input
+              id="tradeAnalysisImage"
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
             >
 
-            <label for="tradeReviewActive">
-              Vídeo publicado para os mentorados elegíveis
-            </label>
+            <div class="hint">
+              JPG, PNG, WEBP ou GIF. Máximo de 5 MB.
+            </div>
+
+            <div
+              id="tradeAnalysisCurrentImage"
+              class="hint hidden"
+            ></div>
           </div>
+
+
+          <div class="field full">
+            <label for="tradeAnalysisExplanation">
+              Explicação do trade
+            </label>
+
+            <textarea
+              id="tradeAnalysisExplanation"
+              placeholder="Explique o contexto, a leitura, entrada, invalidação, gerenciamento e principal aprendizado."
+              style="min-height:130px;"
+            ></textarea>
+          </div>
+
+
+          <div class="field full">
+            <div class="checkbox-row">
+              <input
+                id="tradeAnalysisActive"
+                type="checkbox"
+                checked
+              >
+
+              <label for="tradeAnalysisActive">
+                Análise publicada para os mentorados elegíveis
+              </label>
+            </div>
+          </div>
+
+
+          <div class="trade-review-actions">
+            <button
+              id="saveTradeAnalysisButton"
+              type="button"
+              class="primary-button"
+            >
+              Adicionar análise
+            </button>
+
+            <button
+              id="cancelTradeAnalysisButton"
+              type="button"
+              class="secondary-button hidden"
+            >
+              Cancelar edição
+            </button>
+          </div>
+
         </div>
 
 
-        <div class="trade-review-actions">
-          <button
-            id="saveTradeReviewButton"
-            type="button"
-            class="primary-button"
-          >
-            Adicionar revisão
-          </button>
-
-          <button
-            id="cancelTradeReviewButton"
-            type="button"
-            class="secondary-button hidden"
-          >
-            Cancelar edição
-          </button>
+        <div
+          id="tradeAnalysisList"
+          class="trade-review-list"
+        >
+          <div class="reminder-empty">
+            Carregando análises...
+          </div>
         </div>
 
       </div>
 
 
       <div
-        id="tradeReviewList"
-        class="trade-review-list"
+        id="tradeVideoTabContent"
+        class="trade-review-tab-content hidden"
       >
-        <div class="reminder-empty">
-          Carregando revisões...
+
+        <div class="trade-review-form">
+
+          <div class="field">
+            <label for="tradeReviewTitle">
+              Título da revisão
+            </label>
+
+            <input
+              id="tradeReviewTitle"
+              type="text"
+              placeholder="Ex.: Rompimento falso no suporte"
+            >
+          </div>
+
+
+          <div class="field">
+            <label for="tradeReviewUrl">
+              Link do vídeo no YouTube
+            </label>
+
+            <input
+              id="tradeReviewUrl"
+              type="url"
+              placeholder="https://youtube.com/..."
+            >
+          </div>
+
+
+          <div class="field full">
+            <label for="tradeReviewDescription">
+              Descrição
+            </label>
+
+            <textarea
+              id="tradeReviewDescription"
+              placeholder="Explique brevemente o contexto ou o principal aprendizado desta revisão."
+              style="min-height:74px;"
+            ></textarea>
+          </div>
+
+
+          <div class="field full">
+            <div class="checkbox-row">
+              <input
+                id="tradeReviewActive"
+                type="checkbox"
+                checked
+              >
+
+              <label for="tradeReviewActive">
+                Vídeo publicado para os mentorados elegíveis
+              </label>
+            </div>
+          </div>
+
+
+          <div class="trade-review-actions">
+            <button
+              id="saveTradeReviewButton"
+              type="button"
+              class="primary-button"
+            >
+              Adicionar revisão
+            </button>
+
+            <button
+              id="cancelTradeReviewButton"
+              type="button"
+              class="secondary-button hidden"
+            >
+              Cancelar edição
+            </button>
+          </div>
+
         </div>
+
+
+        <div
+          id="tradeReviewList"
+          class="trade-review-list"
+        >
+          <div class="reminder-empty">
+            Carregando revisões...
+          </div>
+        </div>
+
       </div>
 
     </section>
