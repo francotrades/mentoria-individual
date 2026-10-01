@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Performance dos Mentorados | FrancoTrades</title>
+  <title>Diário de Trade dos Mentorados | FrancoTrades</title>
   <style>
     :root{
       --bg:#050706;--card:#0c110e;--card2:#101713;--border:rgba(255,255,255,.08);
@@ -43,8 +43,8 @@
   <div id="app" class="hidden">
     <div id="message" class="message"></div>
     <section class="hero">
-      <div class="eyebrow">Mentoria · Performance</div>
-      <h1>Performance dos mentorados</h1>
+      <div class="eyebrow">Mentoria · Diário de Trade</div>
+      <h1>Diário de Trade dos mentorados</h1>
       <p>Visualize o histórico individual, inclusive de mentorados inativos, e deixe feedback diretamente nas operações. Seu diário pessoal não aparece aqui.</p>
     </section>
 
@@ -153,7 +153,7 @@ async function selectStudent(id){
     supabase.from("student_trade_attachments").select("*").eq("student_id",id).order("created_at",{ascending:false}),
     supabase.from("student_trade_comments").select("*").eq("student_id",id).order("created_at",{ascending:true})
   ]);
-  if(a.error||t.error){console.error(a.error,t.error);showMessage("Não foi possível carregar a performance.","error");return}
+  if(a.error||t.error){console.error(a.error,t.error);showMessage("Não foi possível carregar o Diário de Trade.","error");return}
   accounts=a.data||[];trades=t.data||[];attachments=att.data||[];comments=com.data||[];
   $("accountFilter").innerHTML='<option value="">Todas as contas</option>'+accounts.map(x=>'<option value="'+x.id+'">'+esc(x.name)+'</option>').join("");
   calculateStats();await renderTrades();$("studentPerformance").classList.remove("hidden");
