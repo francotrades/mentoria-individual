@@ -2681,6 +2681,12 @@ function localDateISO(
 
 async function loadPaymentArea() {
 
+  paymentPanel.classList
+    .add(
+      "hidden"
+    );
+
+
   if (!currentUser) {
     return;
   }
@@ -2791,37 +2797,17 @@ async function loadPaymentArea() {
     if (!pending) {
 
       paymentPanel.classList
-        .remove(
+        .add(
           "hidden"
         );
 
 
-      paymentStatusText.textContent =
-        "Tudo em dia";
+      copyPixButton.dataset.pixPayload =
+        "";
 
 
-      paymentInstallment.textContent =
-        "—";
-
-
-      paymentDueDate.textContent =
-        "—";
-
-
-      paymentAmount.textContent =
-        "Quitado";
-
-
-      paymentAmount.classList
-        .remove(
-          "pending"
-        );
-
-
-      paymentAmount.classList
-        .add(
-          "paid"
-        );
+      copyPixKeyButton.dataset.pixKey =
+        "";
 
 
       return;
