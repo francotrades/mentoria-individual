@@ -347,13 +347,18 @@ function detectDelimiter(text){
 }
 function parseCsv(text){
   const d=detectDelimiter(text), rows=[]; let row=[],cell="",q=false;
-  for(let i=0;i<text.length;i++){const ch=text[i],n=text[i+1];
+  for(let i=0;i<text.length;i++){
+    const ch=text[i],n=text[i+1];
     if(ch==='"'&&q&&n==='"'){cell+='"';i++;continue}
     if(ch==='"'){q=!q;continue}
     if(ch===d&&!q){row.push(cell);cell="";continue}
-    if((ch==="
-"||ch==="")&&!q){if(ch===""&&n==="
-")i++;row.push(cell);cell="";if(row.some(x=>x.trim()!==""))rows.push(row);row=[];continue}
+    if((ch==="\n"||ch==="\r")&&!q){
+      if(ch==="\r"&&n==="\n")i++;
+      row.push(cell);cell="";
+      if(row.some(x=>x.trim()!==""))rows.push(row);
+      row=[];
+      continue;
+    }
     cell+=ch;
   }
   if(cell||row.length){row.push(cell);rows.push(row)}
