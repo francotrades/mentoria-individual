@@ -3360,6 +3360,39 @@ const cancelTradeReviewButton =
 const tradeReviewList =
   $("tradeReviewList");
 
+const tradeReviewTabButtons =
+  [...document.querySelectorAll("[data-trade-review-tab]")];
+
+const tradeAnalysisTabContent =
+  $("tradeAnalysisTabContent");
+
+const tradeVideoTabContent =
+  $("tradeVideoTabContent");
+
+const tradeAnalysisTitle =
+  $("tradeAnalysisTitle");
+
+const tradeAnalysisImage =
+  $("tradeAnalysisImage");
+
+const tradeAnalysisCurrentImage =
+  $("tradeAnalysisCurrentImage");
+
+const tradeAnalysisExplanation =
+  $("tradeAnalysisExplanation");
+
+const tradeAnalysisActive =
+  $("tradeAnalysisActive");
+
+const saveTradeAnalysisButton =
+  $("saveTradeAnalysisButton");
+
+const cancelTradeAnalysisButton =
+  $("cancelTradeAnalysisButton");
+
+const tradeAnalysisList =
+  $("tradeAnalysisList");
+
 
 const studentSelect =
   $("studentSelect");
@@ -3547,8 +3580,10 @@ let allFinancials = [];
 let allPayments = [];
 let allReminderLogs = [];
 let allTradeReviews = [];
+let allTradeAnalysisReviews = [];
 
 let editingTradeReviewId = null;
+let editingTradeAnalysisReviewId = null;
 
 let selectedStudent = null;
 let studentSessions = [];
