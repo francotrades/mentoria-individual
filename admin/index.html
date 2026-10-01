@@ -9607,6 +9607,75 @@ async function refreshData() {
 
 /* EVENTOS */
 
+for (
+  const button of
+  tradeReviewTabButtons
+) {
+
+  button.addEventListener(
+    "click",
+    () =>
+      setTradeReviewAdminTab(
+        button.dataset.tradeReviewTab
+      )
+  );
+
+}
+
+
+saveTradeAnalysisButton.addEventListener(
+  "click",
+  saveTradeAnalysisReview
+);
+
+
+cancelTradeAnalysisButton.addEventListener(
+  "click",
+  resetTradeAnalysisForm
+);
+
+
+tradeAnalysisList.addEventListener(
+  "click",
+  async event => {
+
+    const editButton =
+      event.target.closest(
+        "[data-edit-trade-analysis]"
+      );
+
+
+    if (editButton) {
+
+      editTradeAnalysisReview(
+        editButton.dataset
+          .editTradeAnalysis
+      );
+
+      return;
+
+    }
+
+
+    const deleteButton =
+      event.target.closest(
+        "[data-delete-trade-analysis]"
+      );
+
+
+    if (deleteButton) {
+
+      await deleteTradeAnalysisReview(
+        deleteButton.dataset
+          .deleteTradeAnalysis
+      );
+
+    }
+
+  }
+);
+
+
 saveTradeReviewButton.addEventListener(
   "click",
   saveTradeReview
