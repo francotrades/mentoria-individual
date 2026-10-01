@@ -3082,6 +3082,14 @@
           </button>
 
           <button
+            id="toggleEarlyReviewAccessButton"
+            class="secondary-button"
+            type="button"
+          >
+            Liberar revisões antecipadamente
+          </button>
+
+          <button
             id="deleteTestStudentButton"
             class="danger-button"
             type="button"
@@ -3575,6 +3583,9 @@ const saveStudentButton =
 const resendStudentAccessButton =
   $("resendStudentAccessButton");
 
+const toggleEarlyReviewAccessButton =
+  $("toggleEarlyReviewAccessButton");
+
 const deleteTestStudentButton =
   $("deleteTestStudentButton");
 
@@ -3718,6 +3729,7 @@ let pastedTradeAnalysisFile = null;
 let pastedTradeAnalysisPreviewUrl = "";
 
 let selectedStudent = null;
+let selectedStudentHasEarlyReviewAccess = false;
 let studentSessions = [];
 let studentProgress = [];
 
@@ -8026,6 +8038,207 @@ function renderStudentSelect() {
 
 /* ALUNO */
 
+async function loadSelectedStudentReviewAccess() {
+
+  selectedStudentHasEarlyReviewAccess =
+    false;
+
+
+  if (!selectedStudent) {
+
+    toggleEarlyReviewAccessButton.textContent =
+      "Liberar revisões antecipadamente";
+
+    toggleEarlyReviewAccessButton.disabled =
+      true;
+
+    return;
+
+  }
+
+
+  toggleEarlyReviewAccessButton.disabled =
+    false;
+
+
+  const {
+    data,
+    error
+  } =
+    await supabase
+      .from(
+        "trade_review_access_overrides"
+      )
+      .select(
+        "student_id,early_access"
+      )
+      .eq(
+        "student_id",
+        selectedStudent.id
+      )
+      .maybeSingle();
+
+
+  if (error) {
+
+    console.error(
+      "Liberação antecipada não carregada:",
+      error
+    );
+
+
+    toggleEarlyReviewAccessButton.textContent =
+      "Liberar revisões antecipadamente";
+
+    return;
+
+  }
+
+
+  selectedStudentHasEarlyReviewAccess =
+    data?.early_access ===
+    true;
+
+
+  toggleEarlyReviewAccessButton.textContent =
+    selectedStudentHasEarlyReviewAccess
+      ?
+      "Revogar liberação antecipada"
+      :
+      "Liberar revisões antecipadamente";
+
+}
+
+
+async function toggleSelectedStudentEarlyReviewAccess() {
+
+  if (!selectedStudent) {
+    return;
+  }
+
+
+  toggleEarlyReviewAccessButton.disabled =
+    true;
+
+
+  if (
+    selectedStudentHasEarlyReviewAccess
+  ) {
+
+    const {
+      error
+    } =
+      await supabase
+        .from(
+          "trade_review_access_overrides"
+        )
+        .delete()
+        .eq(
+          "student_id",
+          selectedStudent.id
+        );
+
+
+    if (error) {
+
+      console.error(
+        error
+      );
+
+
+      showMessage(
+        "Não foi possível revogar a liberação antecipada.",
+        "error"
+      );
+
+
+      toggleEarlyReviewAccessButton.disabled =
+        false;
+
+      return;
+
+    }
+
+
+    selectedStudentHasEarlyReviewAccess =
+      false;
+
+
+    showMessage(
+      "Liberação antecipada das revisões revogada."
+    );
+
+  }
+
+  else {
+
+    const {
+      error
+    } =
+      await supabase
+        .from(
+          "trade_review_access_overrides"
+        )
+        .upsert(
+          {
+            student_id:
+              selectedStudent.id,
+            early_access:
+              true
+          },
+          {
+            onConflict:
+              "student_id"
+          }
+        );
+
+
+    if (error) {
+
+      console.error(
+        error
+      );
+
+
+      showMessage(
+        "Não foi possível liberar as revisões antecipadamente.",
+        "error"
+      );
+
+
+      toggleEarlyReviewAccessButton.disabled =
+        false;
+
+      return;
+
+    }
+
+
+    selectedStudentHasEarlyReviewAccess =
+      true;
+
+
+    showMessage(
+      "Revisões liberadas antecipadamente para este mentorado."
+    );
+
+  }
+
+
+  toggleEarlyReviewAccessButton.textContent =
+    selectedStudentHasEarlyReviewAccess
+      ?
+      "Revogar liberação antecipada"
+      :
+      "Liberar revisões antecipadamente";
+
+
+  toggleEarlyReviewAccessButton.disabled =
+    false;
+
+}
+
+
 async function selectStudent(
   studentId
 ) {
@@ -8038,6 +8251,15 @@ async function selectStudent(
 
 
   if (!selectedStudent) {
+
+    selectedStudentHasEarlyReviewAccess =
+      false;
+
+    toggleEarlyReviewAccessButton.textContent =
+      "Liberar revisões antecipadamente";
+
+    toggleEarlyReviewAccessButton.disabled =
+      true;
 
     studentArea.classList
       .add("hidden");
@@ -8072,6 +8294,8 @@ async function selectStudent(
   renderStudentData();
   renderStudentProgress();
   renderStudentSessions();
+
+  await loadSelectedStudentReviewAccess();
 
 
   studentArea.classList
@@ -10442,6 +10666,12 @@ saveStudentButton.addEventListener(
 resendStudentAccessButton.addEventListener(
   "click",
   resendStudentAccess
+);
+
+
+toggleEarlyReviewAccessButton.addEventListener(
+  "click",
+  toggleSelectedStudentEarlyReviewAccess
 );
 
 
