@@ -1728,7 +1728,7 @@
         </p>
 
         <div class="trade-reviews-rule">
-          🔒 Ambos são liberados após as 8 primeiras aulas
+          🔒 Ambos são liberados quando as gravações das 8 primeiras aulas estiverem disponíveis
         </div>
       </div>
 
@@ -1765,8 +1765,9 @@
         class="trade-review-tab-content"
       >
         <div class="trade-tab-note">
-          As análises com imagem ficam disponíveis da liberação da 8ª aula
-          até a liberação da última sessão da sua mentoria.
+          As análises com imagem ficam disponíveis quando as gravações das
+          8 primeiras aulas estiverem disponíveis e permanecem até a gravação
+          da última sessão da sua mentoria ser cadastrada.
         </div>
 
         <div
@@ -1781,8 +1782,9 @@
         class="trade-review-tab-content hidden"
       >
         <div class="trade-tab-note">
-          As revisões em vídeo ficam disponíveis após a 8ª aula enquanto
-          seu acesso geral à plataforma estiver ativo.
+          As revisões em vídeo ficam disponíveis quando as gravações das
+          8 primeiras aulas estiverem disponíveis, enquanto seu acesso geral
+          à plataforma estiver ativo.
         </div>
 
         <div
@@ -3362,11 +3364,20 @@ function setStudentTradeReviewTab(
 }
 
 
-function countFirstEightReleased() {
+function countFirstEightRecorded() {
 
-  const releasedNumbers =
+  const recordedNumbers =
     new Set(
       currentSessions
+        .filter(
+          item =>
+            Boolean(
+              (
+                item.youtube_url ||
+                ""
+              ).trim()
+            )
+        )
         .map(
           item =>
             Number(
@@ -3382,14 +3393,14 @@ function countFirstEightReleased() {
     );
 
 
-  return releasedNumbers.size;
+  return recordedNumbers.size;
 
 }
 
 
 function renderLockedTradeContent(
   target,
-  releasedCount
+  recordedCount
 ) {
 
   target.innerHTML =
@@ -3400,14 +3411,14 @@ function renderLockedTradeContent(
         </strong>
 
         <p>
-          Esta área é liberada automaticamente quando as
+          Esta área é liberada automaticamente quando as gravações das
           8 primeiras aulas da mentoria estiverem disponíveis para você.
           Nesse momento, você já terá a base necessária para aproveitar
           melhor as análises.
         </p>
 
         <div class="trade-reviews-progress">
-          ${releasedCount} de 8 aulas liberadas
+          ${recordedCount} de 8 gravações disponíveis
         </div>
       </div>
     `;
@@ -3426,8 +3437,9 @@ function renderTradeAnalysisClosed() {
 
         <p>
           A área de Revisão dos Trades com imagem e explicação fica disponível
-          entre a liberação da 8ª aula e a liberação da última sessão da sua
-          mentoria. Como sua última sessão já foi liberada, este ciclo foi
+          quando as gravações das 8 primeiras aulas estão disponíveis e permanece
+          até a gravação da última sessão da sua mentoria ser cadastrada. Como a
+          gravação da sua última sessão já está disponível, este ciclo foi
           encerrado automaticamente.
         </p>
       </div>
@@ -3603,8 +3615,8 @@ async function renderTradeAnalysisReviews() {
 
 async function loadTradeAnalysisReviews() {
 
-  const releasedCount =
-    countFirstEightReleased();
+  const recordedCount =
+    countFirstEightRecorded();
 
 
   tradeAnalysisList.innerHTML =
@@ -3653,12 +3665,12 @@ async function loadTradeAnalysisReviews() {
 
 
     if (
-      releasedCount < 8
+      recordedCount < 8
     ) {
 
       renderLockedTradeContent(
         tradeAnalysisList,
-        releasedCount
+        recordedCount
       );
 
     }
@@ -3843,8 +3855,8 @@ function renderTradeReviews() {
 
 async function loadTradeReviews() {
 
-  const releasedCount =
-    countFirstEightReleased();
+  const recordedCount =
+    countFirstEightRecorded();
 
 
   tradeReviewsList.innerHTML =
@@ -3894,7 +3906,7 @@ async function loadTradeReviews() {
 
     renderLockedTradeContent(
       tradeReviewsList,
-      releasedCount
+      recordedCount
     );
 
     return;
