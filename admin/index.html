@@ -3098,6 +3098,14 @@
           </button>
 
           <button
+            id="toggleEarlyDiaryAccessButton"
+            class="secondary-button"
+            type="button"
+          >
+            Liberar Diário de Trade antecipadamente
+          </button>
+
+          <button
             id="deleteTestStudentButton"
             class="danger-button"
             type="button"
@@ -3108,6 +3116,10 @@
         </div>
 
         <div class="hint" style="margin-top:10px;">
+          Revisões e Diário de Trade são liberados automaticamente quando as gravações das 8 primeiras sessões estiverem disponíveis. Os botões acima permitem antecipar individualmente o acesso.
+        </div>
+
+        <div class="hint" style="margin-top:6px;">
           Exclusão definitiva para testes: remove conta, sessões, progresso e financeiro criado pelo painel. Registros financeiros importados ficam protegidos.
         </div>
 
@@ -3594,6 +3606,9 @@ const resendStudentAccessButton =
 const toggleEarlyReviewAccessButton =
   $("toggleEarlyReviewAccessButton");
 
+const toggleEarlyDiaryAccessButton =
+  $("toggleEarlyDiaryAccessButton");
+
 const deleteTestStudentButton =
   $("deleteTestStudentButton");
 
@@ -3738,6 +3753,7 @@ let pastedTradeAnalysisPreviewUrl = "";
 
 let selectedStudent = null;
 let selectedStudentHasEarlyReviewAccess = false;
+let selectedStudentHasEarlyDiaryAccess = false;
 let studentSessions = [];
 let studentProgress = [];
 
@@ -8247,6 +8263,174 @@ async function toggleSelectedStudentEarlyReviewAccess() {
 }
 
 
+async function loadSelectedStudentDiaryAccess() {
+
+  selectedStudentHasEarlyDiaryAccess =
+    false;
+
+  if (!selectedStudent) {
+
+    toggleEarlyDiaryAccessButton.textContent =
+      "Liberar Diário de Trade antecipadamente";
+
+    toggleEarlyDiaryAccessButton.disabled =
+      true;
+
+    return;
+  }
+
+  toggleEarlyDiaryAccessButton.disabled =
+    false;
+
+  const {
+    data,
+    error
+  } =
+    await supabase
+      .from(
+        "trade_journal_access_overrides"
+      )
+      .select(
+        "student_id,early_access"
+      )
+      .eq(
+        "student_id",
+        selectedStudent.id
+      )
+      .maybeSingle();
+
+  if (error) {
+
+    console.error(
+      "Liberação antecipada do Diário de Trade não carregada:",
+      error
+    );
+
+    toggleEarlyDiaryAccessButton.textContent =
+      "Liberar Diário de Trade antecipadamente";
+
+    return;
+  }
+
+  selectedStudentHasEarlyDiaryAccess =
+    data?.early_access ===
+    true;
+
+  toggleEarlyDiaryAccessButton.textContent =
+    selectedStudentHasEarlyDiaryAccess
+      ?
+      "Revogar acesso antecipado ao Diário"
+      :
+      "Liberar Diário de Trade antecipadamente";
+}
+
+
+async function toggleSelectedStudentEarlyDiaryAccess() {
+
+  if (!selectedStudent) {
+    return;
+  }
+
+  toggleEarlyDiaryAccessButton.disabled =
+    true;
+
+  if (
+    selectedStudentHasEarlyDiaryAccess
+  ) {
+
+    const {
+      error
+    } =
+      await supabase
+        .from(
+          "trade_journal_access_overrides"
+        )
+        .delete()
+        .eq(
+          "student_id",
+          selectedStudent.id
+        );
+
+    if (error) {
+
+      console.error(error);
+
+      showMessage(
+        "Não foi possível revogar o acesso antecipado ao Diário de Trade.",
+        "error"
+      );
+
+      toggleEarlyDiaryAccessButton.disabled =
+        false;
+
+      return;
+    }
+
+    selectedStudentHasEarlyDiaryAccess =
+      false;
+
+    showMessage(
+      "Acesso antecipado ao Diário de Trade revogado."
+    );
+  }
+
+  else {
+
+    const {
+      error
+    } =
+      await supabase
+        .from(
+          "trade_journal_access_overrides"
+        )
+        .upsert(
+          {
+            student_id:
+              selectedStudent.id,
+            early_access:
+              true
+          },
+          {
+            onConflict:
+              "student_id"
+          }
+        );
+
+    if (error) {
+
+      console.error(error);
+
+      showMessage(
+        "Não foi possível liberar o Diário de Trade antecipadamente.",
+        "error"
+      );
+
+      toggleEarlyDiaryAccessButton.disabled =
+        false;
+
+      return;
+    }
+
+    selectedStudentHasEarlyDiaryAccess =
+      true;
+
+    showMessage(
+      "Diário de Trade liberado antecipadamente para este mentorado."
+    );
+  }
+
+  toggleEarlyDiaryAccessButton.textContent =
+    selectedStudentHasEarlyDiaryAccess
+      ?
+      "Revogar acesso antecipado ao Diário"
+      :
+      "Liberar Diário de Trade antecipadamente";
+
+  toggleEarlyDiaryAccessButton.disabled =
+    false;
+}
+
+
 async function selectStudent(
   studentId
 ) {
@@ -8263,10 +8447,19 @@ async function selectStudent(
     selectedStudentHasEarlyReviewAccess =
       false;
 
+    selectedStudentHasEarlyDiaryAccess =
+      false;
+
     toggleEarlyReviewAccessButton.textContent =
       "Liberar revisões antecipadamente";
 
     toggleEarlyReviewAccessButton.disabled =
+      true;
+
+    toggleEarlyDiaryAccessButton.textContent =
+      "Liberar Diário de Trade antecipadamente";
+
+    toggleEarlyDiaryAccessButton.disabled =
       true;
 
     studentArea.classList
@@ -8303,7 +8496,10 @@ async function selectStudent(
   renderStudentProgress();
   renderStudentSessions();
 
-  await loadSelectedStudentReviewAccess();
+  await Promise.all([
+    loadSelectedStudentReviewAccess(),
+    loadSelectedStudentDiaryAccess()
+  ]);
 
 
   studentArea.classList
@@ -10680,6 +10876,11 @@ resendStudentAccessButton.addEventListener(
 toggleEarlyReviewAccessButton.addEventListener(
   "click",
   toggleSelectedStudentEarlyReviewAccess
+);
+
+toggleEarlyDiaryAccessButton.addEventListener(
+  "click",
+  toggleSelectedStudentEarlyDiaryAccess
 );
 
 
