@@ -285,6 +285,18 @@
       cursor: pointer;
     }
 
+    .diary-global-on {
+      border: 1px solid rgba(67,226,144,.45) !important;
+      background: rgba(67,226,144,.10) !important;
+      color: #8cf0ba !important;
+    }
+
+    .diary-global-off {
+      border: 1px solid rgba(239,68,68,.45) !important;
+      background: rgba(239,68,68,.08) !important;
+      color: #fca5a5 !important;
+    }
+
     .danger-button {
       border: 1px solid rgba(239, 68, 68, 0.45);
       border-radius: 9px;
@@ -2012,12 +2024,22 @@
       </div>
 
 
-      <button
-        id="openNewStudentButton"
-        class="new-student-button"
-      >
-        + Novo mentorado
-      </button>
+      <div class="button-row" style="margin-top:0;justify-content:flex-end;">
+        <button
+          id="toggleDiaryGlobalButton"
+          class="danger-button"
+          type="button"
+        >
+          Diário de Trade: DESATIVADO
+        </button>
+
+        <button
+          id="openNewStudentButton"
+          class="new-student-button"
+        >
+          + Novo mentorado
+        </button>
+      </div>
 
     </section>
 
@@ -3414,6 +3436,9 @@ const loading = $("loading");
 const adminContent = $("adminContent");
 const message = $("message");
 
+const toggleDiaryGlobalButton =
+  $("toggleDiaryGlobalButton");
+
 const openNewStudentButton =
   $("openNewStudentButton");
 
@@ -3750,6 +3775,8 @@ let editingTradeReviewId = null;
 let editingTradeAnalysisReviewId = null;
 let pastedTradeAnalysisFile = null;
 let pastedTradeAnalysisPreviewUrl = "";
+
+let diaryGloballyEnabled = false;
 
 let selectedStudent = null;
 let selectedStudentHasEarlyReviewAccess = false;
@@ -6826,6 +6853,144 @@ async function deleteTradeReview(
     "Revisão excluída."
   );
 
+}
+
+
+async function loadDiaryGlobalSetting() {
+
+  const {
+    data,
+    error
+  } =
+    await supabase
+      .from(
+        "trade_journal_settings"
+      )
+      .select(
+        "enabled"
+      )
+      .eq(
+        "id",
+        1
+      )
+      .maybeSingle();
+
+  if (error) {
+
+    console.error(
+      "Configuração global do Diário de Trade não carregada:",
+      error
+    );
+
+    diaryGloballyEnabled =
+      false;
+
+    toggleDiaryGlobalButton.textContent =
+      "Diário de Trade: CONFIGURE O SQL";
+
+    toggleDiaryGlobalButton.classList
+      .remove(
+        "diary-global-on"
+      );
+
+    toggleDiaryGlobalButton.classList
+      .add(
+        "diary-global-off"
+      );
+
+    return;
+  }
+
+  diaryGloballyEnabled =
+    data?.enabled ===
+    true;
+
+  toggleDiaryGlobalButton.textContent =
+    diaryGloballyEnabled
+      ?
+      "Diário de Trade: ATIVADO"
+      :
+      "Diário de Trade: DESATIVADO";
+
+  toggleDiaryGlobalButton.classList.toggle(
+    "diary-global-on",
+    diaryGloballyEnabled
+  );
+
+  toggleDiaryGlobalButton.classList.toggle(
+    "diary-global-off",
+    !diaryGloballyEnabled
+  );
+}
+
+
+async function toggleDiaryGlobalAccess() {
+
+  const nextValue =
+    !diaryGloballyEnabled;
+
+  const confirmed =
+    confirm(
+      nextValue
+        ?
+        "Ativar o Diário de Trade para os mentorados elegíveis?\n\nAlunos com as 8 primeiras gravações ou liberação antecipada individual poderão acessar imediatamente."
+        :
+        "Desativar o Diário de Trade para TODOS os mentorados?\n\nO histórico será preservado e você continuará acessando como administrador para testes."
+    );
+
+  if (!confirmed) {
+    return;
+  }
+
+  toggleDiaryGlobalButton.disabled =
+    true;
+
+  const {
+    error
+  } =
+    await supabase
+      .from(
+        "trade_journal_settings"
+      )
+      .update({
+        enabled:
+          nextValue,
+        updated_at:
+          new Date()
+            .toISOString()
+      })
+      .eq(
+        "id",
+        1
+      );
+
+  toggleDiaryGlobalButton.disabled =
+    false;
+
+  if (error) {
+
+    console.error(error);
+
+    showMessage(
+      "Não foi possível alterar a disponibilidade global do Diário de Trade.",
+      "error"
+    );
+
+    return;
+  }
+
+  diaryGloballyEnabled =
+    nextValue;
+
+  await loadDiaryGlobalSetting();
+
+  showMessage(
+    diaryGloballyEnabled
+      ?
+      "Diário de Trade ativado para os mentorados elegíveis."
+      :
+      "Diário de Trade desativado para todos os mentorados. Seu acesso administrativo continua ativo."
+  );
 }
 
 
@@ -10815,6 +10980,12 @@ for (
   );
 
 }
+
+
+toggleDiaryGlobalButton.addEventListener(
+  "click",
+  toggleDiaryGlobalAccess
+);
 
 
 openStudentFinancialEditor.addEventListener(
