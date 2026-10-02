@@ -1027,8 +1027,19 @@
       }
 
 
-      .header-link {
+      .site-main-link {
         display: none;
+      }
+
+      .header-right {
+        gap: 6px;
+      }
+
+      .diary-header-link,
+      .logout-button {
+        padding: 8px 10px;
+        font-size: 10px;
+        white-space: nowrap;
       }
 
 
@@ -1119,6 +1130,22 @@
     @media (
       max-width: 480px
     ) {
+
+      header {
+        min-height: 64px;
+        padding: 0 12px;
+      }
+
+      .logo {
+        font-size: 15px;
+        letter-spacing: 1px;
+      }
+
+      .diary-header-link,
+      .logout-button {
+        padding: 7px 8px;
+        font-size: 9px;
+      }
 
       .progress-panel,
       .next-panel,
@@ -1560,14 +1587,14 @@
 
     <a
       href="./diario-de-trade/"
-      class="header-link"
+      class="header-link diary-header-link"
     >
       Diário de Trade
     </a>
 
     <a
       href="../"
-      class="header-link"
+      class="header-link site-main-link"
     >
       Site principal
     </a>
