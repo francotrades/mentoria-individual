@@ -849,6 +849,14 @@ async function init(){
   const {data:p,error}=await supabase.from("profiles").select("nome,status,role,data_expiracao").eq("id",currentUser.id).single();if(error||!p){window.location.href="../../login/?reason=profile";return}
   profile=p;if(p.role==="admin"){window.location.href="../../admin/diario-de-trade/";return}
   const expired=p.data_expiracao&&p.data_expiracao<today();if(p.status!=="ativo"||expired){await supabase.auth.signOut();window.location.href="../../login/?reason="+(expired||p.status==="expirado"?"expired":"inactive");return}
+
+  const {data:diaryAllowed,error:diaryAccessError}=await supabase.rpc("can_access_student_trade_journal",{target_student:currentUser.id});
+  if(diaryAccessError){console.error("Acesso ao Diário de Trade não verificado:",diaryAccessError)}
+  if(diaryAllowed!==true){
+    window.location.href="../";
+    return;
+  }
+
   $("welcomeTitle").textContent="Diário de Trade · "+(p.nome?.trim().split(/\s+/)[0]||"Mentorado");
   $("tradeDate").value=today();$("payoutDate").value=today();$("weeklyStart").value=mondayOfCurrentWeek();
   await loadData();
