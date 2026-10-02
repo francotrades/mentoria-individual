@@ -64,6 +64,22 @@
       border-radius:7px;padding:8px 11px;font:600 11px "Chakra Petch",monospace
     }
     .nav-btn.active{color:#062016;background:var(--green);border-color:var(--green)}
+    .mobile-nav-toggle{
+      display:none;width:100%;align-items:center;justify-content:space-between;gap:12px;
+      border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:9px;
+      padding:10px 12px;font:600 11px "Chakra Petch",monospace
+    }
+    .mobile-nav-left{display:flex;align-items:center;gap:9px;min-width:0}
+    .hamburger{display:inline-flex;flex-direction:column;gap:3px;width:17px;flex:0 0 auto}
+    .hamburger i{display:block;height:2px;border-radius:2px;background:var(--green)}
+    .mobile-nav-current{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .mobile-nav-arrow{color:var(--green);transition:transform .18s ease}
+    .nav-wrap.mobile-open .mobile-nav-arrow{transform:rotate(180deg)}
+    .nav-count{
+      display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;
+      margin-left:5px;padding:0 5px;border-radius:99px;background:rgba(246,199,91,.13);
+      border:1px solid rgba(246,199,91,.35);color:var(--amber);font-size:9px;font-weight:700
+    }
     .filters{
       display:grid;grid-template-columns:repeat(3,minmax(160px,1fr));gap:10px;
       padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--panel);margin-bottom:16px
@@ -146,7 +162,21 @@
     @media(max-width:1080px){.kpis{grid-template-columns:repeat(3,1fr)}.analysis-grid{grid-template-columns:1fr}.trade-line{grid-template-columns:1fr 1fr 1fr}.detail-grid{grid-template-columns:repeat(3,1fr)}.rule-grid{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:760px){
       .shell{padding:0 12px 50px}header{margin:0 -12px;padding:11px 12px}.brand-sub{display:none}.header-actions .link-btn{display:none}
-      .nav-wrap{top:59px}.filters,.grid2,.grid3,.grid4,.review-form{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}
+      .nav-wrap{top:59px;padding:8px 0 9px}
+      .mobile-nav-toggle{display:flex}
+      .nav{
+        display:none;position:absolute;left:0;right:0;top:calc(100% - 1px);
+        flex-direction:column;gap:5px;overflow:visible;padding:9px;
+        border:1px solid var(--line);border-top:0;border-radius:0 0 10px 10px;
+        background:var(--panel);box-shadow:0 18px 38px rgba(0,0,0,.30)
+      }
+      .nav-wrap.mobile-open .nav{display:flex}
+      .nav-btn{
+        width:100%;display:flex;align-items:center;justify-content:space-between;
+        text-align:left;border-radius:7px;padding:10px 11px
+      }
+      .nav-btn.active{background:rgba(67,226,144,.10);color:var(--green);border-color:rgba(67,226,144,.35)}
+      .filters,.grid2,.grid3,.grid4,.review-form{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}
       .trade-line{grid-template-columns:1fr 1fr}.detail-grid{grid-template-columns:repeat(2,1fr)}.screens{grid-template-columns:repeat(2,1fr)}
       .calendar-grid{gap:3px}.day{min-height:66px;padding:5px}.day-pnl{font-size:10px}.rule-grid{grid-template-columns:1fr 1fr}
     }
@@ -181,19 +211,33 @@
 
     <div id="message" class="message"></div>
 
-    <div class="nav-wrap">
-      <nav class="nav">
-        <button class="nav-btn active" data-screen="overview">Visão geral</button>
-        <button class="nav-btn" data-screen="journal">Diário</button>
-        <button class="nav-btn" data-screen="quick">Revisão rápida</button>
-        <button class="nav-btn" data-screen="positions">Posições abertas</button>
-        <button class="nav-btn" data-screen="calendar">Calendário</button>
-        <button class="nav-btn" data-screen="analytics">Análises</button>
-        <button class="nav-btn" data-screen="execution">Execução & saídas</button>
-        <button class="nav-btn" data-screen="weekly">Revisão semanal</button>
-        <button class="nav-btn" data-screen="playbook">Playbook</button>
-        <button class="nav-btn" data-screen="import">Importar</button>
-        <button class="nav-btn" data-screen="accounts">Contas & risco</button>
+    <div id="diaryNavWrap" class="nav-wrap">
+      <button
+        id="mobileNavToggle"
+        class="mobile-nav-toggle"
+        type="button"
+        aria-expanded="false"
+        aria-controls="diaryNav"
+      >
+        <span class="mobile-nav-left">
+          <span class="hamburger" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span id="mobileNavCurrent" class="mobile-nav-current">Visão geral</span>
+        </span>
+        <span class="mobile-nav-arrow" aria-hidden="true">⌄</span>
+      </button>
+
+      <nav id="diaryNav" class="nav">
+        <button class="nav-btn active" data-screen="overview" data-label="Visão geral">Visão geral</button>
+        <button class="nav-btn" data-screen="journal" data-label="Diário">Diário</button>
+        <button class="nav-btn" data-screen="quick" data-label="Revisão rápida">Revisão rápida <span id="navQuickCount" class="nav-count hidden">0</span></button>
+        <button class="nav-btn" data-screen="positions" data-label="Posições abertas">Posições abertas</button>
+        <button class="nav-btn" data-screen="calendar" data-label="Calendário">Calendário</button>
+        <button class="nav-btn" data-screen="analytics" data-label="Análises">Análises</button>
+        <button class="nav-btn" data-screen="execution" data-label="Execução & saídas">Execução & saídas</button>
+        <button class="nav-btn" data-screen="weekly" data-label="Revisão semanal">Revisão semanal</button>
+        <button class="nav-btn" data-screen="playbook" data-label="Playbook">Playbook</button>
+        <button class="nav-btn" data-screen="import" data-label="Importar">Importar</button>
+        <button class="nav-btn" data-screen="accounts" data-label="Contas & risco">Contas & risco</button>
       </nav>
     </div>
 
@@ -449,13 +493,34 @@ function showMessage(text,type="success"){
   clearTimeout(showMessage.t);showMessage.t=setTimeout(()=>{e.textContent="";e.className="message"},3500);
 }
 
+function closeMobileNav(){
+  $("diaryNavWrap").classList.remove("mobile-open");
+  $("mobileNavToggle").setAttribute("aria-expanded","false");
+}
 function setScreen(name){
-  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.screen===name));
+  let activeLabel="Visão geral";
+  document.querySelectorAll(".nav-btn").forEach(b=>{
+    const active=b.dataset.screen===name;
+    b.classList.toggle("active",active);
+    if(active)activeLabel=b.dataset.label||b.textContent.trim();
+  });
   document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("active",s.id==="screen-"+name));
+  $("mobileNavCurrent").textContent=activeLabel;
+  closeMobileNav();
   localStorage.setItem("ft-diary-screen",name);
   renderCurrentScreen(name);
 }
+$("mobileNavToggle").addEventListener("click",()=>{
+  const open=$("diaryNavWrap").classList.toggle("mobile-open");
+  $("mobileNavToggle").setAttribute("aria-expanded",open?"true":"false");
+});
 document.querySelectorAll(".nav-btn").forEach(b=>b.addEventListener("click",()=>setScreen(b.dataset.screen)));
+document.addEventListener("click",event=>{
+  if(window.innerWidth>760)return;
+  if(!$("diaryNavWrap").contains(event.target))closeMobileNav();
+});
+document.addEventListener("keydown",event=>{if(event.key==="Escape")closeMobileNav()});
+window.addEventListener("resize",()=>{if(window.innerWidth>760)closeMobileNav()});
 
 function accountById(id){return accounts.find(a=>String(a.id)===String(id))}
 function accountCurrency(id){return accountById(id)?.currency||"USD"}
@@ -556,6 +621,8 @@ function renderJournal(){const list=filteredTrades().slice().sort((a,b)=>String(
 function renderQuick(){
   const list=filteredTrades().filter(t=>!t.quick_review_completed).slice().sort((a,b)=>String(b.trade_date).localeCompare(String(a.trade_date)));
   $("quickPendingBadge").textContent=list.length+" pendente"+(list.length===1?"":"s");
+  $("navQuickCount").textContent=String(list.length);
+  $("navQuickCount").classList.toggle("hidden",list.length===0);
   $("quickReviewList").innerHTML=list.length?list.map(t=>'<div class="review-card"><div class="account-top"><div><div class="trade-title">'+fmtDate(t.trade_date)+' · '+esc(t.symbol)+' · '+esc(t.setup||"Sem setup")+'</div><div class="muted">'+money(netOf(t),accountCurrency(t.account_id))+'</div></div></div><div class="review-form"><div class="field"><label>Respeitou o stop?</label><select id="qr-stop-'+t.id+'"><option value="">—</option><option value="yes">Sim</option><option value="no">Não</option><option value="na">Não se aplica</option></select></div><div class="field"><label>Respeitou o risco?</label><select id="qr-risk-'+t.id+'"><option value="">—</option><option value="yes">Sim</option><option value="no">Não</option></select></div><div class="field"><label>Motivo da saída</label><select id="qr-exit-'+t.id+'"><option value="">—</option><option>Alvo</option><option>Stop</option><option>Saída discricionária</option><option>Saída antecipada</option><option>Tempo</option><option>Erro operacional</option></select></div><div class="field"><label>Qualidade da execução</label><select id="qr-quality-'+t.id+'"><option value="">—</option><option>Boa</option><option>Regular</option><option>Ruim</option></select></div><div class="field full"><label>O que manter ou ajustar?</label><textarea id="qr-note-'+t.id+'"></textarea></div></div><div class="actions"><button class="btn primary small" data-save-quick="'+t.id+'">Concluir revisão</button></div></div>').join(""):'<div class="empty">Nenhuma revisão rápida pendente.</div>';
 }
 
