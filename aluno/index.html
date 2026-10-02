@@ -4996,29 +4996,69 @@ async function updateDiaryTradeAccessButton() {
     return;
   }
 
-  const {
-    data,
-    error
-  } =
-    await supabase
-      .rpc(
-        "can_access_student_trade_journal",
-        {
-          target_student:
-            currentUser.id
-        }
-      );
+  const [
+    globalResult,
+    accessResult
+  ] =
+    await Promise.all([
+
+      supabase
+        .rpc(
+          "is_trade_journal_globally_enabled"
+        ),
+
+      supabase
+        .rpc(
+          "can_access_student_trade_journal",
+          {
+            target_student:
+              currentUser.id
+          }
+        )
+
+    ]);
+
+  const globallyEnabled =
+    !globalResult.error &&
+    globalResult.data === true;
 
   const allowed =
-    !error &&
-    data === true;
+    globallyEnabled &&
+    !accessResult.error &&
+    accessResult.data === true;
 
-  if (error) {
+  if (globalResult.error) {
     console.error(
-      "Acesso ao Diário de Trade não verificado:",
-      error
+      "Disponibilidade global do Diário de Trade não verificada:",
+      globalResult.error
     );
   }
+
+  if (accessResult.error) {
+    console.error(
+      "Acesso ao Diário de Trade não verificado:",
+      accessResult.error
+    );
+  }
+
+  if (!globallyEnabled) {
+
+    diaryTradeLink.classList
+      .add(
+        "hidden"
+      );
+
+    diaryTradeLink.removeAttribute(
+      "href"
+    );
+
+    return;
+  }
+
+  diaryTradeLink.classList
+    .remove(
+      "hidden"
+    );
 
   diaryTradeLink.classList.toggle(
     "is-locked",
@@ -5026,6 +5066,7 @@ async function updateDiaryTradeAccessButton() {
   );
 
   if (allowed) {
+
     diaryTradeLink.href =
       "./diario-de-trade/";
 
@@ -5039,7 +5080,9 @@ async function updateDiaryTradeAccessButton() {
     diaryTradeLink.title =
       "Abrir Diário de Trade";
   }
+
   else {
+
     diaryTradeLink.removeAttribute(
       "href"
     );
