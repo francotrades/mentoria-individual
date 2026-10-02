@@ -169,6 +169,28 @@
         rgba(67, 226, 144, 0.04);
     }
 
+    .diary-header-link {
+      border-color: rgba(67, 226, 144, 0.42);
+      background: var(--green);
+      color: #04130c;
+      box-shadow: 0 0 0 1px rgba(67, 226, 144, 0.08), 0 8px 24px rgba(67, 226, 144, 0.12);
+    }
+
+    .diary-header-link:hover {
+      color: #04130c;
+      background: #55e89d;
+      border-color: #55e89d;
+    }
+
+    .diary-header-link.is-locked {
+      background: rgba(255, 255, 255, 0.025);
+      color: var(--muted);
+      border-color: var(--border);
+      box-shadow: none;
+      cursor: not-allowed;
+      opacity: .72;
+    }
+
 
     /* ==========================================
        LAYOUT
@@ -1586,6 +1608,7 @@
   <div class="header-right">
 
     <a
+      id="diaryTradeLink"
       href="./diario-de-trade/"
       class="header-link diary-header-link"
     >
@@ -2410,6 +2433,9 @@ const copyPixKeyButton =
 const pixQrCanvas =
   $("pixQrCanvas");
 
+
+const diaryTradeLink =
+  $("diaryTradeLink");
 
 const logoutButton =
   $("logoutButton");
@@ -4964,6 +4990,74 @@ function renderSessions() {
 }
 
 
+async function updateDiaryTradeAccessButton() {
+
+  if (!currentUser) {
+    return;
+  }
+
+  const {
+    data,
+    error
+  } =
+    await supabase
+      .rpc(
+        "can_access_student_trade_journal",
+        {
+          target_student:
+            currentUser.id
+        }
+      );
+
+  const allowed =
+    !error &&
+    data === true;
+
+  if (error) {
+    console.error(
+      "Acesso ao Diário de Trade não verificado:",
+      error
+    );
+  }
+
+  diaryTradeLink.classList.toggle(
+    "is-locked",
+    !allowed
+  );
+
+  if (allowed) {
+    diaryTradeLink.href =
+      "./diario-de-trade/";
+
+    diaryTradeLink.textContent =
+      "Diário de Trade";
+
+    diaryTradeLink.removeAttribute(
+      "aria-disabled"
+    );
+
+    diaryTradeLink.title =
+      "Abrir Diário de Trade";
+  }
+  else {
+    diaryTradeLink.removeAttribute(
+      "href"
+    );
+
+    diaryTradeLink.textContent =
+      "Diário de Trade · após a 8ª";
+
+    diaryTradeLink.setAttribute(
+      "aria-disabled",
+      "true"
+    );
+
+    diaryTradeLink.title =
+      "Liberação automática após as gravações das 8 primeiras sessões ou antecipadamente pelo mentor";
+  }
+}
+
+
 /* ==========================================
    DASHBOARD
 ========================================== */
@@ -5242,6 +5336,8 @@ async function loadDashboard() {
   currentSessions =
     studentSessions ||
     [];
+
+  await updateDiaryTradeAccessButton();
 
 
   /* PROGRESSO */
