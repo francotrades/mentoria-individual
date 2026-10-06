@@ -5023,7 +5023,6 @@ async function updateDiaryTradeAccessButton() {
     globalResult.data === true;
 
   const allowed =
-    globallyEnabled &&
     !accessResult.error &&
     accessResult.data === true;
 
@@ -5041,7 +5040,14 @@ async function updateDiaryTradeAccessButton() {
     );
   }
 
-  if (!globallyEnabled) {
+  /*
+    Se o rollout global estiver desligado, o botão só aparece
+    para quem recebeu liberação individual do mentor.
+  */
+  if (
+    !globallyEnabled &&
+    !allowed
+  ) {
 
     diaryTradeLink.classList
       .add(
@@ -5078,7 +5084,11 @@ async function updateDiaryTradeAccessButton() {
     );
 
     diaryTradeLink.title =
-      "Abrir Diário de Trade";
+      globallyEnabled
+        ?
+        "Abrir Diário de Trade"
+        :
+        "Acesso individual liberado pelo mentor";
   }
 
   else {
