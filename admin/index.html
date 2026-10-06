@@ -2129,17 +2129,40 @@
             Quantidade de sessões
           </label>
 
-          <select id="newStudentSessions">
+          <input
+            id="newStudentSessions"
+            type="number"
+            min="1"
+            max="13"
+            step="1"
+            value="12"
+          >
 
-            <option value="12">
-              12 sessões
-            </option>
+          <div class="hint">
+            Escolha de 1 a 13 sessões. Ex.: 6 para uma mentoria especial.
+          </div>
 
-            <option value="13">
-              13 sessões
-            </option>
+        </div>
 
-          </select>
+
+        <div class="field">
+
+          <label for="newStudentAccessMonths">
+            Acesso / acompanhamento (meses)
+          </label>
+
+          <input
+            id="newStudentAccessMonths"
+            type="number"
+            min="1"
+            max="36"
+            step="1"
+            value="12"
+          >
+
+          <div class="hint">
+            Atualiza automaticamente a data “Acesso até”. Você ainda pode editar a data manualmente.
+          </div>
 
         </div>
 
@@ -3138,7 +3161,7 @@
         </div>
 
         <div class="hint" style="margin-top:10px;">
-          Revisões e Diário de Trade são liberados automaticamente quando as gravações das 8 primeiras sessões estiverem disponíveis. Os botões acima permitem antecipar individualmente o acesso.
+          Revisões e Diário de Trade seguem a liberação automática padrão após as 8 primeiras gravações. Em mentorias especiais com menos sessões, use os botões acima para liberar o acesso individualmente desde o início.
         </div>
 
         <div class="hint" style="margin-top:6px;">
@@ -3459,6 +3482,9 @@ const newStudentEnd =
 
 const newStudentSessions =
   $("newStudentSessions");
+
+const newStudentAccessMonths =
+  $("newStudentAccessMonths");
 
 const newStudentFee =
   $("newStudentFee");
@@ -4436,9 +4462,15 @@ function prepareNewStudentForm() {
   newStudentStart.value =
     todayISO;
 
+  newStudentAccessMonths.value =
+    "12";
+
   newStudentEnd.value =
-    add365Days(
-      todayISO
+    addMonthsISO(
+      todayISO,
+      Number(
+        newStudentAccessMonths.value
+      )
     );
 
   newStudentSessions.value =
@@ -4494,17 +4526,40 @@ cancelNewStudentButton
   );
 
 
+function updateNewStudentEndFromMonths() {
+
+  const months =
+    Math.max(
+      1,
+      Number(
+        newStudentAccessMonths.value ||
+        12
+      )
+    );
+
+  if (!newStudentStart.value) {
+    return;
+  }
+
+  newStudentEnd.value =
+    addMonthsISO(
+      newStudentStart.value,
+      months
+    );
+}
+
+
 newStudentStart
   .addEventListener(
     "change",
-    () => {
+    updateNewStudentEndFromMonths
+  );
 
-      newStudentEnd.value =
-        add365Days(
-          newStudentStart.value
-        );
 
-    }
+newStudentAccessMonths
+  .addEventListener(
+    "change",
+    updateNewStudentEndFromMonths
   );
 
 
@@ -4624,6 +4679,23 @@ createStudentButton
 
         return;
 
+      }
+
+
+      if (
+        !Number.isInteger(
+          numeroSessoes
+        ) ||
+        numeroSessoes < 1 ||
+        numeroSessoes > 13
+      ) {
+
+        showMessage(
+          "Informe uma quantidade de sessões entre 1 e 13.",
+          "error"
+        );
+
+        return;
       }
 
 
