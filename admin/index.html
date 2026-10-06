@@ -7007,7 +7007,7 @@ async function toggleDiaryGlobalAccess() {
         ?
         "Ativar o Diário de Trade para os mentorados elegíveis?\n\nAlunos com as 8 primeiras gravações ou liberação antecipada individual poderão acessar imediatamente."
         :
-        "Desativar o Diário de Trade para TODOS os mentorados?\n\nO histórico será preservado e você continuará acessando como administrador para testes."
+        "Desativar a liberação automática do Diário de Trade para os mentorados?\n\nO histórico será preservado, você continuará acessando como administrador e alunos liberados individualmente continuarão com acesso."
     );
 
   if (!confirmed) {
@@ -7061,7 +7061,7 @@ async function toggleDiaryGlobalAccess() {
       ?
       "Diário de Trade ativado para os mentorados elegíveis."
       :
-      "Diário de Trade desativado para todos os mentorados. Seu acesso administrativo continua ativo."
+      "Liberação automática do Diário de Trade desativada. Seu acesso administrativo e as liberações individuais continuam ativos."
   );
 }
 
