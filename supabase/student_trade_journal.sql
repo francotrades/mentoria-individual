@@ -56,14 +56,14 @@ language sql
 stable
 security definer
 set search_path = public
-as $
+as $$
   select exists (
     select 1
     from public.trade_journal_access_overrides o
     where o.student_id = target_user
       and o.early_access = true
   );
-$;
+$$;
 
 
 create or replace function public.has_first_eight_recordings(
@@ -74,7 +74,7 @@ language sql
 stable
 security definer
 set search_path = public
-as $
+as $$
   select (
     select count(distinct s.numero)
     from public.student_sessions ss
@@ -84,7 +84,7 @@ as $
       and s.numero between 1 and 8
       and nullif(btrim(coalesce(ss.youtube_url, '')), '') is not null
   ) = 8;
-$;
+$$;
 
 
 create or replace function public.can_access_student_trade_journal(
@@ -95,7 +95,7 @@ language sql
 stable
 security definer
 set search_path = public
-as $
+as $$
   select
     public.is_admin()
     or (
@@ -106,7 +106,7 @@ as $
         or public.has_first_eight_recordings(target_student)
       )
     );
-$;
+$$;
 
 
 create table if not exists public.student_trade_accounts (
