@@ -2,7 +2,8 @@
 -- Execute UMA VEZ no SQL Editor do Supabase.
 --
 -- Enquanto enabled = false:
--- - nenhum mentorado acessa o Diário, mesmo com 8 gravações ou override individual;
+-- - a liberação automática pelas 8 primeiras gravações fica suspensa;
+-- - alunos liberados manualmente pelo mentor continuam podendo acessar;
 -- - o administrador continua acessando para testes;
 -- - todo o histórico permanece preservado.
 --
@@ -72,16 +73,18 @@ language sql
 stable
 security definer
 set search_path = public
-as $$
+as $
   select
     public.is_admin()
     or (
-      public.is_trade_journal_globally_enabled()
-      and auth.uid() = target_student
+      auth.uid() = target_student
       and public.has_active_mentorship_access(target_student)
       and (
         public.has_trade_journal_early_access(target_student)
-        or public.has_first_eight_recordings(target_student)
+        or (
+          public.is_trade_journal_globally_enabled()
+          and public.has_first_eight_recordings(target_student)
+        )
       )
     );
-$$;
+$;
