@@ -89,6 +89,15 @@
       width:100%;border:1px solid var(--line);border-radius:8px;background:var(--panel2);color:var(--text);
       padding:9px 10px;outline:none;font-size:12px
     }
+    .field-heading{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:5px}
+    .field-heading label{margin-bottom:0}
+    .field-help-button{flex-shrink:0;width:24px;height:24px;border:1px solid var(--line);border-radius:50%;background:var(--panel2);color:var(--green);cursor:pointer;font:700 12px sans-serif}
+    .field-help-button:hover,.field-help-button[aria-expanded="true"]{border-color:var(--green)}
+    .field-help-button:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+    .field-help-text{margin:0 0 8px;padding:9px;border:1px solid var(--line);border-radius:8px;background:var(--panel2);color:var(--text);font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+    .field-help-text[hidden]{display:none}
+    .field-note{display:block;margin-top:5px;color:var(--muted);font-size:11px;line-height:1.4}
+    .field input[readonly]{color:var(--green);cursor:default}
     .field textarea{min-height:92px;resize:vertical}
     .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--green)}
     .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
@@ -280,25 +289,25 @@
         </div>
         <div id="tradeFormWrap" class="hidden">
           <div class="grid4">
-            <div class="field"><label>Conta</label><select id="tradeAccount"></select></div>
-            <div class="field"><label>Data</label><input id="tradeDate" type="date"></div>
-            <div class="field"><label>Ativo</label><input id="tradeSymbol" placeholder="NQ, ES, AAPL..."></div>
-            <div class="field"><label>Direção</label><select id="tradeSide"><option value="long">Long</option><option value="short">Short</option></select></div>
-            <div class="field"><label>Quantidade / contratos</label><input id="tradeQty" type="number" step="0.0001"></div>
-            <div class="field"><label>Resultado (P&L)</label><input id="tradePnl" type="number" step="0.01"></div>
-            <div class="field"><label>Taxas</label><input id="tradeFees" type="number" step="0.01" value="0"></div>
-            <div class="field"><label>Risco inicial ($)</label><input id="tradeRisk" type="number" step="0.01"></div>
-            <div class="field"><label>Entrada</label><input id="tradeEntry" type="number" step="0.000001"></div>
-            <div class="field"><label>Saída</label><input id="tradeExit" type="number" step="0.000001"></div>
-            <div class="field"><label>Tempo (min)</label><input id="tradeDuration" type="number" step="1"></div>
-            <div class="field"><label>Setup</label><input id="tradeSetup" list="setupDatalist" placeholder="Ex.: Opening Range"><datalist id="setupDatalist"></datalist></div>
-            <div class="field"><label>R:R</label><input id="tradeRR" type="number" step="0.01"></div>
-            <div class="field"><label>MFE</label><input id="tradeMfe" type="number" step="0.01"></div>
-            <div class="field"><label>MAE</label><input id="tradeMae" type="number" step="0.01"></div>
-            <div class="field"><label>Estado emocional</label><input id="tradeEmotion" placeholder="Calmo, ansioso..."></div>
-            <div class="field full"><label>Observações / aprendizado</label><textarea id="tradeNotes" placeholder="Contexto, execução, erro, acerto, aprendizado..."></textarea></div>
+            <div class="field"><div class="field-heading"><label for="tradeAccount">Conta</label><button type="button" class="field-help-button" aria-label="Explicação: Conta" aria-expanded="false" aria-controls="tradeAccountHelp" title="Conta em que você executou a operação. Use a moeda dessa conta nos campos de resultado, taxas, risco, MFE e MAE.">?</button></div><p id="tradeAccountHelp" class="field-help-text" hidden>Conta em que você executou a operação. Use a moeda dessa conta nos campos de resultado, taxas, risco, MFE e MAE.</p><select id="tradeAccount"></select></div>
+            <div class="field"><div class="field-heading"><label for="tradeDate">Data</label><button type="button" class="field-help-button" aria-label="Explicação: Data" aria-expanded="false" aria-controls="tradeDateHelp" title="Data em que a operação foi realizada.">?</button></div><p id="tradeDateHelp" class="field-help-text" hidden>Data em que a operação foi realizada.</p><input id="tradeDate" type="date"></div>
+            <div class="field"><div class="field-heading"><label for="tradeSymbol">Ativo</label><button type="button" class="field-help-button" aria-label="Explicação: Ativo" aria-expanded="false" aria-controls="tradeSymbolHelp" title="Código do ativo operado, por exemplo NQ, ES ou AAPL.">?</button></div><p id="tradeSymbolHelp" class="field-help-text" hidden>Código do ativo operado, por exemplo NQ, ES ou AAPL.</p><input id="tradeSymbol" placeholder="NQ, ES, AAPL..."></div>
+            <div class="field"><div class="field-heading"><label for="tradeSide">Direção</label><button type="button" class="field-help-button" aria-label="Explicação: Direção" aria-expanded="false" aria-controls="tradeSideHelp" title="Long: operação comprada, que ganha com a alta. Short: operação vendida, que ganha com a queda.">?</button></div><p id="tradeSideHelp" class="field-help-text" hidden>Long: operação comprada, que ganha com a alta. Short: operação vendida, que ganha com a queda.</p><select id="tradeSide"><option value="long">Long</option><option value="short">Short</option></select></div>
+            <div class="field"><div class="field-heading"><label for="tradeQty">Quantidade / contratos</label><button type="button" class="field-help-button" aria-label="Explicação: Quantidade / contratos" aria-expanded="false" aria-controls="tradeQtyHelp" title="Quantidade total de ações, opções ou contratos operados. Não é o valor financeiro da posição.">?</button></div><p id="tradeQtyHelp" class="field-help-text" hidden>Quantidade total de ações, opções ou contratos operados. Não é o valor financeiro da posição.</p><input id="tradeQty" type="number" step="0.0001"></div>
+            <div class="field"><div class="field-heading"><label for="tradePnl">Resultado (P&L)</label><button type="button" class="field-help-button" aria-label="Explicação: Resultado (P&amp;L)" aria-expanded="false" aria-controls="tradePnlHelp" title="Resultado financeiro realizado antes das taxas: positivo para lucro, negativo para prejuízo e zero para empate. As taxas são descontadas separadamente no resultado líquido.">?</button></div><p id="tradePnlHelp" class="field-help-text" hidden>Resultado financeiro realizado antes das taxas: positivo para lucro, negativo para prejuízo e zero para empate. As taxas são descontadas separadamente no resultado líquido.</p><input id="tradePnl" type="number" step="0.01"></div>
+            <div class="field"><div class="field-heading"><label for="tradeFees">Taxas</label><button type="button" class="field-help-button" aria-label="Explicação: Taxas" aria-expanded="false" aria-controls="tradeFeesHelp" title="Total de corretagem, emolumentos e outras taxas desta operação, em valor positivo. Se o P&amp;L informado já estiver líquido, deixe zero para não descontar duas vezes.">?</button></div><p id="tradeFeesHelp" class="field-help-text" hidden>Total de corretagem, emolumentos e outras taxas desta operação, em valor positivo. Se o P&amp;L informado já estiver líquido, deixe zero para não descontar duas vezes.</p><input id="tradeFees" type="number" step="0.01" value="0"></div>
+            <div class="field"><div class="field-heading"><label for="tradeRisk">Risco inicial</label><button type="button" class="field-help-button" aria-label="Explicação: Risco inicial" aria-expanded="false" aria-controls="tradeRiskHelp" title="Valor financeiro que você planejou perder se o stop inicial fosse atingido, para a posição inteira. Informe um valor positivo na moeda da conta; não use o tamanho da posição nem o prejuízo final.">?</button></div><p id="tradeRiskHelp" class="field-help-text" hidden>Valor financeiro que você planejou perder se o stop inicial fosse atingido, para a posição inteira. Informe um valor positivo na moeda da conta; não use o tamanho da posição nem o prejuízo final.</p><input id="tradeRisk" type="number" step="0.01" min="0.01"></div>
+            <div class="field"><div class="field-heading"><label for="tradeEntry">Entrada</label><button type="button" class="field-help-button" aria-label="Explicação: Entrada" aria-expanded="false" aria-controls="tradeEntryHelp" title="Preço de entrada no ativo. Se fez várias entradas, use o preço médio.">?</button></div><p id="tradeEntryHelp" class="field-help-text" hidden>Preço de entrada no ativo. Se fez várias entradas, use o preço médio.</p><input id="tradeEntry" type="number" step="0.000001"></div>
+            <div class="field"><div class="field-heading"><label for="tradeExit">Saída</label><button type="button" class="field-help-button" aria-label="Explicação: Saída" aria-expanded="false" aria-controls="tradeExitHelp" title="Preço de saída do ativo. Se fez saídas parciais, use o preço médio.">?</button></div><p id="tradeExitHelp" class="field-help-text" hidden>Preço de saída do ativo. Se fez saídas parciais, use o preço médio.</p><input id="tradeExit" type="number" step="0.000001"></div>
+            <div class="field"><div class="field-heading"><label for="tradeDuration">Tempo (min)</label><button type="button" class="field-help-button" aria-label="Explicação: Tempo (min)" aria-expanded="false" aria-controls="tradeDurationHelp" title="Tempo total da operação, em minutos, entre a primeira entrada e a última saída.">?</button></div><p id="tradeDurationHelp" class="field-help-text" hidden>Tempo total da operação, em minutos, entre a primeira entrada e a última saída.</p><input id="tradeDuration" type="number" step="1"></div>
+            <div class="field"><div class="field-heading"><label for="tradeSetup">Setup</label><button type="button" class="field-help-button" aria-label="Explicação: Setup" aria-expanded="false" aria-controls="tradeSetupHelp" title="Nome do padrão ou estratégia que justificou a entrada. Use nomes consistentes para comparar os resultados.">?</button></div><p id="tradeSetupHelp" class="field-help-text" hidden>Nome do padrão ou estratégia que justificou a entrada. Use nomes consistentes para comparar os resultados.</p><input id="tradeSetup" list="setupDatalist" placeholder="Ex.: Opening Range"><datalist id="setupDatalist"></datalist></div>
+            <div class="field"><div class="field-heading"><label for="tradeRR">R:R realizado (automático)</label><button type="button" class="field-help-button" aria-label="Explicação: R:R realizado (automático)" aria-expanded="false" aria-controls="tradeRRHelp" title="R:R realizado = resultado (P&amp;L) ÷ risco inicial, antes das taxas. Exemplo: gain de 200 e risco de 100 = 2R (1:2); perda de 100 = −1R. Mede o resultado obtido, e não o alvo planejado antes da entrada. Sem risco positivo, o cálculo fica vazio.">?</button></div><p id="tradeRRHelp" class="field-help-text" hidden>R:R realizado = resultado (P&amp;L) ÷ risco inicial, antes das taxas. Exemplo: gain de 200 e risco de 100 = 2R (1:2); perda de 100 = −1R. Mede o resultado obtido, e não o alvo planejado antes da entrada. Sem risco positivo, o cálculo fica vazio.</p><input id="tradeRR" type="number" step="0.01" readonly placeholder="Informe resultado e risco"><small id="tradeRRHint" class="field-note" aria-live="polite">Resultado ÷ risco inicial.</small></div>
+            <div class="field"><div class="field-heading"><label for="tradeMfe">MFE</label><button type="button" class="field-help-button" aria-label="Explicação: MFE" aria-expanded="false" aria-controls="tradeMfeHelp" title="MFE: maior lucro em aberto que a operação alcançou antes de ser encerrada, na moeda da conta. Exemplo: chegou a ganhar 300, mas você saiu com 100; MFE = 300. Informe positivo; se não souber, deixe vazio.">?</button></div><p id="tradeMfeHelp" class="field-help-text" hidden>MFE: maior lucro em aberto que a operação alcançou antes de ser encerrada, na moeda da conta. Exemplo: chegou a ganhar 300, mas você saiu com 100; MFE = 300. Informe positivo; se não souber, deixe vazio.</p><input id="tradeMfe" type="number" step="0.01"></div>
+            <div class="field"><div class="field-heading"><label for="tradeMae">MAE</label><button type="button" class="field-help-button" aria-label="Explicação: MAE" aria-expanded="false" aria-controls="tradeMaeHelp" title="MAE: maior perda em aberto que a operação alcançou antes de ser encerrada, na moeda da conta. Exemplo: chegou a perder 80 e terminou com lucro; MAE = 80. Informe a magnitude positiva; se não souber, deixe vazio.">?</button></div><p id="tradeMaeHelp" class="field-help-text" hidden>MAE: maior perda em aberto que a operação alcançou antes de ser encerrada, na moeda da conta. Exemplo: chegou a perder 80 e terminou com lucro; MAE = 80. Informe a magnitude positiva; se não souber, deixe vazio.</p><input id="tradeMae" type="number" step="0.01"></div>
+            <div class="field"><div class="field-heading"><label for="tradeEmotion">Estado emocional</label><button type="button" class="field-help-button" aria-label="Explicação: Estado emocional" aria-expanded="false" aria-controls="tradeEmotionHelp" title="Como você se sentiu durante a operação: calmo, ansioso, com medo, confiante ou impulsivo. Isso ajuda a identificar padrões de comportamento.">?</button></div><p id="tradeEmotionHelp" class="field-help-text" hidden>Como você se sentiu durante a operação: calmo, ansioso, com medo, confiante ou impulsivo. Isso ajuda a identificar padrões de comportamento.</p><input id="tradeEmotion" placeholder="Calmo, ansioso..."></div>
+            <div class="field full"><div class="field-heading"><label for="tradeNotes">Observações / aprendizado</label><button type="button" class="field-help-button" aria-label="Explicação: Observações / aprendizado" aria-expanded="false" aria-controls="tradeNotesHelp" title="Registre o contexto, o motivo da entrada e da saída, o que seguiu ou desviou do plano e um aprendizado prático.">?</button></div><p id="tradeNotesHelp" class="field-help-text" hidden>Registre o contexto, o motivo da entrada e da saída, o que seguiu ou desviou do plano e um aprendizado prático.</p><textarea id="tradeNotes" placeholder="Contexto, execução, erro, acerto, aprendizado..."></textarea></div>
             <div class="field full">
-              <label>Prints</label>
+              <div class="field-heading"><label for="tradeFiles">Prints</label><button type="button" class="field-help-button" aria-label="Explicação: Prints" aria-expanded="false" aria-controls="tradeFilesHelp" title="Anexe prints do gráfico para facilitar a revisão. Você pode selecionar imagens ou colar uma captura com Ctrl+V. Mostre entrada, stop e saída quando possível.">?</button></div><p id="tradeFilesHelp" class="field-help-text" hidden>Anexe prints do gráfico para facilitar a revisão. Você pode selecionar imagens ou colar uma captura com Ctrl+V. Mostre entrada, stop e saída quando possível.</p>
               <div id="tradePasteZone" class="drop" tabindex="0">Ctrl+V para colar uma captura ou selecione arquivos abaixo.</div>
               <div id="tradePastePreview" class="paste-list"></div>
               <input id="tradeFiles" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple>
@@ -547,7 +556,7 @@ function statsFor(list){
   const grossWin=wins.reduce((s,t)=>s+netOf(t),0),grossLoss=Math.abs(losses.reduce((s,t)=>s+netOf(t),0));
   const net=list.reduce((s,t)=>s+netOf(t),0);
   const expectancy=list.length?net/list.length:0;
-  const rs=list.map(t=>Number(t.rr)).filter(Number.isFinite);
+  const rs=list.filter(t=>t.rr!=null&&t.rr!=="").map(t=>Number(t.rr)).filter(Number.isFinite);
   let equity=0,peak=0,maxDD=0;
   [...list].sort((a,b)=>String(a.trade_date).localeCompare(String(b.trade_date))||a.id-b.id).forEach(t=>{equity+=netOf(t);peak=Math.max(peak,equity);maxDD=Math.max(maxDD,peak-equity)});
   return {net,wins:wins.length,losses:losses.length,winRate:list.length?wins.length/list.length*100:0,pf:grossLoss?grossWin/grossLoss:(grossWin>0?Infinity:0),expectancy,maxDD,avgR:rs.length?rs.reduce((a,b)=>a+b,0)/rs.length:0};
@@ -659,7 +668,7 @@ function renderAnalytics(){
   const s=statsFor(list);
   $("analysisSummary").innerHTML='<table><thead><tr><th>Trades</th><th>Wins</th><th>Losses</th><th>Acerto</th><th>Resultado</th><th>Expectativa</th><th>DD máx.</th></tr></thead><tbody><tr><td>'+list.length+'</td><td>'+s.wins+'</td><td>'+s.losses+'</td><td>'+s.winRate.toFixed(1)+'%</td><td>'+money(s.net)+'</td><td>'+money(s.expectancy)+'</td><td>'+money(s.maxDD)+'</td></tr></tbody></table>';
 }
-function avgField(list,key){const vals=list.map(t=>Number(t[key])).filter(Number.isFinite);return vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:null}
+function avgField(list,key){const vals=list.filter(t=>t[key]!=null&&t[key]!=="").map(t=>Number(t[key])).filter(Number.isFinite);return vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:null}
 function renderExecution(){
   const list=filteredTrades(),mfe=avgField(list,"mfe"),mae=avgField(list,"mae"),dur=avgField(list,"duration_minutes"),r=avgField(list,"rr"),risk=avgField(list,"initial_risk");
   $("execMfe").textContent=mfe==null?"—":fmtNum(mfe);$("execMae").textContent=mae==null?"—":fmtNum(mae);$("execDuration").textContent=dur==null?"—":Math.round(dur)+" min";$("execR").textContent=r==null?"—":fmtNum(r)+"R";$("execRisk").textContent=risk==null?"—":money(risk);
@@ -728,16 +737,45 @@ document.addEventListener("paste",async e=>{
   pastedTradeFiles.push(f);renderPasted();showMessage("Captura adicionada.");
 });
 
+function calculateRealizedR(result, risk){
+  if(String(result).trim()==="" || String(risk).trim()==="")return null;
+  const pnl=Number(result),initialRisk=Number(risk);
+  if(!Number.isFinite(pnl)||!Number.isFinite(initialRisk)||initialRisk<=0)return null;
+  const ratio=pnl/initialRisk;
+  return Number.isFinite(ratio)?ratio:null;
+}
+function updateTradeRR(){
+  const ratio=calculateRealizedR($("tradePnl").value,$("tradeRisk").value);
+  $("tradeRR").value=ratio===null?"":ratio.toFixed(2);
+  $("tradeRRHint").textContent=ratio===null
+    ?"Informe o resultado e um risco inicial maior que zero."
+    :"Resultado ÷ risco inicial = "+ratio.toFixed(2)+"R · antes das taxas.";
+  return ratio;
+}
+["tradePnl","tradeRisk"].forEach(id=>$(id).addEventListener("input",updateTradeRR));
+$("tradeFormWrap").addEventListener("click",e=>{
+  const button=e.target.closest(".field-help-button");if(!button)return;
+  const expanded=button.getAttribute("aria-expanded")!=="true";
+  button.setAttribute("aria-expanded",String(expanded));
+  $(button.getAttribute("aria-controls")).hidden=!expanded;
+});
+$("tradeFormWrap").addEventListener("keydown",e=>{
+  if(e.key!=="Escape")return;
+  const button=e.target.closest(".field")?.querySelector(".field-help-button[aria-expanded='true']");
+  if(button){button.setAttribute("aria-expanded","false");$(button.getAttribute("aria-controls")).hidden=true;button.focus();}
+});
 $("toggleTradeFormButton").addEventListener("click",()=>$("tradeFormWrap").classList.toggle("hidden"));
 $("saveTradeButton").addEventListener("click",async()=>{
   if(!$("tradeAccount").value||!$("tradeDate").value||!$("tradeSymbol").value.trim()){showMessage("Preencha conta, data e ativo.","error");return}
-  const payload={student_id:currentUser.id,account_id:Number($("tradeAccount").value),trade_date:$("tradeDate").value,symbol:$("tradeSymbol").value.trim().toUpperCase(),side:$("tradeSide").value,quantity:num($("tradeQty").value),entry_price:num($("tradeEntry").value),exit_price:num($("tradeExit").value),pnl:Number($("tradePnl").value||0),fees:Number($("tradeFees").value||0),initial_risk:num($("tradeRisk").value),duration_minutes:num($("tradeDuration").value),setup:$("tradeSetup").value.trim()||null,emotion:$("tradeEmotion").value.trim()||null,rr:num($("tradeRR").value),mfe:num($("tradeMfe").value),mae:num($("tradeMae").value),notes:$("tradeNotes").value.trim()||null,source:"manual"};
+  const calculatedRR=updateTradeRR();
+  const payload={student_id:currentUser.id,account_id:Number($("tradeAccount").value),trade_date:$("tradeDate").value,symbol:$("tradeSymbol").value.trim().toUpperCase(),side:$("tradeSide").value,quantity:num($("tradeQty").value),entry_price:num($("tradeEntry").value),exit_price:num($("tradeExit").value),pnl:Number($("tradePnl").value||0),fees:Number($("tradeFees").value||0),initial_risk:num($("tradeRisk").value),duration_minutes:num($("tradeDuration").value),setup:$("tradeSetup").value.trim()||null,emotion:$("tradeEmotion").value.trim()||null,rr:calculatedRR,mfe:num($("tradeMfe").value),mae:num($("tradeMae").value),notes:$("tradeNotes").value.trim()||null,source:"manual"};
   const {data,error}=await supabase.from("student_trades").insert(payload).select("id").single();if(error){console.error(error);showMessage("Não foi possível salvar o trade.","error");return}
   await uploadFiles(data.id,[...$("tradeFiles").files,...pastedTradeFiles]);pastedTradeFiles=[];renderPasted();$("tradeFiles").value="";
   ["tradeSymbol","tradeQty","tradePnl","tradeEntry","tradeExit","tradeRisk","tradeDuration","tradeSetup","tradeRR","tradeMfe","tradeMae","tradeEmotion","tradeNotes"].forEach(id=>$(id).value="");$("tradeFees").value="0";$("tradeDate").value=today();
+  updateTradeRR();
   await loadData();showMessage("Trade salvo.");$("tradeFormWrap").classList.add("hidden");
 });
-$("resetTradeButton").addEventListener("click",()=>{["tradeSymbol","tradeQty","tradePnl","tradeEntry","tradeExit","tradeRisk","tradeDuration","tradeSetup","tradeRR","tradeMfe","tradeMae","tradeEmotion","tradeNotes"].forEach(id=>$(id).value="");pastedTradeFiles=[];renderPasted()});
+$("resetTradeButton").addEventListener("click",()=>{["tradeSymbol","tradeQty","tradePnl","tradeEntry","tradeExit","tradeRisk","tradeDuration","tradeSetup","tradeRR","tradeMfe","tradeMae","tradeEmotion","tradeNotes"].forEach(id=>$(id).value="");$("tradeFees").value="0";updateTradeRR();pastedTradeFiles=[];renderPasted()});
 
 document.body.addEventListener("click",async e=>{
   const detail=e.target.closest("[data-trade-detail]");if(detail){await openTradeDetail(detail.dataset.tradeDetail);return}
