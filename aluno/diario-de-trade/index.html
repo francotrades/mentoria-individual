@@ -457,7 +457,7 @@
       <section class="panel">
         <div class="panel-head"><div><div class="panel-title">Contas & risco</div><div class="panel-sub">Conta pessoal, simulador ou prop firm. Zero nos limites significa “sem limite configurado”.</div></div></div>
         <div class="grid4">
-          <div class="field"><label>Preset</label><select id="accountPresetFirm"><option value="">Personalizado</option><option value="Tradeify">Tradeify</option><option value="Take Profit Trader">Take Profit Trader</option><option value="Apex Trader Funding">Apex Trader Funding</option><option value="My Funded Futures">My Funded Futures</option><option value="Lucid Trading">Lucid Trading</option></select></div>
+          <div class="field"><label>Preset</label><select id="accountPresetFirm"><option value="">Personalizado</option><option value="Tradeify">Tradeify</option><option value="Take Profit Trader">Take Profit Trader</option><option value="Apex Trader Funding">Apex Trader Funding</option><option value="My Funded Futures">My Funded Futures</option><option value="Lucid Trading">Lucid Trading</option><option value="tastytrade">tastytrade · conta pessoal</option></select></div>
           <div class="field"><label>Tamanho</label><select id="accountPresetSize"><option value="">—</option><option value="25000">25K</option><option value="50000">50K</option><option value="75000">75K</option><option value="100000">100K</option><option value="150000">150K</option></select></div>
           <div class="field"><label>Situação</label><select id="accountStage"><option value="new">Conta nova</option><option value="existing">Conta em andamento</option></select></div>
           <div class="field"><label>Fase</label><select id="accountPhase"><option value="evaluation">Avaliação</option><option value="verification">Verificação</option><option value="funded">Funded</option><option value="payout">Ciclo de saque</option></select></div>
@@ -840,17 +840,28 @@ $("savePlaybookButton").addEventListener("click",async()=>{
 const PROP_PLATFORMS={"Tradeify":"Tradovate / NinjaTrader","Take Profit Trader":"Tradovate / NinjaTrader","Apex Trader Funding":"Tradovate / NinjaTrader","My Funded Futures":"Tradovate / NinjaTrader","Lucid Trading":"Tradovate / NinjaTrader"};
 function applyPreset(){
   const firm=$("accountPresetFirm").value,size=Number($("accountPresetSize").value||0);
-  if(firm){$("accountType").value="prop";$("accountPropFirm").value=firm;if(!$("accountBroker").value)$("accountBroker").value=PROP_PLATFORMS[firm]||""}
+  $("accountPresetSize").disabled=firm==="tastytrade";
+  if(firm==="tastytrade"){
+    $("accountType").value="personal";
+    $("accountPropFirm").value="";
+    $("accountBroker").value="tastytrade";
+    $("accountCurrency").value="USD";
+    $("accountName").value="tastytrade · Pessoal";
+    $("accountPresetSize").value="";
+    if(size>0&&Number($("accountBalance").value)===size)$("accountBalance").value="0";
+    return;
+  }
+  if(firm){$("accountType").value="prop";$("accountPropFirm").value=firm;if(!$("accountBroker").value||$("accountBroker").value==="tastytrade")$("accountBroker").value=PROP_PLATFORMS[firm]||""}
   if(size){$("accountBalance").value=size;if(firm)$("accountName").value=firm+" "+Math.round(size/1000)+"K"}else if(firm)$("accountName").value=firm;
 }
 $("accountPresetFirm").addEventListener("change",applyPreset);$("accountPresetSize").addEventListener("change",applyPreset);
 $("accountStage").addEventListener("change",()=>$("existingAccountFields").classList.toggle("hidden",$("accountStage").value!=="existing"));
 $("saveAccountButton").addEventListener("click",async()=>{
   const name=$("accountName").value.trim();if(!name){showMessage("Informe o nome da conta.","error");return}
-  const size=num($("accountPresetSize").value),stage=$("accountStage").value;
-  const rules={preset_firm:$("accountPresetFirm").value||null,preset_size:size,phase:$("accountPhase").value,risk_per_trade_pct:num($("accountRiskPct").value)||0,max_trades_day:num($("accountMaxTrades").value)||0,profit_share_pct:num($("accountProfitShare").value)||0,minimum_balance:num($("accountMinimumBalance").value)||0};
+  const size=$("accountPresetSize").value?num($("accountPresetSize").value):null,stage=$("accountStage").value;
+  const rules={preset_firm:$("accountPresetFirm").value==="tastytrade"?null:$("accountPresetFirm").value||null,preset_broker:$("accountPresetFirm").value==="tastytrade"?"tastytrade":null,preset_size:size,phase:$("accountPhase").value,risk_per_trade_pct:num($("accountRiskPct").value)||0,max_trades_day:num($("accountMaxTrades").value)||0,profit_share_pct:num($("accountProfitShare").value)||0,minimum_balance:num($("accountMinimumBalance").value)||0};
   const {error}=await supabase.from("student_trade_accounts").insert({student_id:currentUser.id,name,account_type:$("accountType").value,prop_firm:$("accountPropFirm").value.trim()||null,broker:$("accountBroker").value.trim()||null,currency:$("accountCurrency").value,starting_balance:Number($("accountBalance").value||0),account_size:size,account_stage:stage,current_balance:stage==="existing"?num($("accountCurrentBalance").value):null,drawdown_remaining:stage==="existing"?num($("accountDrawdownRemaining").value):null,max_drawdown:num($("accountMaxDrawdown").value),profit_target:num($("accountProfitTarget").value),daily_loss_limit:num($("accountDailyLoss").value),consistency_rule:num($("accountConsistency").value),rules,notes:$("accountNotes").value.trim()||null});
-  if(error){console.error(error);showMessage("Não foi possível cadastrar a conta.","error");return}["accountName","accountPropFirm","accountBroker","accountProfitTarget","accountMaxDrawdown","accountDailyLoss","accountRiskPct","accountMaxTrades","accountConsistency","accountProfitShare","accountMinimumBalance","accountCurrentBalance","accountDrawdownRemaining","accountNotes"].forEach(id=>$(id).value="");$("accountBalance").value="0";$("accountPresetFirm").value="";$("accountPresetSize").value="";$("accountStage").value="new";$("existingAccountFields").classList.add("hidden");await loadData();showMessage("Conta cadastrada.");
+  if(error){console.error(error);showMessage("Não foi possível cadastrar a conta.","error");return}["accountName","accountPropFirm","accountBroker","accountProfitTarget","accountMaxDrawdown","accountDailyLoss","accountRiskPct","accountMaxTrades","accountConsistency","accountProfitShare","accountMinimumBalance","accountCurrentBalance","accountDrawdownRemaining","accountNotes"].forEach(id=>$(id).value="");$("accountBalance").value="0";$("accountPresetFirm").value="";$("accountPresetSize").value="";$("accountPresetSize").disabled=false;$("accountStage").value="new";$("existingAccountFields").classList.add("hidden");await loadData();showMessage("Conta cadastrada.");
 });
 $("savePayoutButton").addEventListener("click",async()=>{
   if(!$("payoutAccount").value||!num($("payoutAmount").value)){showMessage("Informe conta e valor.","error");return}
