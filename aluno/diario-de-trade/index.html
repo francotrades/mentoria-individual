@@ -152,6 +152,8 @@
     .detail-k{font:600 8.5px "Chakra Petch",monospace;color:var(--muted2);text-transform:uppercase}
     .detail-v{font-size:11px;margin-top:3px}
     .screens{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px}
+    .mentor-view .header-actions .link-btn{display:inline-flex}
+    .mentor-view #toggleTradeFormButton,.mentor-view #tradeFormWrap,.mentor-view .detail .field,.mentor-view .detail .actions,.mentor-view [data-delete-trade],.mentor-view [data-close-position],.mentor-view [data-delete-position],.mentor-view [data-delete-weekly],.mentor-view [data-delete-playbook],.mentor-view [data-toggle-account],.mentor-view [data-pay-payout]{display:none!important}
     .screen-img{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--panel)}
     .screen-img img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}.screen-img a{display:block;padding:7px;color:var(--green);font-size:10px;text-decoration:none}
     .comment{border-left:3px solid var(--green);background:rgba(67,226,144,.04);padding:9px 10px;border-radius:7px;margin-top:7px;font-size:11px}
@@ -217,7 +219,7 @@
     </div>
     <div class="header-actions">
       <button id="themeButton" class="btn">☾</button>
-      <a href="../" class="link-btn">Área do Aluno</a>
+      <a id="diaryBackLink" href="../" class="link-btn">Área do Aluno</a>
       <button id="logoutButton" class="btn">Sair</button>
     </div>
   </header>
@@ -503,6 +505,7 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const supabase=createClient("https://vfnltuecpnuixemxvwvk.supabase.co","sb_publishable_nxgAFL2foBN8CuKMT5_2qQ_uDlaJ4Xc");
 const $=id=>document.getElementById(id);
 let currentUser=null,profile=null;
+let diaryStudentId=null,mentorView=false;
 let accounts=[],trades=[],attachments=[],comments=[],playbooks=[],positions=[],weeklyReviews=[],payouts=[];
 let pastedTradeFiles=[],csvRows=[],calendarCursor=new Date(),equityChart=null;
 
@@ -534,7 +537,7 @@ function setScreen(name){
   document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("active",s.id==="screen-"+name));
   $("mobileNavCurrent").textContent=activeLabel;
   closeMobileNav();
-  localStorage.setItem("ft-diary-screen",name);
+  if(!mentorView)localStorage.setItem("ft-diary-screen",name);
   renderCurrentScreen(name);
 }
 $("mobileNavToggle").addEventListener("click",()=>{
@@ -884,39 +887,69 @@ $("logoutButton").addEventListener("click",async()=>{await supabase.auth.signOut
 
 async function loadData(){
   const [a,t,att,com,pb,pos,wr,po]=await Promise.all([
-    supabase.from("student_trade_accounts").select("*").order("created_at",{ascending:false}),
-    supabase.from("student_trades").select("*").order("trade_date",{ascending:false}).order("id",{ascending:false}),
-    supabase.from("student_trade_attachments").select("*").order("created_at",{ascending:false}),
-    supabase.from("student_trade_comments").select("*").order("created_at",{ascending:true}),
-    supabase.from("student_trade_playbooks").select("*").order("created_at",{ascending:false}),
-    supabase.from("student_open_positions").select("*").order("opened_at",{ascending:false}),
-    supabase.from("student_weekly_reviews").select("*").order("week_start",{ascending:false}),
-    supabase.from("student_prop_payouts").select("*").order("requested_at",{ascending:false})
+    supabase.from("student_trade_accounts").select("*").eq("student_id",diaryStudentId).order("created_at",{ascending:false}),
+    supabase.from("student_trades").select("*").eq("student_id",diaryStudentId).order("trade_date",{ascending:false}).order("id",{ascending:false}),
+    supabase.from("student_trade_attachments").select("*").eq("student_id",diaryStudentId).order("created_at",{ascending:false}),
+    supabase.from("student_trade_comments").select("*").eq("student_id",diaryStudentId).order("created_at",{ascending:true}),
+    supabase.from("student_trade_playbooks").select("*").eq("student_id",diaryStudentId).order("created_at",{ascending:false}),
+    supabase.from("student_open_positions").select("*").eq("student_id",diaryStudentId).order("opened_at",{ascending:false}),
+    supabase.from("student_weekly_reviews").select("*").eq("student_id",diaryStudentId).order("week_start",{ascending:false}),
+    supabase.from("student_prop_payouts").select("*").eq("student_id",diaryStudentId).order("requested_at",{ascending:false})
   ]);
   const errs=[a,t,att,com,pb,pos,wr,po].filter(x=>x.error);
   if(errs.length){console.error(errs.map(x=>x.error));showMessage("Alguns módulos ainda não estão disponíveis. Execute os SQLs do Diário de Trade no Supabase.","error")}
   accounts=a.data||[];trades=t.data||[];attachments=att.data||[];comments=com.data||[];playbooks=pb.data||[];positions=pos.data||[];weeklyReviews=wr.data||[];payouts=po.data||[];
   rerenderAll();
 }
+function resolveDiaryStudent(role, userId, requestedStudent){
+  return role==="admin" ? (requestedStudent || null) : userId;
+}
+const mentorWriteSelector="#toggleTradeFormButton,#saveTradeButton,#resetTradeButton,#savePositionButton,#saveWeeklyButton,#savePlaybookButton,#saveAccountButton,#savePayoutButton,#importCsvButton,[data-upload-trade],[data-delete-trade],[data-save-quick],[data-close-position],[data-delete-position],[data-delete-weekly],[data-delete-playbook],[data-toggle-account],[data-pay-payout]";
+function configureMentorView(student){
+  document.body.classList.add("mentor-view");
+  document.title="Performance · "+(student.nome||"Mentorado")+" | FrancoTrades";
+  $("welcomeTitle").textContent="Performance · "+(student.nome||"Mentorado");
+  document.querySelector(".hero p").textContent="Visão do mentor · "+(student.status==="ativo"&&(!student.data_expiracao||student.data_expiracao>=today())?"Aluno ativo":"Histórico preservado · acesso do aluno encerrado")+". Analise resultado, risco e execução com os filtros abaixo.";
+  $("diaryBackLink").href="../../admin/diario-de-trade/?student="+encodeURIComponent(diaryStudentId);
+  $("diaryBackLink").textContent="Voltar ao mentor";
+  document.querySelector(".sidebar-note").textContent="Diário do mentorado · visualização pelo mentor";
+  ["quick","import"].forEach(name=>{
+    document.querySelector('[data-screen="'+name+'"]').classList.add("hidden");
+  });
+  ["savePositionButton","saveWeeklyButton","savePlaybookButton","saveAccountButton"].forEach(id=>$(id).closest("section.panel").classList.add("hidden"));
+  const payoutPanel=$("savePayoutButton").closest("section.panel");
+  payoutPanel.querySelector(".grid3").classList.add("hidden");
+  $("savePayoutButton").closest(".actions").classList.add("hidden");
+  // Impede ações de edição no modo de acompanhamento, inclusive em controles dinâmicos.
+  document.addEventListener("click",e=>{
+    if(e.target.closest(mentorWriteSelector)){e.preventDefault();e.stopImmediatePropagation();}
+  },true);
+  document.addEventListener("paste",e=>{e.preventDefault();e.stopImmediatePropagation();},true);
+}
 async function init(){
   applyTheme(localStorage.getItem("ft-diary-theme")||"dark");
   const {data:{session}}=await supabase.auth.getSession();if(!session){window.location.href="../../login/";return}
   currentUser=session.user;
   const {data:p,error}=await supabase.from("profiles").select("nome,status,role,data_expiracao").eq("id",currentUser.id).single();if(error||!p){window.location.href="../../login/?reason=profile";return}
-  profile=p;if(p.role==="admin"){window.location.href="../../admin/diario-de-trade/";return}
-  const expired=p.data_expiracao&&p.data_expiracao<today();if(p.status!=="ativo"||expired){await supabase.auth.signOut();window.location.href="../../login/?reason="+(expired||p.status==="expirado"?"expired":"inactive");return}
-
-  const {data:diaryAllowed,error:diaryAccessError}=await supabase.rpc("can_access_student_trade_journal",{target_student:currentUser.id});
-  if(diaryAccessError){console.error("Acesso ao Diário de Trade não verificado:",diaryAccessError)}
-  if(diaryAllowed!==true){
-    window.location.href="../";
-    return;
+  const requestedStudent=new URLSearchParams(window.location.search).get("student");
+  diaryStudentId=resolveDiaryStudent(p.role,currentUser.id,requestedStudent);
+  profile=p;
+  if(p.role==="admin"){
+    if(!diaryStudentId){window.location.href="../../admin/diario-de-trade/";return;}
+    if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(diaryStudentId)){$("loading").textContent="Mentorado inválido. Volte ao painel do mentor.";return;}
+    const {data:student,error:studentError}=await supabase.from("profiles").select("id,nome,status,role,data_expiracao").eq("id",diaryStudentId).eq("role","aluno").single();
+    if(studentError||!student){$("loading").textContent="Mentorado não encontrado ou indisponível. Volte ao painel do mentor.";return;}
+    mentorView=true;profile=student;configureMentorView(student);
+  }else{
+    const expired=p.data_expiracao&&p.data_expiracao<today();if(p.status!=="ativo"||expired){await supabase.auth.signOut();window.location.href="../../login/?reason="+(expired||p.status==="expirado"?"expired":"inactive");return;}
+    const {data:diaryAllowed,error:diaryAccessError}=await supabase.rpc("can_access_student_trade_journal",{target_student:currentUser.id});
+    if(diaryAccessError){console.error("Acesso ao Diário de Trade não verificado:",diaryAccessError);}
+    if(diaryAllowed!==true){window.location.href="../";return;}
+    $("welcomeTitle").textContent="Diário de Trade · "+(p.nome?.trim().split(/\s+/)[0]||"Mentorado");
   }
-
-  $("welcomeTitle").textContent="Diário de Trade · "+(p.nome?.trim().split(/\s+/)[0]||"Mentorado");
   $("tradeDate").value=today();$("payoutDate").value=today();$("weeklyStart").value=mondayOfCurrentWeek();
   await loadData();
-  const saved=localStorage.getItem("ft-diary-screen");if(saved&&$("screen-"+saved))setScreen(saved);
+  const saved=mentorView?"overview":localStorage.getItem("ft-diary-screen");if(saved&&$("screen-"+saved))setScreen(saved);
   $("loading").classList.add("hidden");$("app").classList.remove("hidden");
 }
 init();

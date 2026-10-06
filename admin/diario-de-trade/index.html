@@ -57,6 +57,12 @@
     </section>
 
     <div id="studentPerformance" class="hidden">
+      <section class="panel">
+        <div class="section-head">
+          <div><div class="section-title">Acompanhamento de performance</div><div class="section-sub">Curva de resultado, drawdown, expectativa, R médio, calendário, setups e execução do mentorado.</div></div>
+          <a id="fullStudentAnalytics" class="btn primary">Estatísticas completas</a>
+        </div>
+      </section>
       <section class="stats">
         <div class="stat"><div class="stat-label">Trades</div><div id="statTrades" class="stat-value">0</div></div>
         <div class="stat"><div class="stat-label">P&L líquido</div><div id="statPnl" class="stat-value">$0</div></div>
@@ -98,8 +104,9 @@ function renderStudents(){
 }
 
 function calculateStats(){
-  const wins=trades.filter(t=>Number(t.pnl)>0),losses=trades.filter(t=>Number(t.pnl)<0);
-  const grossWin=wins.reduce((s,t)=>s+Number(t.pnl||0),0),grossLoss=Math.abs(losses.reduce((s,t)=>s+Number(t.pnl||0),0));
+  const netOf=t=>Number(t.pnl||0)-Number(t.fees||0);
+  const wins=trades.filter(t=>netOf(t)>0),losses=trades.filter(t=>netOf(t)<0);
+  const grossWin=wins.reduce((s,t)=>s+netOf(t),0),grossLoss=Math.abs(losses.reduce((s,t)=>s+netOf(t),0));
   const net=trades.reduce((s,t)=>s+Number(t.pnl||0)-Number(t.fees||0),0);
   $("statTrades").textContent=trades.length;$("statPnl").textContent=money(net,"USD");$("statPnl").style.color=net<0?"var(--red)":"var(--green)";
   $("statWin").textContent=trades.length?Math.round(wins.length/trades.length*100)+"%":"0%";
@@ -146,6 +153,7 @@ async function openDetail(id){
 
 async function selectStudent(id){
   selectedStudent=profiles.find(p=>p.id===id);if(!selectedStudent)return;
+  $("fullStudentAnalytics").href="../../aluno/diario-de-trade/?student="+encodeURIComponent(id);
   renderStudents();$("selectedStudentTitle").textContent=(selectedStudent.nome||"Mentorado")+" · Operações";
   const [a,t,att,com]=await Promise.all([
     supabase.from("student_trade_accounts").select("*").eq("student_id",id).order("created_at",{ascending:false}),
@@ -181,7 +189,7 @@ async function init(){
   if(meError||me?.role!=="admin"){window.location.href="../../aluno/";return}
   const {data,error}=await supabase.from("profiles").select("id,nome,email,status,data_expiracao,role").eq("role","aluno").order("nome",{ascending:true});
   if(error){console.error(error);$("loading").textContent="Não foi possível carregar os mentorados.";return}
-  profiles=data||[];renderStudents();$("loading").classList.add("hidden");$("app").classList.remove("hidden");
+  profiles=data||[];renderStudents();const requestedStudent=new URLSearchParams(window.location.search).get("student");if(requestedStudent)await selectStudent(requestedStudent);$("loading").classList.add("hidden");$("app").classList.remove("hidden");
 }
 init();
 </script>
