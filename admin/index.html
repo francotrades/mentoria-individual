@@ -8651,9 +8651,22 @@ async function toggleSelectedStudentEarlyDiaryAccess() {
     selectedStudentHasEarlyDiaryAccess =
       true;
 
-    showMessage(
-      "Diário de Trade liberado antecipadamente para este mentorado."
-    );
+    const { data: confirmedAccess, error: confirmationError } =
+      await supabase.rpc("has_trade_journal_early_access", {
+        target_user: selectedStudent.id
+      });
+
+    if (confirmationError || confirmedAccess !== true) {
+      console.error("Liberação individual não confirmada pela API:", confirmationError);
+      showMessage(
+        "Liberação salva, mas não confirmada pela regra de acesso. Aplique supabase/trade_journal_global_access.sql no SQL Editor do Supabase e confira o acesso novamente.",
+        "error"
+      );
+    } else {
+      showMessage(
+        "Diário de Trade liberado antecipadamente para este mentorado."
+      );
+    }
   }
 
   toggleEarlyDiaryAccessButton.textContent =

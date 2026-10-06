@@ -5040,6 +5040,16 @@ async function updateDiaryTradeAccessButton() {
     );
   }
 
+  if (accessResult.error) {
+    diaryTradeLink.classList.remove("hidden");
+    diaryTradeLink.classList.add("is-locked");
+    diaryTradeLink.removeAttribute("href");
+    diaryTradeLink.setAttribute("aria-disabled", "true");
+    diaryTradeLink.textContent = "Diário de Trade · acesso indisponível";
+    diaryTradeLink.title = "Não foi possível verificar seu acesso. Avise o mentor.";
+    return;
+  }
+
   /*
     Se o rollout global estiver desligado, o botão só aparece
     para quem recebeu liberação individual do mentor.

@@ -10,6 +10,8 @@
 -- Ao ativar:
 -- - volta a valer a regra normal: 8 primeiras gravações OU liberação antecipada individual.
 
+begin;
+
 create table if not exists public.trade_journal_settings (
   id integer primary key check (id = 1),
   enabled boolean not null default false,
@@ -73,7 +75,7 @@ language sql
 stable
 security definer
 set search_path = public
-as $
+as $$
   select
     public.is_admin()
     or (
@@ -87,4 +89,9 @@ as $
         )
       )
     );
-$;
+$$;
+
+-- Atualiza a descoberta das funções pela API após a migração.
+notify pgrst, 'reload schema';
+
+commit;
