@@ -121,6 +121,10 @@
     .kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-bottom:14px}
     .kpi{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:13px;min-width:0}
     .kpi-label{font:600 9px "Chakra Petch",monospace;color:var(--muted2);text-transform:uppercase;letter-spacing:.6px}
+    .help-heading{display:flex;align-items:center;justify-content:space-between;gap:7px}
+    .help-heading .field-help-button{width:22px;height:22px}
+    .kpi .field-help-text{margin-top:8px;font-size:11px}
+    .panel-head > .field-help-button{flex-shrink:0}
     .kpi-value{font:700 22px "Chakra Petch",monospace;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .kpi-value.pos{color:var(--green)}.kpi-value.neg{color:var(--red)}.kpi-value.neu{color:var(--amber)}
     .chart-box{height:280px;position:relative}
@@ -263,32 +267,32 @@
     <div id="message" class="message"></div>
 
     <section class="filters">
-      <div class="field"><label>Conta</label><select id="globalAccountFilter"><option value="">Todas as contas</option></select></div>
-      <div class="field"><label>Período</label><select id="globalPeriodFilter"><option value="all">Todo o histórico</option><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="90">Últimos 90 dias</option><option value="month">Mês atual</option></select></div>
-      <div class="field"><label>Setup</label><select id="globalSetupFilter"><option value="">Todos os setups</option></select></div>
+      <div class="field"><div class="field-heading"><label for="globalAccountFilter">Conta</label><button type="button" class="field-help-button" aria-label="Explicação: Conta" aria-expanded="false" aria-controls="globalAccountFilterHelp" title="Seleciona a conta que será analisada. Todas as contas reúne as operações cadastradas em todas elas.">?</button></div><p id="globalAccountFilterHelp" class="field-help-text" hidden>Seleciona a conta que será analisada. Todas as contas reúne as operações cadastradas em todas elas.</p><select id="globalAccountFilter"><option value="">Todas as contas</option></select></div>
+      <div class="field"><div class="field-heading"><label for="globalPeriodFilter">Período</label><button type="button" class="field-help-button" aria-label="Explicação: Período" aria-expanded="false" aria-controls="globalPeriodFilterHelp" title="Seleciona a janela de datas da análise. Os indicadores, a curva e as listas usam somente os trades desse período.">?</button></div><p id="globalPeriodFilterHelp" class="field-help-text" hidden>Seleciona a janela de datas da análise. Os indicadores, a curva e as listas usam somente os trades desse período.</p><select id="globalPeriodFilter"><option value="all">Todo o histórico</option><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="90">Últimos 90 dias</option><option value="month">Mês atual</option></select></div>
+      <div class="field"><div class="field-heading"><label for="globalSetupFilter">Setup</label><button type="button" class="field-help-button" aria-label="Explicação: Setup" aria-expanded="false" aria-controls="globalSetupFilterHelp" title="Seleciona a estratégia a analisar. Todos os setups inclui todas as operações, inclusive as que não têm setup informado.">?</button></div><p id="globalSetupFilterHelp" class="field-help-text" hidden>Seleciona a estratégia a analisar. Todos os setups inclui todas as operações, inclusive as que não têm setup informado.</p><select id="globalSetupFilter"><option value="">Todos os setups</option></select></div>
     </section>
 
     <section id="screen-overview" class="screen active">
       <div class="kpis">
-        <div class="kpi"><div class="kpi-label">Resultado líquido</div><div id="kpiNet" class="kpi-value">$0</div></div>
-        <div class="kpi"><div class="kpi-label">Taxa de acerto</div><div id="kpiWin" class="kpi-value">0%</div></div>
-        <div class="kpi"><div class="kpi-label">Profit factor</div><div id="kpiPf" class="kpi-value">0.00</div></div>
-        <div class="kpi"><div class="kpi-label">Expectativa</div><div id="kpiExpectancy" class="kpi-value">$0</div></div>
-        <div class="kpi"><div class="kpi-label">Drawdown máx.</div><div id="kpiDrawdown" class="kpi-value">$0</div></div>
-        <div class="kpi"><div class="kpi-label">R médio</div><div id="kpiAvgR" class="kpi-value">0.00R</div></div>
+        <div class="kpi"><div class="help-heading"><div class="kpi-label">Resultado líquido</div><button type="button" class="field-help-button" aria-label="Explicação: Resultado líquido" aria-expanded="false" aria-controls="overviewNetHelp" title="Soma dos lucros e prejuízos dos trades selecionados, descontando as taxas. Exemplo: P&amp;L de 200 e taxas de 10 = resultado líquido de 190. Os filtros de conta, período e setup alteram este indicador.">?</button></div><p id="overviewNetHelp" class="field-help-text" hidden>Soma dos lucros e prejuízos dos trades selecionados, descontando as taxas. Exemplo: P&amp;L de 200 e taxas de 10 = resultado líquido de 190. Os filtros de conta, período e setup alteram este indicador.</p><div id="kpiNet" class="kpi-value">$0</div></div>
+        <div class="kpi"><div class="help-heading"><div class="kpi-label">Taxa de acerto</div><button type="button" class="field-help-button" aria-label="Explicação: Taxa de acerto" aria-expanded="false" aria-controls="overviewWinHelp" title="Percentual de trades com resultado líquido positivo em relação ao total de operações selecionadas. Exemplo: 6 trades lucrativos em 10 = 60%. Operações zeradas também entram no total; as taxas podem transformar um empate bruto em perda líquida.">?</button></div><p id="overviewWinHelp" class="field-help-text" hidden>Percentual de trades com resultado líquido positivo em relação ao total de operações selecionadas. Exemplo: 6 trades lucrativos em 10 = 60%. Operações zeradas também entram no total; as taxas podem transformar um empate bruto em perda líquida.</p><div id="kpiWin" class="kpi-value">0%</div></div>
+        <div class="kpi"><div class="help-heading"><div class="kpi-label">Profit factor</div><button type="button" class="field-help-button" aria-label="Explicação: Profit factor" aria-expanded="false" aria-controls="overviewPfHelp" title="Lucros líquidos acumulados ÷ valor absoluto das perdas líquidas acumuladas. Exemplo: ganhos de 600 e perdas de 300 = 2,00. Acima de 1, os ganhos superam as perdas; abaixo de 1, as perdas superam os ganhos. ∞ aparece quando há ganhos e nenhuma perda; sem ganhos nem perdas, o painel mostra 0.">?</button></div><p id="overviewPfHelp" class="field-help-text" hidden>Lucros líquidos acumulados ÷ valor absoluto das perdas líquidas acumuladas. Exemplo: ganhos de 600 e perdas de 300 = 2,00. Acima de 1, os ganhos superam as perdas; abaixo de 1, as perdas superam os ganhos. ∞ aparece quando há ganhos e nenhuma perda; sem ganhos nem perdas, o painel mostra 0.</p><div id="kpiPf" class="kpi-value">0.00</div></div>
+        <div class="kpi"><div class="help-heading"><div class="kpi-label">Expectativa</div><button type="button" class="field-help-button" aria-label="Explicação: Expectativa" aria-expanded="false" aria-controls="overviewExpectancyHelp" title="Resultado líquido total ÷ número de trades selecionados: quanto cada operação rendeu em média. Exemplo: resultado de 500 em 10 trades = 50 por trade. É uma média do histórico filtrado, não uma previsão do próximo trade.">?</button></div><p id="overviewExpectancyHelp" class="field-help-text" hidden>Resultado líquido total ÷ número de trades selecionados: quanto cada operação rendeu em média. Exemplo: resultado de 500 em 10 trades = 50 por trade. É uma média do histórico filtrado, não uma previsão do próximo trade.</p><div id="kpiExpectancy" class="kpi-value">$0</div></div>
+        <div class="kpi"><div class="help-heading"><div class="kpi-label">Drawdown máx.</div><button type="button" class="field-help-button" aria-label="Explicação: Drawdown máx." aria-expanded="false" aria-controls="overviewDrawdownHelp" title="Maior queda do resultado líquido acumulado desde um pico até o ponto mais baixo seguinte, nos trades selecionados. Exemplo: a curva chegou a 1.000 e depois caiu para 700; drawdown = 300. Considera operações encerradas, não perdas em aberto nem o limite de drawdown da prop firm.">?</button></div><p id="overviewDrawdownHelp" class="field-help-text" hidden>Maior queda do resultado líquido acumulado desde um pico até o ponto mais baixo seguinte, nos trades selecionados. Exemplo: a curva chegou a 1.000 e depois caiu para 700; drawdown = 300. Considera operações encerradas, não perdas em aberto nem o limite de drawdown da prop firm.</p><div id="kpiDrawdown" class="kpi-value">$0</div></div>
+        <div class="kpi"><div class="help-heading"><div class="kpi-label">R médio</div><button type="button" class="field-help-button" aria-label="Explicação: R médio" aria-expanded="false" aria-controls="overviewAvgRHelp" title="Média dos valores de R registrados nos trades selecionados. Nos trades preenchidos manualmente, R = P&amp;L antes das taxas ÷ risco inicial. Exemplo: trades de 2R, −1R e 0R têm média de 0,33R. Trades sem R informado ficam fora da média; se nenhum tiver R, o painel mostra 0,00R.">?</button></div><p id="overviewAvgRHelp" class="field-help-text" hidden>Média dos valores de R registrados nos trades selecionados. Nos trades preenchidos manualmente, R = P&amp;L antes das taxas ÷ risco inicial. Exemplo: trades de 2R, −1R e 0R têm média de 0,33R. Trades sem R informado ficam fora da média; se nenhum tiver R, o painel mostra 0,00R.</p><div id="kpiAvgR" class="kpi-value">0.00R</div></div>
       </div>
       <div class="grid2">
         <section class="panel">
-          <div class="panel-head"><div><div class="panel-title">Curva de resultado</div><div class="panel-sub">Evolução acumulada do resultado líquido.</div></div></div>
+          <div class="panel-head"><div><div class="panel-title">Curva de resultado</div><div class="panel-sub">Evolução acumulada do resultado líquido.</div></div><button type="button" class="field-help-button" aria-label="Explicação: Curva de resultado" aria-expanded="false" aria-controls="overviewEquityHelp" title="Mostra a soma progressiva dos resultados líquidos de cada trade selecionado, em ordem de data. Subidas representam ganhos e quedas representam perdas. A curva começa a acumular do zero dentro do período filtrado; ela não representa o saldo total da conta.">?</button></div><p id="overviewEquityHelp" class="field-help-text" hidden>Mostra a soma progressiva dos resultados líquidos de cada trade selecionado, em ordem de data. Subidas representam ganhos e quedas representam perdas. A curva começa a acumular do zero dentro do período filtrado; ela não representa o saldo total da conta.</p>
           <div class="chart-box"><canvas id="equityChart"></canvas></div>
         </section>
         <section class="panel">
-          <div class="panel-head"><div><div class="panel-title">Performance por setup</div><div class="panel-sub">Quantidade, acerto e resultado.</div></div></div>
+          <div class="panel-head"><div><div class="panel-title">Performance por setup</div><div class="panel-sub">Quantidade, acerto e resultado.</div></div><button type="button" class="field-help-button" aria-label="Explicação: Performance por setup" aria-expanded="false" aria-controls="overviewSetupHelp" title="Agrupa os trades selecionados por estratégia. Trades = quantidade de operações; Acerto = percentual com lucro líquido; P&amp;L = resultado líquido acumulado; PF = profit factor, ou ganhos divididos pelas perdas. Sem setup reúne operações sem estratégia informada. Compare também a quantidade de trades para entender o tamanho da amostra.">?</button></div><p id="overviewSetupHelp" class="field-help-text" hidden>Agrupa os trades selecionados por estratégia. Trades = quantidade de operações; Acerto = percentual com lucro líquido; P&amp;L = resultado líquido acumulado; PF = profit factor, ou ganhos divididos pelas perdas. Sem setup reúne operações sem estratégia informada. Compare também a quantidade de trades para entender o tamanho da amostra.</p>
           <div id="overviewSetupTable" class="table-wrap"></div>
         </section>
       </div>
       <section class="panel">
-        <div class="panel-head"><div><div class="panel-title">Últimas operações</div><div class="panel-sub">Trades mais recentes dentro dos filtros selecionados.</div></div></div>
+        <div class="panel-head"><div><div class="panel-title">Últimas operações</div><div class="panel-sub">Trades mais recentes dentro dos filtros selecionados.</div></div><button type="button" class="field-help-button" aria-label="Explicação: Últimas operações" aria-expanded="false" aria-controls="overviewRecentHelp" title="Mostra as seis operações mais recentes dentro dos filtros selecionados. Em cada registro aparecem data e conta, ativo e direção, quantidade, setup e resultado líquido. Clique em Detalhes para consultar risco, R:R, MFE, MAE, prints e feedback do mentor.">?</button></div><p id="overviewRecentHelp" class="field-help-text" hidden>Mostra as seis operações mais recentes dentro dos filtros selecionados. Em cada registro aparecem data e conta, ativo e direção, quantidade, setup e resultado líquido. Clique em Detalhes para consultar risco, R:R, MFE, MAE, prints e feedback do mentor.</p>
         <div id="overviewRecentTrades"></div>
       </section>
     </section>
@@ -767,15 +771,15 @@ function updateTradeRR(){
   return ratio;
 }
 ["tradePnl","tradeRisk"].forEach(id=>$(id).addEventListener("input",updateTradeRR));
-$("tradeFormWrap").addEventListener("click",e=>{
+$("app").addEventListener("click",e=>{
   const button=e.target.closest(".field-help-button");if(!button)return;
   const expanded=button.getAttribute("aria-expanded")!=="true";
   button.setAttribute("aria-expanded",String(expanded));
   $(button.getAttribute("aria-controls")).hidden=!expanded;
 });
-$("tradeFormWrap").addEventListener("keydown",e=>{
+$("app").addEventListener("keydown",e=>{
   if(e.key!=="Escape")return;
-  const button=e.target.closest(".field")?.querySelector(".field-help-button[aria-expanded='true']");
+  const button=e.target.closest(".field-help-button[aria-expanded='true']") || e.target.closest(".field,.kpi,.panel")?.querySelector(".field-help-button[aria-expanded='true']");
   if(button){button.setAttribute("aria-expanded","false");$(button.getAttribute("aria-controls")).hidden=true;button.focus();}
 });
 $("toggleTradeFormButton").addEventListener("click",()=>$("tradeFormWrap").classList.toggle("hidden"));
