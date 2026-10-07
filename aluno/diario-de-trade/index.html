@@ -505,6 +505,7 @@
 </div>
 
 <script type="module">
+import { renderTradeEditor, parseTradeEdit } from "./modules/trade-edit.js?v=20261007";
 import { createExecutionTools } from "./modules/execution-tools.js?v=20261007-mission";
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
@@ -628,29 +629,34 @@ function renderEquity(){
   const ctx=$("equityChart");if(!ctx)return;
   equityChart=new Chart(ctx,{type:"line",data:{labels,datasets:[{label:"Resultado acumulado",data:values,borderColor:"#43e290",backgroundColor:"rgba(67,226,144,.08)",fill:true,tension:.28,pointRadius:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:getComputedStyle(document.documentElement).getPropertyValue("--muted")}}},scales:{x:{ticks:{color:"#7d8e83",maxTicksLimit:8},grid:{color:"rgba(120,150,130,.08)"}},y:{ticks:{color:"#7d8e83"},grid:{color:"rgba(120,150,130,.08)"}}}}});
 }
+let tradeCardSequence=0;
 function tradeMini(t){
-  const a=accountById(t.account_id),n=netOf(t);
-  return '<div class="trade-card"><div class="trade-line"><div><div class="trade-title">'+fmtDate(t.trade_date)+'</div><div class="muted">'+esc(a?.name||"Sem conta")+'</div></div><div><div class="trade-title">'+esc(t.symbol)+'</div><div class="muted">'+esc(t.side)+'</div></div><div>'+esc(t.quantity??"—")+'</div><div>'+esc(t.setup||"Sem setup")+'</div><div class="pnl '+(n>=0?'pos':'neg')+'"><strong>'+money(n,a?.currency||"USD")+'</strong></div><button class="btn small" data-trade-detail="'+t.id+'">Detalhes</button></div><div id="trade-detail-'+t.id+'" class="detail hidden"></div></div>';
+  const a=accountById(t.account_id),n=netOf(t),detailId="trade-detail-"+(++tradeCardSequence);
+  return '<div class="trade-card"><div class="trade-line"><div><div class="trade-title">'+fmtDate(t.trade_date)+'</div><div class="muted">'+esc(a?.name||"Sem conta")+'</div></div><div><div class="trade-title">'+esc(t.symbol)+'</div><div class="muted">'+esc(t.side)+'</div></div><div>'+esc(t.quantity??"—")+'</div><div>'+esc(t.setup||"Sem setup")+'</div><div class="pnl '+(n>=0?'pos':'neg')+'"><strong>'+money(n,a?.currency||"USD")+'</strong></div><button class="btn small" data-trade-detail="'+t.id+'" aria-expanded="false" aria-controls="'+detailId+'">Detalhes</button></div><div id="'+detailId+'" data-trade-detail-panel class="detail hidden"></div></div>';
 }
 function renderOverview(){
   renderKPIs();renderEquity();renderSetupTable("overviewSetupTable",filteredTrades());
   $("overviewRecentTrades").innerHTML=filteredTrades().slice().sort((a,b)=>String(b.trade_date).localeCompare(String(a.trade_date))||b.id-a.id).slice(0,6).map(tradeMini).join("")||'<div class="empty">Nenhuma operação.</div>';
 }
 async function signedUrl(path){const {data,error}=await supabase.storage.from("trade-journal-screenshots").createSignedUrl(path,3600);return error?"":data?.signedUrl||""}
-async function openTradeDetail(id){
-  const t=trades.find(x=>String(x.id)===String(id)),d=$("trade-detail-"+id);if(!t||!d)return;
-  if(!d.classList.contains("hidden")){d.classList.add("hidden");return}
-  d.classList.remove("hidden");d.innerHTML='<div class="muted">Carregando...</div>';
-  const files=attachments.filter(x=>String(x.trade_id)===String(id)),cards=[];
-  for(const f of files){const u=await signedUrl(f.storage_path);if(u)cards.push('<div class="screen-img"><img src="'+esc(u)+'" alt="'+esc(f.file_name)+'"><a href="'+esc(u)+'" target="_blank" rel="noopener">Abrir print</a></div>')}
+async function openTradeDetail(id,trigger,force=false){
+  const t=trades.find(x=>String(x.id)===String(id)),d=trigger?.closest(".trade-card")?.querySelector("[data-trade-detail-panel]");if(!t||!d)return;
+  if(!force&&!d.classList.contains("hidden")){d.classList.add("hidden");trigger.setAttribute("aria-expanded","false");return}
+  d.classList.remove("hidden");trigger.setAttribute("aria-expanded","true");
+  const files=attachments.filter(x=>String(x.trade_id)===String(id));
+
   const cs=comments.filter(x=>String(x.trade_id)===String(id));
   d.innerHTML='<div class="detail-grid">'+[
-    ["Entrada",t.entry_price],["Saída",t.exit_price],["Risco inicial",t.initial_risk!=null?money(t.initial_risk):null],["R:R",t.rr!=null?t.rr+"R":null],["MFE",t.mfe],["MAE",t.mae],["Tempo",t.duration_minutes!=null?t.duration_minutes+" min":null],["Emocional",t.emotion],["Saída",t.exit_reason],["Origem",t.source]
+    ["Conta",accountById(t.account_id)?.name],["Data",fmtDate(t.trade_date)],["Ativo",t.symbol],["Direção",t.side],["Quantidade",t.quantity],["P&L bruto",money(t.pnl,accountCurrency(t.account_id))],["Taxas",money(t.fees,accountCurrency(t.account_id))],["Entrada",t.entry_price],["Saída",t.exit_price],["Risco inicial",t.initial_risk!=null?money(t.initial_risk,accountCurrency(t.account_id)):null],["R:R",t.rr!=null?t.rr+"R":null],["MFE",t.mfe],["MAE",t.mae],["Tempo",t.duration_minutes!=null?t.duration_minutes+" min":null],["Emocional",t.emotion],["Saída",t.exit_reason],["Origem",t.source]
   ].map(x=>'<div class="detail-item"><div class="detail-k">'+x[0]+'</div><div class="detail-v">'+esc(x[1]??"—")+'</div></div>').join("")+'</div>'+
   (t.notes?'<div class="section-note" style="margin-top:10px;white-space:pre-wrap">'+esc(t.notes)+'</div>':'')+
-  '<div class="screens">'+cards.join("")+'</div>'+
+  '<div class="screens" data-trade-prints></div>'+
   '<div style="margin-top:12px"><div class="panel-title" style="font-size:12px">Feedback do mentor</div>'+(cs.length?cs.map(c=>'<div class="comment">'+esc(c.comment)+'<div class="muted">'+fmtDateTime(c.created_at)+'</div></div>').join(""):'<div class="muted">Nenhum comentário ainda.</div>')+'</div>'+
-  '<div class="field" style="margin-top:12px"><label>Adicionar print</label><input id="extra-files-'+id+'" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple></div><div class="actions"><button class="btn small" data-upload-trade="'+id+'">Enviar print</button><button class="btn small danger" data-delete-trade="'+id+'">Excluir trade</button></div>';
+  (mentorView?'':'<div class="actions"><button type="button" class="btn primary" data-edit-trade="'+id+'">Editar trade</button></div>'+renderTradeEditor(t,accounts,d.id)+'<div class="field" style="margin-top:12px"><label for="extra-files-'+d.id+'">Adicionar print</label><input id="extra-files-'+d.id+'" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple></div><div class="actions"><button class="btn small" data-upload-trade="'+id+'">Enviar print</button><button class="btn small danger" data-delete-trade="'+id+'">Excluir trade</button></div>');
+  const prints=d.querySelector('[data-trade-prints]');
+  if(files.length)prints.innerHTML='<div class="muted">Carregando prints...</div>';
+  const results=await Promise.allSettled(files.map(async f=>{const u=await signedUrl(f.storage_path);return u?'<div class="screen-img"><img src="'+esc(u)+'" alt="'+esc(f.file_name)+'"><a href="'+esc(u)+'" target="_blank" rel="noopener">Abrir print</a></div>':'';}));
+  if(prints.isConnected)prints.innerHTML=results.map(r=>r.status==='fulfilled'?r.value:'').join('')+(results.some(r=>r.status==='rejected'||!r.value)?'<div class="muted">Alguns prints não puderam ser carregados.</div>':'');
 }
 function renderJournal(){const list=filteredTrades().slice().sort((a,b)=>String(b.trade_date).localeCompare(String(a.trade_date))||b.id-a.id);$("tradeList").innerHTML=list.map(tradeMini).join("")||'<div class="empty">Nenhum trade registrado.</div>'}
 
@@ -806,8 +812,10 @@ $("saveTradeButton").addEventListener("click",async()=>{
 $("resetTradeButton").addEventListener("click",()=>{["tradeSymbol","tradeQty","tradePnl","tradeEntry","tradeExit","tradeRisk","tradeDuration","tradeSetup","tradeRR","tradeMfe","tradeMae","tradeEmotion","tradeNotes"].forEach(id=>$(id).value="");$("tradeFees").value="0";updateTradeRR();executionTools.resetNew();pastedTradeFiles=[];renderPasted()});
 
 document.body.addEventListener("click",async e=>{
-  const detail=e.target.closest("[data-trade-detail]");if(detail){await openTradeDetail(detail.dataset.tradeDetail);return}
-  const upload=e.target.closest("[data-upload-trade]");if(upload){const input=$("extra-files-"+upload.dataset.uploadTrade);if(!input?.files?.length){showMessage("Selecione uma imagem.","error");return}await uploadFiles(upload.dataset.uploadTrade,input.files);await loadData();showMessage("Print enviado.");return}
+  const detail=e.target.closest("[data-trade-detail]");if(detail){await openTradeDetail(detail.dataset.tradeDetail,detail);return}
+  const edit=e.target.closest("[data-edit-trade]");if(edit){if(mentorView)return;const form=edit.closest('.trade-card').querySelector('[data-trade-edit-form]');form.classList.remove('hidden');updateTradeEditRR(form);form.querySelector('input')?.focus();return}
+  const cancel=e.target.closest('[data-cancel-trade-edit]');if(cancel){const form=cancel.closest('form');form.reset();updateTradeEditRR(form);form.querySelector('[data-edit-error]').textContent='';form.classList.add('hidden');return}
+  const upload=e.target.closest("[data-upload-trade]");if(upload){const input=upload.closest(".trade-card").querySelector('input[type="file"]');if(!input?.files?.length){showMessage("Selecione uma imagem.","error");return}await uploadFiles(upload.dataset.uploadTrade,input.files);await loadData();showMessage("Print enviado.");return}
   const del=e.target.closest("[data-delete-trade]");if(del){if(!confirm("Excluir este trade e seus anexos?"))return;const {error}=await supabase.from("student_trades").delete().eq("id",Number(del.dataset.deleteTrade));if(error){showMessage("Não foi possível excluir.","error");return}await loadData();showMessage("Trade excluído.");return}
   const qr=e.target.closest("[data-save-quick]");if(qr){
     const id=Number(qr.dataset.saveQuick),review={stop_respected:$("qr-stop-"+id).value,risk_respected:$("qr-risk-"+id).value,note:$("qr-note-"+id).value.trim()};
@@ -826,6 +834,26 @@ document.body.addEventListener("click",async e=>{
   const dpl=e.target.closest("[data-delete-playbook]");if(dpl){await supabase.from("student_trade_playbooks").update({active:false}).eq("id",Number(dpl.dataset.deletePlaybook));await loadData();return}
   const ta=e.target.closest("[data-toggle-account]");if(ta){const a=accountById(ta.dataset.toggleAccount);if(!a)return;await supabase.from("student_trade_accounts").update({active:!a.active}).eq("id",a.id);await loadData();return}
   const pp=e.target.closest("[data-pay-payout]");if(pp){await supabase.from("student_prop_payouts").update({status:"paid",paid_at:today()}).eq("id",Number(pp.dataset.payPayout));await loadData();showMessage("Saque marcado como pago.");return}
+});
+
+function updateTradeEditRR(form){
+  const pnl=Number(form.querySelector('[name="pnl"]').value),risk=Number(form.querySelector('[name="initial_risk"]').value);
+  form.querySelector('[data-edit-rr]').textContent=Number.isFinite(pnl)&&risk>0?(pnl/risk).toFixed(2)+'R':'—';
+}
+document.addEventListener('input',event=>{const form=event.target.closest('[data-trade-edit-form]');if(form)updateTradeEditRR(form)});
+document.addEventListener('submit',async event=>{
+  const form=event.target.closest('[data-trade-edit-form]');if(!form)return;event.preventDefault();
+  if(mentorView||currentUser?.id!==diaryStudentId||form.dataset.saving)return;
+  const t=trades.find(t=>String(t.id)===form.dataset.tradeEditForm);if(!t)return;
+  const button=form.querySelector('[data-save-trade-edit]'),errorBox=form.querySelector('[data-edit-error]'),screen=form.closest('.screen');
+  form.dataset.saving='true';button.disabled=true;errorBox.textContent='';
+  try{
+    const payload=parseTradeEdit(new FormData(form),t,accounts);
+    const {error}=await supabase.from('student_trades').update(payload).eq('id',t.id).eq('student_id',diaryStudentId).select('id').single();if(error)throw error;
+    await loadData();const trigger=screen?.querySelector('[data-trade-detail="'+t.id+'"]');if(trigger)await openTradeDetail(t.id,trigger,true);
+    showMessage('Trade atualizado.');
+  }catch(error){console.error(error);errorBox.textContent=error.message||'Não foi possível salvar as alterações.';}
+  finally{delete form.dataset.saving;button.disabled=false;}
 });
 
 $("savePositionButton").addEventListener("click",async()=>{
@@ -944,7 +972,7 @@ async function loadData(){
 function resolveDiaryStudent(role, userId, requestedStudent){
   return role==="admin" ? (requestedStudent || null) : userId;
 }
-const mentorWriteSelector="#toggleTradeFormButton,#saveTradeButton,#resetTradeButton,#savePositionButton,#saveWeeklyButton,#savePlaybookButton,#saveAccountButton,#savePayoutButton,#importCsvButton,[data-upload-trade],[data-delete-trade],[data-save-quick],[data-close-position],[data-delete-position],[data-delete-weekly],[data-delete-playbook],[data-toggle-account],[data-pay-payout]";
+const mentorWriteSelector="#toggleTradeFormButton,#saveTradeButton,#resetTradeButton,#savePositionButton,#saveWeeklyButton,#savePlaybookButton,#saveAccountButton,#savePayoutButton,#importCsvButton,[data-edit-trade],[data-save-trade-edit],[data-upload-trade],[data-delete-trade],[data-save-quick],[data-close-position],[data-delete-position],[data-delete-weekly],[data-delete-playbook],[data-toggle-account],[data-pay-payout]";
 function configureMentorView(student){
   document.body.classList.add("mentor-view");
   document.title="Performance · "+(student.nome||"Mentorado")+" | FrancoTrades";
