@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="./modules/execution.css?v=20261007">
   <style>
     :root{
       --bg:#070a08;--panel:#0d120f;--panel2:#111a15;--line:#203027;
@@ -255,6 +256,7 @@
         <button class="nav-btn" data-screen="playbook" data-label="Playbook"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 10 5-10 5L2 8l10-5Zm-10 9 10 5 10-5M2 16l10 5 10-5"/></svg><span class="nav-label">Playbook</span></button>
         <button class="nav-btn" data-screen="import" data-label="Importar"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M4 16v5h16v-5"/></svg><span class="nav-label">Importar</span></button>
         <button class="nav-btn" data-screen="accounts" data-label="Contas & risco"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 5 8 9 8 9s8-4 8-9V6l-8-3Z"/><path d="m8 12 3 3 5-6"/></svg><span class="nav-label">Contas & risco</span></button>
+        <button class="nav-btn" data-screen="development" data-label="Desenvolvimento de execução"><span class="nav-icon" aria-hidden="true">◎</span><span class="nav-label">Desenvolvimento de execução</span></button>
       </nav>
       <div class="sidebar-note">Seu diário privado<span>Registre, revise e evolua seu processo.</span></div>
     </aside>
@@ -275,6 +277,7 @@
     </section>
 
     <section id="screen-overview" class="screen active">
+      <div id="executionOverview"></div>
       <div class="kpis">
         <div class="kpi"><div class="help-heading"><div class="kpi-label">Resultado líquido</div><button type="button" class="field-help-button" aria-label="Explicação: Resultado líquido" aria-expanded="false" aria-controls="overviewNetHelp" title="Soma dos lucros e prejuízos dos trades selecionados, descontando as taxas. Exemplo: P&amp;L de 200 e taxas de 10 = resultado líquido de 190. Os filtros de conta, período e setup alteram este indicador.">?</button></div><p id="overviewNetHelp" class="field-help-text" hidden>Soma dos lucros e prejuízos dos trades selecionados, descontando as taxas. Exemplo: P&amp;L de 200 e taxas de 10 = resultado líquido de 190. Os filtros de conta, período e setup alteram este indicador.</p><div id="kpiNet" class="kpi-value">$0</div></div>
         <div class="kpi"><div class="help-heading"><div class="kpi-label">Taxa de acerto</div><button type="button" class="field-help-button" aria-label="Explicação: Taxa de acerto" aria-expanded="false" aria-controls="overviewWinHelp" title="Percentual de trades com resultado líquido positivo em relação ao total de operações selecionadas. Exemplo: 6 trades lucrativos em 10 = 60%. Operações zeradas também entram no total; as taxas podem transformar um empate bruto em perda líquida.">?</button></div><p id="overviewWinHelp" class="field-help-text" hidden>Percentual de trades com resultado líquido positivo em relação ao total de operações selecionadas. Exemplo: 6 trades lucrativos em 10 = 60%. Operações zeradas também entram no total; as taxas podem transformar um empate bruto em perda líquida.</p><div id="kpiWin" class="kpi-value">0%</div></div>
@@ -495,11 +498,14 @@
         <div id="payoutList" style="margin-top:12px"></div>
       </section>
     </section>
+    <section id="screen-development" class="screen"><div id="executionDevelopment"></div></section>
     </div>
   </main>
+  <dialog id="executionDialog"><div class="exec-dialog-head"><h2 id="executionDialogTitle"></h2><button type="button" class="btn" data-exec-action="close" aria-label="Fechar avaliação">Fechar</button></div><div id="executionDialogBody"></div></dialog>
 </div>
 
 <script type="module">
+import { createExecutionTools } from "./modules/execution-tools.js?v=20261007";
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
 const supabase=createClient("https://vfnltuecpnuixemxvwvk.supabase.co","sb_publishable_nxgAFL2foBN8CuKMT5_2qQ_uDlaJ4Xc");
@@ -648,13 +654,7 @@ async function openTradeDetail(id){
 }
 function renderJournal(){const list=filteredTrades().slice().sort((a,b)=>String(b.trade_date).localeCompare(String(a.trade_date))||b.id-a.id);$("tradeList").innerHTML=list.map(tradeMini).join("")||'<div class="empty">Nenhum trade registrado.</div>'}
 
-function renderQuick(){
-  const list=filteredTrades().filter(t=>!t.quick_review_completed).slice().sort((a,b)=>String(b.trade_date).localeCompare(String(a.trade_date)));
-  $("quickPendingBadge").textContent=list.length+" pendente"+(list.length===1?"":"s");
-  $("navQuickCount").textContent=String(list.length);
-  $("navQuickCount").classList.toggle("hidden",list.length===0);
-  $("quickReviewList").innerHTML=list.length?list.map(t=>'<div class="review-card"><div class="account-top"><div><div class="trade-title">'+fmtDate(t.trade_date)+' · '+esc(t.symbol)+' · '+esc(t.setup||"Sem setup")+'</div><div class="muted">'+money(netOf(t),accountCurrency(t.account_id))+'</div></div></div><div class="review-form"><div class="field"><label>Respeitou o stop?</label><select id="qr-stop-'+t.id+'"><option value="">—</option><option value="yes">Sim</option><option value="no">Não</option><option value="na">Não se aplica</option></select></div><div class="field"><label>Respeitou o risco?</label><select id="qr-risk-'+t.id+'"><option value="">—</option><option value="yes">Sim</option><option value="no">Não</option></select></div><div class="field"><label>Motivo da saída</label><select id="qr-exit-'+t.id+'"><option value="">—</option><option>Alvo</option><option>Stop</option><option>Saída discricionária</option><option>Saída antecipada</option><option>Tempo</option><option>Erro operacional</option></select></div><div class="field"><label>Qualidade da execução</label><select id="qr-quality-'+t.id+'"><option value="">—</option><option>Boa</option><option>Regular</option><option>Ruim</option></select></div><div class="field full"><label>O que manter ou ajustar?</label><textarea id="qr-note-'+t.id+'"></textarea></div></div><div class="actions"><button class="btn primary small" data-save-quick="'+t.id+'">Concluir revisão</button></div></div>').join(""):'<div class="empty">Nenhuma revisão rápida pendente.</div>';
-}
+function renderQuick(){executionTools.renderQuick()}
 
 function renderPositions(){
   const open=positions.filter(p=>p.status==="open"),closed=positions.filter(p=>p.status==="closed");
@@ -715,10 +715,11 @@ function renderPayouts(){
 }
 
 function renderCurrentScreen(name){
-  if(name==="overview")renderOverview();
-  if(name==="journal")renderJournal();
+  if(name==="development")executionTools.render();
+  if(name==="overview"){renderOverview();executionTools.render()}
+  if(name==="journal"){renderJournal();executionTools.render()}
   if(name==="quick")renderQuick();
-  if(name==="positions")renderPositions();
+  if(name==="positions"){renderPositions();executionTools.render()}
   if(name==="calendar")renderCalendar();
   if(name==="analytics")renderAnalytics();
   if(name==="execution")renderExecution();
@@ -728,7 +729,7 @@ function renderCurrentScreen(name){
 }
 function rerenderAll(){
   refreshFilterOptions();
-  renderOverview();renderJournal();renderQuick();renderPositions();renderCalendar();renderAnalytics();renderExecution();renderWeekly();renderPlaybooks();renderAccounts();renderPayouts();
+  renderOverview();renderJournal();renderQuick();renderPositions();renderCalendar();renderAnalytics();renderExecution();renderWeekly();renderPlaybooks();renderAccounts();renderPayouts();executionTools.render();
 }
 
 async function uploadFiles(tradeId,fileList){
@@ -788,15 +789,17 @@ $("app").addEventListener("keydown",e=>{
 $("toggleTradeFormButton").addEventListener("click",()=>$("tradeFormWrap").classList.toggle("hidden"));
 $("saveTradeButton").addEventListener("click",async()=>{
   if(!$("tradeAccount").value||!$("tradeDate").value||!$("tradeSymbol").value.trim()){showMessage("Preencha conta, data e ativo.","error");return}
+  let executionData;try{executionData=executionTools.readNewTrade()}catch(error){showMessage(error.message,"error");return}
+  if(executionData.psychology.actualRisk!=null)$("tradeRisk").value=executionData.psychology.actualRisk;
   const calculatedRR=updateTradeRR();
-  const payload={student_id:currentUser.id,account_id:Number($("tradeAccount").value),trade_date:$("tradeDate").value,symbol:$("tradeSymbol").value.trim().toUpperCase(),side:$("tradeSide").value,quantity:num($("tradeQty").value),entry_price:num($("tradeEntry").value),exit_price:num($("tradeExit").value),pnl:Number($("tradePnl").value||0),fees:Number($("tradeFees").value||0),initial_risk:num($("tradeRisk").value),duration_minutes:num($("tradeDuration").value),setup:$("tradeSetup").value.trim()||null,emotion:$("tradeEmotion").value.trim()||null,rr:calculatedRR,mfe:num($("tradeMfe").value),mae:num($("tradeMae").value),notes:$("tradeNotes").value.trim()||null,source:"manual"};
+  const payload={student_id:currentUser.id,account_id:Number($("tradeAccount").value),trade_date:$("tradeDate").value,symbol:$("tradeSymbol").value.trim().toUpperCase(),side:$("tradeSide").value,quantity:num($("tradeQty").value),entry_price:num($("tradeEntry").value),exit_price:num($("tradeExit").value),pnl:Number($("tradePnl").value||0),fees:Number($("tradeFees").value||0),initial_risk:num($("tradeRisk").value),duration_minutes:num($("tradeDuration").value),setup:$("tradeSetup").value.trim()||null,emotion:$("tradeEmotion").value.trim()||null,rr:calculatedRR,mfe:num($("tradeMfe").value),mae:num($("tradeMae").value),notes:$("tradeNotes").value.trim()||null,source:"manual",quick_review:{execution:executionData},quick_review_completed:false};
   const {data,error}=await supabase.from("student_trades").insert(payload).select("id").single();if(error){console.error(error);showMessage("Não foi possível salvar o trade.","error");return}
   await uploadFiles(data.id,[...$("tradeFiles").files,...pastedTradeFiles]);pastedTradeFiles=[];renderPasted();$("tradeFiles").value="";
   ["tradeSymbol","tradeQty","tradePnl","tradeEntry","tradeExit","tradeRisk","tradeDuration","tradeSetup","tradeRR","tradeMfe","tradeMae","tradeEmotion","tradeNotes"].forEach(id=>$(id).value="");$("tradeFees").value="0";$("tradeDate").value=today();
   updateTradeRR();
-  await loadData();showMessage("Trade salvo.");$("tradeFormWrap").classList.add("hidden");
+  executionTools.resetNew();await loadData();showMessage("Trade salvo.");$("tradeFormWrap").classList.add("hidden");
 });
-$("resetTradeButton").addEventListener("click",()=>{["tradeSymbol","tradeQty","tradePnl","tradeEntry","tradeExit","tradeRisk","tradeDuration","tradeSetup","tradeRR","tradeMfe","tradeMae","tradeEmotion","tradeNotes"].forEach(id=>$(id).value="");$("tradeFees").value="0";updateTradeRR();pastedTradeFiles=[];renderPasted()});
+$("resetTradeButton").addEventListener("click",()=>{["tradeSymbol","tradeQty","tradePnl","tradeEntry","tradeExit","tradeRisk","tradeDuration","tradeSetup","tradeRR","tradeMfe","tradeMae","tradeEmotion","tradeNotes"].forEach(id=>$(id).value="");$("tradeFees").value="0";updateTradeRR();executionTools.resetNew();pastedTradeFiles=[];renderPasted()});
 
 document.body.addEventListener("click",async e=>{
   const detail=e.target.closest("[data-trade-detail]");if(detail){await openTradeDetail(detail.dataset.tradeDetail);return}
@@ -808,10 +811,11 @@ document.body.addEventListener("click",async e=>{
     if(error){console.error(error);showMessage("Não foi possível salvar a revisão.","error");return}await loadData();showMessage("Revisão concluída.");return
   }
   const close=e.target.closest("[data-close-position]");if(close){
-    const id=Number(close.dataset.closePosition),exit=prompt("Preço de saída:"),pnl=prompt("Resultado/P&L da posição:");
-    if(exit===null||pnl===null)return;
-    const {error}=await supabase.from("student_open_positions").update({status:"closed",closed_at:new Date().toISOString(),exit_price:num(exit),pnl:Number(pnl||0)}).eq("id",id);
-    if(error){showMessage("Não foi possível encerrar.","error");return}await loadData();showMessage("Posição encerrada.");return
+    const id=Number(close.dataset.closePosition),exit=prompt("Preço de saída:");if(exit===null)return;
+    const pnl=prompt("Resultado bruto/P&L da posição:");if(pnl===null)return;
+    const fees=prompt("Taxas totais da operação:","0");if(fees===null)return;
+    if(!pnl.trim()||!fees.trim()||![exit||0,pnl,fees].every(v=>Number.isFinite(Number(v)))||Number(fees)<0){showMessage("Informe valores numéricos válidos. Taxas não podem ser negativas.","error");return}
+    try{await executionTools.closePosition(id,exit,pnl,fees)}catch(error){showMessage(error.message,"error")}return
   }
   const dp=e.target.closest("[data-delete-position]");if(dp){if(!confirm("Excluir esta posição?"))return;await supabase.from("student_open_positions").delete().eq("id",Number(dp.dataset.deletePosition));await loadData();return}
   const dw=e.target.closest("[data-delete-weekly]");if(dw){await supabase.from("student_weekly_reviews").delete().eq("id",Number(dw.dataset.deleteWeekly));await loadData();return}
@@ -892,7 +896,7 @@ $("calendarPrev").addEventListener("click",()=>{calendarCursor=new Date(calendar
 ["globalAccountFilter","globalPeriodFilter","globalSetupFilter"].forEach(id=>$(id).addEventListener("change",rerenderAll));
 
 function mondayOfCurrentWeek(){const d=new Date(),day=(d.getDay()+6)%7;d.setDate(d.getDate()-day);return d.toISOString().slice(0,10)}
-function applyTheme(theme){document.documentElement.dataset.theme=theme;localStorage.setItem("ft-diary-theme",theme);$("themeButton").textContent=theme==="light"?"☀":"☾";if(equityChart)renderEquity()}
+function applyTheme(theme){document.documentElement.dataset.theme=theme;localStorage.setItem("ft-diary-theme",theme);$("themeButton").textContent=theme==="light"?"☀":"☾";if(equityChart){renderEquity();executionTools.render()}}
 $("themeButton").addEventListener("click",()=>applyTheme(document.documentElement.dataset.theme==="light"?"dark":"light"));
 $("logoutButton").addEventListener("click",async()=>{await supabase.auth.signOut();window.location.href="../../login/"});
 
@@ -909,7 +913,7 @@ async function loadData(){
   ]);
   const errs=[a,t,att,com,pb,pos,wr,po].filter(x=>x.error);
   if(errs.length){console.error(errs.map(x=>x.error));showMessage("Alguns módulos ainda não estão disponíveis. Execute os SQLs do Diário de Trade no Supabase.","error")}
-  accounts=a.data||[];trades=t.data||[];attachments=att.data||[];comments=com.data||[];playbooks=pb.data||[];positions=pos.data||[];weeklyReviews=wr.data||[];payouts=po.data||[];
+  accounts=a.data||[];trades=t.data||[];attachments=att.data||[];comments=com.data||[];playbooks=executionTools.load(pb.data||[]);positions=pos.data||[];weeklyReviews=wr.data||[];payouts=po.data||[];
   rerenderAll();
 }
 function resolveDiaryStudent(role, userId, requestedStudent){
@@ -963,6 +967,8 @@ async function init(){
   const saved=mentorView?"overview":localStorage.getItem("ft-diary-screen");if(saved&&$("screen-"+saved))setScreen(saved);
   $("loading").classList.add("hidden");$("app").classList.remove("hidden");
 }
+const executionTools=createExecutionTools({state:()=>({trades,accounts,attachments,positions,studentId:diaryStudentId,mentorView}),filteredTrades,money,supabase,showMessage,reload:loadData,signedUrl,today});
+executionTools.mount();
 init();
 </script>
 </body>
