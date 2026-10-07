@@ -650,7 +650,8 @@ async function openTradeDetail(id,trigger,force=false){
   (t.notes?'<div class="section-note" style="margin-top:10px;white-space:pre-wrap">'+esc(t.notes)+'</div>':'')+
   '<div class="screens" data-trade-prints></div>'+
   '<div style="margin-top:12px"><div class="panel-title" style="font-size:12px">Feedback do mentor</div>'+(cs.length?cs.map(c=>'<div class="comment">'+esc(c.comment)+'<div class="muted">'+fmtDateTime(c.created_at)+'</div></div>').join(""):'<div class="muted">Nenhum comentário ainda.</div>')+'</div>'+
-  (mentorView?'':'<div class="actions"><button type="button" class="btn primary" data-edit-trade="'+id+'">Editar trade</button></div>'+renderTradeEditor(t,accounts,d.id)+'<div class="field" style="margin-top:12px"><label for="extra-files-'+d.id+'">Adicionar print</label><input id="extra-files-'+d.id+'" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple></div><div class="actions"><button class="btn small" data-upload-trade="'+id+'">Enviar print</button><button class="btn small danger" data-delete-trade="'+id+'">Excluir trade</button></div>');
+  (mentorView?'':'<div class="actions"><button type="button" class="btn primary" data-edit-trade="'+id+'">Editar trade</button></div>'+renderTradeEditor(t,accounts,d.id)+'<div class="field" style="margin-top:12px"><label for="extra-files-'+d.id+'">Adicionar print</label><button type="button" class="drop" style="width:100%;background:var(--panel2)" data-trade-paste="'+id+'">Clique aqui e pressione Ctrl+V (ou ⌘V) para colar uma captura</button><div class="paste-list" data-existing-paste-preview="'+id+'"></div><p class="muted">Cole a captura ou escolha um arquivo abaixo. Depois clique em Enviar print.</p><input id="extra-files-'+d.id+'" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple></div><div class="actions"><button class="btn small" data-upload-trade="'+id+'">Enviar print</button><button class="btn small danger" data-delete-trade="'+id+'">Excluir trade</button></div>');
+  renderExistingPaste(id);
   await renderTradePrints(id,d.querySelector('[data-trade-prints]'));
 }
 async function renderTradePrints(id,prints){
@@ -748,7 +749,7 @@ function rerenderAll(){
   renderOverview();renderJournal();renderQuick();renderPositions();renderCalendar();renderAnalytics();renderExecution();renderWeekly();renderPlaybooks();renderAccounts();renderPayouts();executionTools.render();
 }
 
-async function uploadFiles(tradeId,fileList){
+async function uploadFiles(tradeId,fileList,onUploaded=null){
   let uploaded=0;
   for(const file of [...(fileList||[])]){
     if(file.size>10*1024*1024){showMessage("Uma imagem excede 10 MB.","error");continue}
@@ -757,7 +758,7 @@ async function uploadFiles(tradeId,fileList){
     if(up){console.error(up);showMessage("Não foi possível enviar um print.","error");continue}
     const {data,error:meta}=await supabase.from("student_trade_attachments").insert({student_id:currentUser.id,trade_id:Number(tradeId),storage_path:path,file_name:file.name,content_type:file.type,file_size:file.size}).select("*").single();
     if(meta){console.error(meta);showMessage("A imagem foi enviada, mas não foi possível vinculá-la ao trade.","error");continue}
-    attachments.push(data);uploaded++;
+    attachments.push(data);uploaded++;onUploaded?.(file);
   }
   return uploaded;
 }
@@ -784,11 +785,37 @@ async function optimizeClipboardImage(file){
   return file;
 }
 function renderPasted(){ $("tradePastePreview").innerHTML=pastedTradeFiles.map((f,i)=>'<span class="paste-chip">Captura '+(i+1)+' · '+Math.round(f.size/1024)+' KB</span>').join("");$("tradePasteZone").classList.toggle("ready",pastedTradeFiles.length>0)}
+const pastedExistingPrints=new Map(),uploadingPrintTrades=new Set();
+function renderExistingPaste(id){
+  const key=String(id),entries=pastedExistingPrints.get(key)||[];
+  document.querySelectorAll('[data-existing-paste-preview="'+key+'"]').forEach(preview=>{
+    preview.innerHTML=entries.map((entry,index)=>'<div class="screen-img" style="width:160px"><img src="'+esc(entry.preview)+'" alt="Captura '+(index+1)+' pronta para envio" style="object-fit:contain"><div style="padding:8px"><span class="muted">Captura '+(index+1)+' · '+Math.round(entry.file.size/1024)+' KB</span><button type="button" class="btn small" data-remove-pasted-print="'+entry.id+'" data-pasted-trade="'+key+'" '+(uploadingPrintTrades.has(key)?'disabled':'')+'>Remover</button></div></div>').join('');
+  });
+}
+function removeExistingPaste(id,entryId){
+  const key=String(id),entries=pastedExistingPrints.get(key)||[];
+  const removed=entries.filter(entry=>!entryId||entry.id===entryId);removed.forEach(entry=>URL.revokeObjectURL(entry.preview));
+  const remaining=entryId?entries.filter(entry=>entry.id!==entryId):[];
+  if(remaining.length)pastedExistingPrints.set(key,remaining);else pastedExistingPrints.delete(key);
+  renderExistingPaste(key);
+}
 document.addEventListener("paste",async e=>{
-  if(!$("screen-journal").classList.contains("active")||$("tradeFormWrap").classList.contains("hidden"))return;
-  const it=[...(e.clipboardData?.items||[])].find(x=>x.type?.startsWith("image/"));if(!it)return;e.preventDefault();
-  const raw=it.getAsFile();if(!raw)return;const f=await optimizeClipboardImage(raw);if(f.size>10*1024*1024){showMessage("Captura maior que 10 MB.","error");return}
-  pastedTradeFiles.push(f);renderPasted();showMessage("Captura adicionada.");
+  if(mentorView||currentUser?.id!==diaryStudentId||document.querySelector('dialog[open]'))return;
+  const images=[...(e.clipboardData?.items||[])].filter(item=>item.type?.startsWith('image/'));if(!images.length)return;
+  const card=e.target?.closest?.('.trade-card'),zone=card?.querySelector('[data-trade-paste]');
+  const existing=zone&&zone.closest('.screen')?.classList.contains('active')&&!zone.closest('[data-trade-detail-panel]').classList.contains('hidden');
+  const newTrade=!card&&$('screen-journal').classList.contains('active')&&!$('tradeFormWrap').classList.contains('hidden');
+  if(!existing&&!newTrade)return;e.preventDefault();
+  for(const item of images){
+    const raw=item.getAsFile();if(!raw)continue;const file=await optimizeClipboardImage(raw);
+    if(file.size>10*1024*1024){showMessage('Captura maior que 10 MB.','error');continue;}
+    if(mentorView||currentUser?.id!==diaryStudentId)return;
+    if(existing){
+      const key=String(zone.dataset.tradePaste);if(!trades.some(t=>String(t.id)===key))continue;
+      const entries=pastedExistingPrints.get(key)||[];entries.push({id:crypto.randomUUID(),file,preview:URL.createObjectURL(file)});pastedExistingPrints.set(key,entries);renderExistingPaste(key);
+    }else{pastedTradeFiles.push(file);renderPasted();}
+    showMessage(existing?'Captura adicionada. Clique em Enviar print para anexá-la ao trade.':'Captura adicionada ao novo trade.');
+  }
 });
 
 function calculateRealizedR(result, risk){
@@ -844,10 +871,22 @@ document.body.addEventListener("click",async e=>{
     try{await removeTradeAttachment(id)}catch(error){console.error(error);showMessage(error.message,'error')}
     finally{deletingAttachments.delete(id);buttons.forEach(button=>button.disabled=false)}return
   }
-  const upload=e.target.closest("[data-upload-trade]");if(upload){const input=upload.closest(".trade-card").querySelector('input[type="file"]');if(mentorView||currentUser?.id!==diaryStudentId)return;if(!input?.files?.length){showMessage("Selecione uma imagem.","error");return}
-    if(upload.disabled)return;upload.disabled=true;const total=input.files.length;
-    try{const count=await uploadFiles(upload.dataset.uploadTrade,input.files);if(count){input.value="";executionTools.render();await Promise.allSettled([...document.querySelectorAll('[data-trade-detail]')].filter(button=>button.dataset.tradeDetail===upload.dataset.uploadTrade).map(button=>renderTradePrints(upload.dataset.uploadTrade,button.closest('.trade-card').querySelector('[data-trade-prints]'))));showMessage(count===total?"Print enviado.":count+" de "+total+" prints enviados.",count===total?"success":"error")}}catch(error){console.error(error);showMessage("Não foi possível enviar a imagem.","error")}finally{upload.disabled=false}return}
-  const del=e.target.closest("[data-delete-trade]");if(del){if(!confirm("Excluir este trade e seus anexos?"))return;const {error}=await supabase.from("student_trades").delete().eq("id",Number(del.dataset.deleteTrade));if(error){showMessage("Não foi possível excluir.","error");return}await loadData();showMessage("Trade excluído.");return}
+  const removePasted=e.target.closest('[data-remove-pasted-print]');if(removePasted){if(!mentorView&&!uploadingPrintTrades.has(removePasted.dataset.pastedTrade))removeExistingPaste(removePasted.dataset.pastedTrade,removePasted.dataset.removePastedPrint);return}
+  const upload=e.target.closest("[data-upload-trade]");if(upload){
+    const input=upload.closest('.trade-card').querySelector('input[type="file"]'),id=String(upload.dataset.uploadTrade);
+    if(mentorView||currentUser?.id!==diaryStudentId||uploadingPrintTrades.has(id))return;
+    const entries=[...(pastedExistingPrints.get(id)||[])],files=[...(input?.files||[]),...entries.map(entry=>entry.file)];
+    if(!files.length){showMessage('Escolha um arquivo ou cole uma captura.','error');return;}
+    const buttons=[...document.querySelectorAll('[data-upload-trade="'+id+'"]')];uploadingPrintTrades.add(id);buttons.forEach(button=>button.disabled=true);renderExistingPaste(id);
+    const sent=new Set();
+    try{
+      const count=await uploadFiles(id,files,file=>sent.add(file));
+      entries.filter(entry=>sent.has(entry.file)).forEach(entry=>removeExistingPaste(id,entry.id));
+      if(count){input.value='';executionTools.render();await Promise.allSettled([...document.querySelectorAll('[data-trade-detail]')].filter(button=>button.dataset.tradeDetail===id).map(button=>renderTradePrints(id,button.closest('.trade-card').querySelector('[data-trade-prints]'))));showMessage(count===files.length?'Print enviado.':count+' de '+files.length+' prints enviados.',count===files.length?'success':'error');}
+    }catch(error){console.error(error);showMessage('Não foi possível enviar a imagem.','error');}
+    finally{entries.filter(entry=>sent.has(entry.file)).forEach(entry=>removeExistingPaste(id,entry.id));uploadingPrintTrades.delete(id);buttons.forEach(button=>button.disabled=false);renderExistingPaste(id);}return
+  }
+  const del=e.target.closest("[data-delete-trade]");if(del){if(!confirm("Excluir este trade e seus anexos?"))return;const {error}=await supabase.from("student_trades").delete().eq("id",Number(del.dataset.deleteTrade));if(error){showMessage("Não foi possível excluir.","error");return}removeExistingPaste(del.dataset.deleteTrade);await loadData();showMessage("Trade excluído.");return}
   const qr=e.target.closest("[data-save-quick]");if(qr){
     const id=Number(qr.dataset.saveQuick),review={stop_respected:$("qr-stop-"+id).value,risk_respected:$("qr-risk-"+id).value,note:$("qr-note-"+id).value.trim()};
     const {error}=await supabase.from("student_trades").update({quick_review_completed:true,quick_review:review,exit_reason:$("qr-exit-"+id).value||null,exit_quality:$("qr-quality-"+id).value||null}).eq("id",id);
@@ -1003,7 +1042,7 @@ async function loadData(){
 function resolveDiaryStudent(role, userId, requestedStudent){
   return role==="admin" ? (requestedStudent || null) : userId;
 }
-const mentorWriteSelector="#toggleTradeFormButton,#saveTradeButton,#resetTradeButton,#savePositionButton,#saveWeeklyButton,#savePlaybookButton,#saveAccountButton,#savePayoutButton,#importCsvButton,[data-delete-attachment],[data-edit-trade],[data-save-trade-edit],[data-upload-trade],[data-delete-trade],[data-save-quick],[data-close-position],[data-delete-position],[data-delete-weekly],[data-delete-playbook],[data-toggle-account],[data-pay-payout]";
+const mentorWriteSelector="#toggleTradeFormButton,#saveTradeButton,#resetTradeButton,#savePositionButton,#saveWeeklyButton,#savePlaybookButton,#saveAccountButton,#savePayoutButton,#importCsvButton,[data-remove-pasted-print],[data-trade-paste],[data-delete-attachment],[data-edit-trade],[data-save-trade-edit],[data-upload-trade],[data-delete-trade],[data-save-quick],[data-close-position],[data-delete-position],[data-delete-weekly],[data-delete-playbook],[data-toggle-account],[data-pay-payout]";
 function configureMentorView(student){
   document.body.classList.add("mentor-view");
   document.title="Performance · "+(student.nome||"Mentorado")+" | FrancoTrades";
