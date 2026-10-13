@@ -2251,6 +2251,7 @@
 
 
 <script type="module">
+import {loginReviewSuffix,watchReviewCard,openLinkedReview} from "../assets/review-engagement.js?v=20261013";
 
 import {
   createClient
@@ -4228,6 +4229,7 @@ async function renderTradeAnalysisReviews() {
     tradeAnalysisList.appendChild(
       card
     );
+    watchReviewCard(card,"analysis",item.id,supabase,()=>currentUser);
 
   }
 
@@ -4501,6 +4503,7 @@ function renderTradeReviews() {
     tradeReviewsList.appendChild(
       card
     );
+    watchReviewCard(card,"video",item.id,supabase,()=>currentUser);
 
   }
 
@@ -5139,7 +5142,7 @@ async function loadDashboard() {
   if (!session) {
 
     window.location.href =
-      "../login/";
+      "../login/"+loginReviewSuffix();
 
 
     return;
@@ -5530,6 +5533,7 @@ async function loadDashboard() {
 
   content.classList
     .remove("hidden");
+  openLinkedReview(setStudentTradeReviewTab,tradeReviewsSection,tradeReviewsSectionBody);
 
 }
 

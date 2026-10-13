@@ -2676,6 +2676,8 @@
     </section>
 
 
+    <section class="panel" id="reviewEngagementPanel"><div class="panel-title">Revisões · avisos e acompanhamento</div><p id="reviewNoticeStatus">Os avisos no Discord dependem da configuração do canal. Cada nova publicação gera um aviso; editar uma revisão não gera outro.</p><button class="secondary-button" type="button" id="dispatchReviewNoticesButton">Enviar avisos pendentes</button><button class="secondary-button" type="button" id="refreshReviewEngagementButton">Atualizar acompanhamento</button><div id="reviewEngagementStats">Carregando acompanhamento...</div></section>
+
     <section
       id="mentorsPanel"
       class="panel"
@@ -3429,6 +3431,7 @@
 
 
 <script type="module">
+import {loadReviewEngagement,dispatchReviewNotices} from "../assets/review-engagement.js?v=20261013";
 
 import {
   createClient
@@ -6277,6 +6280,8 @@ async function saveTradeAnalysisReview() {
     resetTradeAnalysisForm();
 
     await loadTradeAnalysisReviews();
+    if(payload.ativo)await dispatchReviewNotices(supabase,document.getElementById("reviewNoticeStatus"));
+    await loadReviewEngagement(supabase,document.getElementById("reviewEngagementStats"));
 
   }
   catch (
@@ -6799,6 +6804,8 @@ async function saveTradeReview() {
   resetTradeReviewForm();
 
   await loadTradeReviews();
+  if(payload.ativo)await dispatchReviewNotices(supabase,document.getElementById("reviewNoticeStatus"));
+  await loadReviewEngagement(supabase,document.getElementById("reviewEngagementStats"));
 
 }
 
@@ -7345,6 +7352,7 @@ async function loadBaseData() {
     loadTradeReviews(),
     loadTradeAnalysisReviews()
   ]);
+  await loadReviewEngagement(supabase,document.getElementById("reviewEngagementStats"));
 
 }
 
@@ -11464,6 +11472,8 @@ async function init() {
 
 init();
 
+document.getElementById('dispatchReviewNoticesButton').addEventListener('click',async event=>{event.target.disabled=true;try{await dispatchReviewNotices(supabase,document.getElementById('reviewNoticeStatus'))}finally{event.target.disabled=false}});
+document.getElementById('refreshReviewEngagementButton').addEventListener('click',()=>loadReviewEngagement(supabase,document.getElementById('reviewEngagementStats')));
 </script>
 
 </body>
