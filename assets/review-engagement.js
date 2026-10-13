@@ -27,6 +27,14 @@ export async function dispatchReviewNotices(supabase,host){
  try{
  host.textContent='Verificando avisos pendentes...';
  const {data,error}=await supabase.functions.invoke('trade-review-notification',{body:{}});
- host.textContent=error?'As revisões estão salvas. A integração de avisos precisa ser ativada ou verificada.':!data?.configured?'As revisões estão salvas. Configure o canal do Discord para ativar os avisos.':data.needsCheck?'O envio precisa ser conferido antes de uma nova tentativa.':data.failed?'O envio de um aviso falhou e aguarda nova tentativa. As revisões estão salvas.':data.sent?data.sent+' aviso(s) enviado(s) ao Discord.':'Não há avisos prontos para envio. Publicações antigas não são anunciadas automaticamente.';
- }catch{host.textContent='A revisão está salva; não foi possível verificar o aviso no Discord agora.';}
+ if(error){host.textContent='As revisões estão salvas. A integração de e-mails precisa ser ativada ou verificada.';return;}
+ if(!data?.configured){host.textContent='As revisões estão salvas. Verifique a configuração de e-mails do portal para ativar os avisos.';return;}
+ if(data.paused){host.textContent='Os avisos de revisão por e-mail estão pausados. As revisões continuam disponíveis no portal.';return;}
+ const parts=[];
+ if(data.sent)parts.push(data.sent+' e-mail(s) enviado(s) aos alunos com acesso.');
+ if(data.skipped)parts.push(data.skipped+' entrega(s) ignorada(s) por alteração no acesso ou cadastro.');
+ if(data.needsCheck)parts.push('Um envio precisa ser conferido antes de tentar novamente.');
+ if(data.failed)parts.push('Uma tentativa falhou; há entregas aguardando nova tentativa.');
+ host.textContent=parts.join(' ')||'Não há e-mails prontos para envio. Publicações antigas não são anunciadas automaticamente.';
+ }catch{host.textContent='A revisão está salva; não foi possível verificar o envio dos e-mails agora.';}
 }

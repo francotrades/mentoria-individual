@@ -2676,7 +2676,7 @@
     </section>
 
 
-    <section class="panel" id="reviewEngagementPanel"><div class="panel-title">Revisões · avisos e acompanhamento</div><p id="reviewNoticeStatus">Os avisos no Discord dependem da configuração do canal. Cada nova publicação gera um aviso; editar uma revisão não gera outro.</p><button class="secondary-button" type="button" id="dispatchReviewNoticesButton">Enviar avisos pendentes</button><button class="secondary-button" type="button" id="refreshReviewEngagementButton">Atualizar acompanhamento</button><div id="reviewEngagementStats">Carregando acompanhamento...</div></section>
+    <section class="panel" id="reviewEngagementPanel"><div class="panel-title">Revisões · avisos e acompanhamento</div><p id="reviewNoticeStatus">Cada nova revisão em texto ou vídeo gera um e-mail para os alunos com acesso àquele formato. A liberação é conferida novamente antes do envio. Editar uma revisão não gera outro aviso.</p><button class="secondary-button" type="button" id="dispatchReviewNoticesButton">Enviar e-mails pendentes</button><button class="secondary-button" type="button" id="refreshReviewEngagementButton">Atualizar acompanhamento</button><div id="reviewEngagementStats">Carregando acompanhamento...</div></section>
 
     <section
       id="mentorsPanel"
@@ -3431,7 +3431,7 @@
 
 
 <script type="module">
-import {loadReviewEngagement,dispatchReviewNotices} from "../assets/review-engagement.js?v=20261013";
+import {loadReviewEngagement,dispatchReviewNotices} from "../assets/review-engagement.js?v=20261013-email";
 
 import {
   createClient
