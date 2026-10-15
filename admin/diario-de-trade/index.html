@@ -26,7 +26,7 @@
     .screens{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}.screen-card{border:1px solid var(--border);border-radius:10px;overflow:hidden;background:#080b09}.screen-card img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}.screen-card a{display:block;padding:8px;color:var(--green);font-size:10px;text-decoration:none}
     .comment{border-left:3px solid var(--green);background:rgba(67,226,144,.035);padding:10px 12px;border-radius:8px;margin-top:8px}.comment small{color:var(--muted2)}.empty,.loading{color:var(--muted);padding:18px;border:1px dashed var(--border);border-radius:10px;text-align:center;font-size:12px}.hidden{display:none!important}.message{display:none;margin-bottom:14px;padding:11px 13px;border-radius:9px;font-size:12px}.message.success{display:block;color:#72e8ab;border:1px solid rgba(67,226,144,.22);background:rgba(67,226,144,.06)}.message.error{display:block;color:#ffaaaa;border:1px solid rgba(255,125,125,.2);background:rgba(255,125,125,.06)}
     @media(max-width:950px){.student-list{grid-template-columns:repeat(2,1fr)}.stats{grid-template-columns:repeat(2,1fr)}.trade-main{grid-template-columns:1fr 1fr}.detail-grid{grid-template-columns:repeat(2,1fr)}.screens{grid-template-columns:repeat(2,1fr)}}
-    @media(max-width:650px){header{padding:14px}.container{width:min(100% - 20px,1260px)}.toolbar,.student-list{grid-template-columns:1fr}.trade-main{grid-template-columns:1fr}.screens,.detail-grid{grid-template-columns:1fr}}
+    @media(max-width:650px){.section-head{flex-direction:column;align-items:stretch}.section-head>.actions{display:grid;grid-template-columns:1fr 1fr}header{padding:14px}.container{width:min(100% - 20px,1260px)}.toolbar,.student-list{grid-template-columns:1fr}.trade-main{grid-template-columns:1fr}.screens,.detail-grid{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
@@ -74,15 +74,16 @@
       <section class="panel">
         <div class="section-head">
           <div><div id="selectedStudentTitle" class="section-title">Operações</div><div class="section-sub">Histórico preservado mesmo após o encerramento do acesso.</div></div>
-          <div class="field"><select id="accountFilter"><option value="">Todas as contas</option></select></div>
+          <div class="actions"><div class="field"><label for="feedbackFilter">Feedback</label><select id="feedbackFilter"><option value="all">Todos os trades</option><option value="pending">Aguardando feedback</option><option value="reviewed">Com feedback</option></select></div><div class="field"><label for="accountFilter">Conta</label><select id="accountFilter"><option value="">Todas as contas</option></select></div></div>
         </div>
-        <div id="tradeList" class="trade-list"></div>
+        <p id="pendingFeedbackCount" class="section-sub" style="margin-bottom:12px"></p><div id="tradeList" class="trade-list"></div>
       </section>
     </div>
   </div>
 </main>
 
 <script type="module">
+import {mentorTradeReference,mentorLoginSuffix} from "../../assets/mentor-trade-link.js?v=20261015";
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 const supabase=createClient("https://vfnltuecpnuixemxvwvk.supabase.co","sb_publishable_nxgAFL2foBN8CuKMT5_2qQ_uDlaJ4Xc");
 const $=id=>document.getElementById(id);
@@ -117,20 +118,22 @@ async function signedUrl(path){const {data,error}=await supabase.storage.from("t
 
 async function renderTrades(){
   const filter=$("accountFilter").value;
-  const list=trades.filter(t=>!filter||String(t.account_id)===filter);
-  const box=$("tradeList"); if(!list.length){box.innerHTML='<div class="empty">Nenhum trade registrado para este mentorado.</div>';return;}
+  const feedback=$("feedbackFilter").value,reviewed=new Set(comments.map(c=>String(c.trade_id)));
+  const pending=trades.filter(t=>!reviewed.has(String(t.id))).length;$("pendingFeedbackCount").textContent=pending+" "+(pending===1?"operação aguardando feedback":"operações aguardando feedback");
+  const list=trades.filter(t=>!filter||String(t.account_id)===filter).filter(t=>feedback==="all"||(feedback==="reviewed")===reviewed.has(String(t.id)));
+  const box=$("tradeList"); if(!list.length){box.innerHTML='<div class="empty">Nenhum trade encontrado para este filtro.</div>';return;}
   box.innerHTML="";
   for(const t of list){
     const a=accountById(t.account_id),net=Number(t.pnl||0)-Number(t.fees||0);
-    const row=document.createElement("div");row.className="trade-row";
-    row.innerHTML='<div class="trade-main"><div><strong>'+esc(t.trade_date)+'</strong><div class="meta">'+esc(a?.name||"Sem conta")+'</div></div><div><strong>'+esc(t.symbol)+'</strong><div class="meta">'+esc(t.side)+'</div></div><div>'+esc(t.quantity??"-")+'</div><div>'+esc(t.setup||"Sem setup")+'</div><div class="pnl '+(net>=0?'win':'loss')+'"><strong>'+money(net,a?.currency||"USD")+'</strong></div><button class="btn" data-detail="'+t.id+'">Analisar</button></div><div id="detail-'+t.id+'" class="detail hidden"></div>';
+    const row=document.createElement("div");row.className="trade-row";row.id='trade-'+t.id;
+    row.innerHTML='<div style="margin-bottom:8px"><span class="pill '+(reviewed.has(String(t.id))?'green':'')+'">'+(reviewed.has(String(t.id))?'Com feedback':'Aguardando feedback')+'</span></div><div class="trade-main"><div><strong>'+esc(t.trade_date)+'</strong><div class="meta">'+esc(a?.name||"Sem conta")+'</div></div><div><strong>'+esc(t.symbol)+'</strong><div class="meta">'+esc(t.side)+'</div></div><div>'+esc(t.quantity??"-")+'</div><div>'+esc(t.setup||"Sem setup")+'</div><div class="pnl '+(net>=0?'win':'loss')+'"><strong>'+money(net,a?.currency||"USD")+'</strong></div><button class="btn" data-detail="'+t.id+'">Analisar</button></div><div id="detail-'+t.id+'" class="detail hidden"></div>';
     box.appendChild(row);
   }
 }
 
 async function openDetail(id){
   const t=trades.find(x=>String(x.id)===String(id));if(!t)return;
-  const d=$("detail-"+id);if(!d.classList.contains("hidden")){d.classList.add("hidden");return}d.classList.remove("hidden");d.innerHTML='<div class="loading">Carregando...</div>';
+  const d=$("detail-"+id);if(!d)return;if(!d.classList.contains("hidden")){d.classList.add("hidden");return}d.classList.remove("hidden");d.innerHTML='<div class="loading">Carregando...</div>';
   const files=attachments.filter(x=>String(x.trade_id)===String(id)),cards=[];
   for(const f of files){const url=await signedUrl(f.storage_path);if(url)cards.push('<div class="screen-card"><img src="'+esc(url)+'" alt="'+esc(f.file_name)+'"><a href="'+esc(url)+'" target="_blank" rel="noopener">Abrir print</a></div>')}
   const cs=comments.filter(c=>String(c.trade_id)===String(id));
@@ -168,7 +171,7 @@ async function selectStudent(id){
 }
 
 $("studentList").addEventListener("click",e=>{const c=e.target.closest("[data-student]");if(c)selectStudent(c.dataset.student)});
-$("studentSearch").addEventListener("input",renderStudents);$("studentStatusFilter").addEventListener("change",renderStudents);$("accountFilter").addEventListener("change",renderTrades);
+$("studentSearch").addEventListener("input",renderStudents);$("studentStatusFilter").addEventListener("change",renderStudents);$("accountFilter").addEventListener("change",renderTrades);$("feedbackFilter").addEventListener("change",renderTrades);
 $("tradeList").addEventListener("click",async e=>{
   const b=e.target.closest("[data-detail]");if(b){await openDetail(b.dataset.detail);return}
   const cb=e.target.closest("[data-comment]");if(cb){
@@ -176,20 +179,20 @@ $("tradeList").addEventListener("click",async e=>{
     const {error}=await supabase.from("student_trade_comments").insert({student_id:selectedStudent.id,trade_id:id,author_id:adminUser.id,comment:text});
     if(error){console.error(error);showMessage("Não foi possível publicar o comentário.","error");return}
     const {data}=await supabase.from("student_trade_comments").select("*").eq("student_id",selectedStudent.id).order("created_at",{ascending:true});comments=data||[];
-    await openDetail(id);await openDetail(id);showMessage("Comentário publicado.");
+    await renderTrades();await openDetail(id);showMessage("Comentário publicado.");
   }
 });
 
 $("logoutButton").addEventListener("click",async()=>{await supabase.auth.signOut();window.location.href="../../login/"});
 
 async function init(){
-  const {data:{session}}=await supabase.auth.getSession();if(!session){window.location.href="../../login/";return}
+  const {data:{session}}=await supabase.auth.getSession();if(!session){window.location.href="../../login/"+mentorLoginSuffix(window.location.search);return}
   adminUser=session.user;
   const {data:me,error:meError}=await supabase.from("profiles").select("role").eq("id",adminUser.id).single();
   if(meError||me?.role!=="admin"){window.location.href="../../aluno/";return}
   const {data,error}=await supabase.from("profiles").select("id,nome,email,status,data_expiracao,role").eq("role","aluno").order("nome",{ascending:true});
   if(error){console.error(error);$("loading").textContent="Não foi possível carregar os mentorados.";return}
-  profiles=data||[];renderStudents();const requestedStudent=new URLSearchParams(window.location.search).get("student");if(requestedStudent)await selectStudent(requestedStudent);$("loading").classList.add("hidden");$("app").classList.remove("hidden");
+  profiles=data||[];renderStudents();const ref=mentorTradeReference(window.location.search);if(ref)await selectStudent(ref.student);$("loading").classList.add("hidden");$("app").classList.remove("hidden");if(ref?.trade&&selectedStudent){await openDetail(ref.trade);$("trade-"+ref.trade)?.scrollIntoView({block:"start"});}
 }
 init();
 </script>

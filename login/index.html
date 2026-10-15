@@ -400,6 +400,7 @@
 
 
 <script type="module">
+import {mentorLoginDestination} from "../assets/mentor-trade-link.js?v=20261015";
 import {loginReviewSuffix} from "../assets/review-engagement.js?v=20261013";
 
 import {
@@ -635,7 +636,7 @@ async function redirectUser(
   ) {
 
     window.location.href =
-      "../admin/";
+      mentorLoginDestination(window.location.search);
 
 
     return;
