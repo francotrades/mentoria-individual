@@ -235,7 +235,7 @@ Deno.serve(async (request) => {
 
   if (!studentSession.teams_url) {
     return jsonResponse(
-      { error: "Live meeting link is not available" },
+      { error: "Teams link is not available" },
       400,
     );
   }
@@ -311,8 +311,6 @@ Deno.serve(async (request) => {
       ? String(studentSession.session_time).slice(0, 5)
       : "";
 
-  const platform = /^https:\/\/meet\.google\.com\//i.test(studentSession.teams_url) ? "Google Meet" : /^https:\/\/teams\.microsoft\.com\//i.test(studentSession.teams_url) ? "Microsoft Teams" : "aula ao vivo";
-
   const subject =
     `Link da sessão ${sessionNumber} disponível — Franco Trades`;
 
@@ -335,7 +333,7 @@ Deno.serve(async (request) => {
         </h1>
 
         <p style="color:#b2bbb6;font-size:15px;line-height:1.65;margin:0 0 10px;">
-          ${escapeHtml(firstName)}, o link da sua próxima sessão foi cadastrado. Com data e horário definidos, o acesso pela Área do Aluno abre 30 minutos antes da aula.
+          ${escapeHtml(firstName)}, o link da sua próxima sessão foi cadastrado. Confira a data e o horário abaixo e entre pela Área do Aluno quando o botão estiver disponível.
         </p>
 
         <p style="color:#ffffff;font-size:15px;font-weight:700;line-height:1.65;margin:0 0 22px;">
@@ -344,21 +342,14 @@ Deno.serve(async (request) => {
         </p>
 
         <a
-          href="${escapeHtml(studentSession.teams_url)}"
-          style="display:inline-block;background:#43e290;color:#04130c;text-decoration:none;font-weight:900;padding:13px 18px;border-radius:10px;margin-right:8px;margin-bottom:8px;"
-        >
-          Entrar na aula — ${escapeHtml(platform)}
-        </a>
-
-        <a
           href="${STUDENT_AREA_URL}"
-          style="display:inline-block;border:1px solid rgba(67,226,144,.35);color:#86efb8;text-decoration:none;font-weight:800;padding:12px 17px;border-radius:10px;margin-bottom:8px;"
+          style="display:inline-block;background:#43e290;color:#04130c;text-decoration:none;font-weight:900;padding:13px 18px;border-radius:10px;"
         >
           Acessar Área do Aluno
         </a>
 
         <p style="color:#7f8a84;font-size:12px;line-height:1.55;margin:20px 0 0;">
-          O botão principal abre a reunião diretamente. A Área do Aluno continua disponível para gravações, progresso e demais informações da mentoria.
+          Na Área do Aluno, clique em “Entrar na aula ao vivo” para acessar a reunião no Google Meet ou Microsoft Teams.
         </p>
       </div>
     </div>
