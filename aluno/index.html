@@ -4636,61 +4636,28 @@ async function loadTradeReviews() {
    RENDERIZAR SESSÕES
 ========================================== */
 
-function getLiveLinkExpiration(
-  item
-) {
-
-  if (
-    !item.teams_url ||
-    !item.teams_url_added_at
-  ) {
-    return null;
+function getLiveLinkWindow(item) {
+  if (!item.teams_url) return null;
+  // Mantém coluna legada teams_url; horários são em Brasília (UTC-3).
+  if (item.data_sessao && item.session_time) {
+    const hour = String(item.session_time).slice(0, 5);
+    const start = new Date(`${item.data_sessao}T${hour}:00-03:00`);
+    if (!Number.isNaN(start.getTime())) return {
+      opensAt: new Date(start.getTime() - 30 * 60 * 1000),
+      closesAt: new Date(start.getTime() + 150 * 60 * 1000)
+    };
   }
-
-
-  const addedAt =
-    new Date(
-      item.teams_url_added_at
-    );
-
-
-  if (
-    Number.isNaN(
-      addedAt.getTime()
-    )
-  ) {
-    return null;
-  }
-
-
-  return new Date(
-    addedAt.getTime() +
-    60 * 60 * 1000
-  );
-
+  if (!item.teams_url_added_at) return null;
+  const added = new Date(item.teams_url_added_at);
+  if (Number.isNaN(added.getTime())) return null;
+  return {opensAt: added, closesAt: new Date(added.getTime() + 60 * 60 * 1000)};
 }
 
-
-function isLiveLinkAvailable(
-  item
-) {
-
-  const expiresAt =
-    getLiveLinkExpiration(
-      item
-    );
-
-
-  if (!expiresAt) {
-    return false;
-  }
-
-
-  return new Date() <
-    expiresAt;
-
+function isLiveLinkAvailable(item) {
+  const window = getLiveLinkWindow(item);
+  return !!window && Date.now() >= window.opensAt.getTime() &&
+    Date.now() < window.closesAt.getTime();
 }
-
 
 function renderSessions() {
 
@@ -4952,42 +4919,13 @@ function renderSessions() {
   }
 
 
-  const expirations =
-    currentSessions
-      .map(
-        getLiveLinkExpiration
-      )
-      .filter(
-        date =>
-          date &&
-          date.getTime() >
-          Date.now()
-      )
-      .sort(
-        (a, b) =>
-          a.getTime() -
-          b.getTime()
-      );
-
-
-  if (
-    expirations.length > 0
-  ) {
-
-    const delay =
-      Math.max(
-        0,
-        expirations[0].getTime() -
-        Date.now() +
-        250
-      );
-
-
-    setTimeout(
-      renderSessions,
-      delay
-    );
-
+  const transitions = currentSessions.map(getLiveLinkWindow).filter(Boolean)
+    .flatMap(window => [window.opensAt, window.closesAt])
+    .filter(date => date.getTime() > Date.now())
+    .sort((a,b) => a.getTime() - b.getTime());
+  if (transitions.length) {
+    const delay = Math.min(86400000, Math.max(0, transitions[0].getTime() - Date.now() + 250));
+    setTimeout(() => { renderSessions(); updateNextSession(); }, delay);
   }
 
 }
