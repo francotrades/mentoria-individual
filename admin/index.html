@@ -2864,6 +2864,7 @@
                 min="0"
                 step="0.01"
               >
+              <p class="financial-editor-description" style="margin-top:6px">O total acompanha as parcelas. Ao incluir uma extensão, confira o saldo abaixo antes de salvar.</p>
             </div>
 
 
@@ -2880,6 +2881,8 @@
 
           </div>
 
+
+          <p id="studentFinancialAutoSummary" class="financial-editor-description" role="status" aria-live="polite" style="margin:10px 0 16px"></p>
 
           <div class="field">
             <label for="studentFinancialNotes">
@@ -3431,6 +3434,7 @@
 
 
 <script type="module">
+import {financialTotals,installmentTotal,nextContractTotal} from "../assets/financial-totals.js?v=20261105";
 import {loadReviewEngagement,dispatchReviewNotices} from "../assets/review-engagement.js?v=20261013-email";
 
 import {
@@ -4134,48 +4138,12 @@ function getStudentFinancial(
     );
 
 
-  const received =
-    payments
-      .filter(
-        item =>
-          item.paga === true
-      )
-      .reduce(
-        (
-          total,
-          item
-        ) =>
-          total +
-          Number(
-            item.valor ||
-            0
-          ),
-        0
-      );
-
-
-  const total =
-    Number(
-      financial.valor_total ||
-      0
-    );
-
-
+  const summary = financialTotals(financial.valor_total, payments);
   return {
-    financial,
-    payments:
-      [...payments].sort(
-        (a, b) =>
-          Number(a.numero_parcela || 0) -
-          Number(b.numero_parcela || 0)
-      ),
-    received,
-    outstanding:
-      Math.max(
-        0,
-        total -
-        received
-      )
+    financial: {...financial, valor_total: summary.contracted},
+    payments: [...payments].sort((a,b)=>Number(a.numero_parcela||0)-Number(b.numero_parcela||0)),
+    received: summary.received,
+    outstanding: summary.outstanding
   };
 
 }
@@ -9279,6 +9247,26 @@ async function sendManualPaymentReminder(
 }
 
 
+let editorScheduledTotal = null;
+function financialEditorPayments() {
+  return [...studentFinancialPayments.querySelectorAll('.financial-payment-row')].map(row=>({
+    valor:Number(row.querySelector('.financial-payment-value').value||0),
+    paga:row.querySelector('.financial-payment-paid').checked
+  }));
+}
+function renderFinancialEditorSummary() {
+  const totals=financialTotals(studentFinancialTotal.value,financialEditorPayments());
+  const currency=studentFinancialCurrency.value||'BRL';
+  $('studentFinancialAutoSummary').textContent='Parcelas: '+formatMoney(totals.scheduled,currency)+' · Recebido: '+formatMoney(totals.received,currency)+' · Saldo a receber: '+formatMoney(totals.outstanding,currency);
+}
+function syncFinancialEditorTotal() {
+  if(editorScheduledTotal===null)return;
+  const scheduled=installmentTotal(financialEditorPayments());
+  studentFinancialTotal.value=nextContractTotal(studentFinancialTotal.value,editorScheduledTotal,scheduled).toFixed(2);
+  editorScheduledTotal=scheduled;
+  renderFinancialEditorSummary();
+}
+
 function addFinancialPaymentRow(
   payment = {}
 ) {
@@ -9357,6 +9345,7 @@ function addFinancialPaymentRow(
       () => {
 
         row.remove();
+        syncFinancialEditorTotal();
 
       }
     );
@@ -9365,6 +9354,7 @@ function addFinancialPaymentRow(
   studentFinancialPayments.appendChild(
     row
   );
+  syncFinancialEditorTotal();
 
 }
 
@@ -9375,6 +9365,8 @@ function openFinancialEditor() {
     return;
   }
 
+
+  editorScheduledTotal = null;
 
   const financialData =
     getStudentFinancial(
@@ -9444,6 +9436,9 @@ function openFinancialEditor() {
   }
 
 
+  editorScheduledTotal = installmentTotal(financialEditorPayments());
+  syncFinancialEditorTotal();
+
   studentFinancialEditor.classList
     .remove(
       "hidden"
@@ -9466,6 +9461,8 @@ async function saveStudentFinancial() {
     return;
   }
 
+
+  syncFinancialEditorTotal();
 
   const totalValue =
     Number(
@@ -11080,6 +11077,16 @@ toggleDiaryGlobalButton.addEventListener(
   toggleDiaryGlobalAccess
 );
 
+
+studentFinancialPayments.addEventListener('input',event=>{
+  if(event.target.matches('.financial-payment-value,.financial-payment-paid'))syncFinancialEditorTotal();
+});
+studentFinancialTotal.addEventListener('input',renderFinancialEditorSummary);
+studentFinancialTotal.addEventListener('change',()=>{
+  editorScheduledTotal=installmentTotal(financialEditorPayments());
+  syncFinancialEditorTotal();
+});
+studentFinancialCurrency.addEventListener('change',renderFinancialEditorSummary);
 
 openStudentFinancialEditor.addEventListener(
   "click",
