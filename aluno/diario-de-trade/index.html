@@ -446,11 +446,20 @@
         <div class="panel-head"><div><div class="panel-title">Importar trades</div><div class="panel-sub">Selecione a conta, o formato e confira a prévia antes de confirmar.</div></div></div>
         <div class="grid3">
           <div class="field"><label>Conta de destino</label><select id="importAccount"></select></div>
-          <div class="field"><label>Formato</label><select id="importProfile"><option value="auto">Detectar automaticamente</option><option value="tradovate">Tradovate</option><option value="ninjatrader">NinjaTrader</option><option value="thinkorswim">Thinkorswim</option><option value="tradingview">TradingView</option><option value="generic">Genérico</option></select></div>
-          <div class="field"><label>Fuso de referência</label><select id="importTimezone"><option value="America/New_York">Nova York</option><option value="America/Sao_Paulo">Brasília</option><option value="UTC">UTC</option></select></div>
+          <div class="field"><label>Formato</label><select id="importProfile"><option value="auto">Detectar automaticamente</option><option value="tradovate">Tradovate</option><option value="ninjatrader">NinjaTrader Desktop · Trades CSV</option><option value="thinkorswim">Thinkorswim</option><option value="tradingview">TradingView</option><option value="generic">Genérico</option></select></div>
+          <div class="field"><label>Fuso do relatório</label><select id="importTimezone"><option value="America/New_York">Nova York</option><option value="America/Chicago">Chicago</option><option value="America/Sao_Paulo">Brasília</option><option value="UTC">UTC</option></select></div>
           <div class="field full"><label>Arquivo CSV</label><input id="csvFile" type="file" accept=".csv,text/csv"></div>
         </div>
-        <div id="importDetection" class="section-note hidden"></div>
+        <div id="ninjaImportOptions" class="hidden">
+          <details class="section-note" style="margin:12px 0"><summary>Como exportar do NinjaTrader Desktop</summary><ol style="margin:10px 0 10px 20px;line-height:1.8"><li>No Control Center, abra <strong>New → Trade Performance</strong>.</li><li>Filtre uma única conta, escolha as datas e clique em <strong>Generate</strong>.</li><li>Em Display, selecione <strong>Trades</strong> e unidade <strong>Currency ($)</strong>.</li><li>Mantenha Account, Instrument, Market pos., Qty, Entry/Exit price, Entry/Exit time, Profit e Commission. Deixe as demais taxas visíveis quando disponíveis.</li><li>Clique com o botão direito na tabela → <strong>Export → CSV</strong>.</li></ol><p>Use o relatório de operações encerradas. Cada linha, incluindo saídas parciais, será mantida como um trade, como no NinjaTrader. Prints e avaliação da execução podem ser adicionados depois.</p></details>
+          <div class="grid3" style="margin-top:12px">
+            <div class="field"><label for="ninjaDateOrder">Datas no arquivo</label><select id="ninjaDateOrder"><option value="mdy">Mês/dia/ano · padrão americano</option><option value="dmy">Dia/mês/ano · padrão brasileiro</option></select></div>
+            <div class="field"><label for="ninjaNumberLocale">Números no arquivo</label><select id="ninjaNumberLocale"><option value="en-US">1,234.56 · padrão americano</option><option value="pt-BR">1.234,56 · padrão brasileiro</option></select></div>
+            <div class="field"><label for="ninjaPnlMode">A coluna Profit do relatório está...</label><select id="ninjaPnlMode"><option value="">Selecione para calcular corretamente</option><option value="net">Líquida · as taxas já foram descontadas</option><option value="gross">Bruta · antes de descontar as taxas</option></select></div>
+            <div class="field full"><label style="display:flex;gap:8px;align-items:center"><input id="ninjaCurrencyConfirm" type="checkbox" style="width:auto">Confirmei que exportei Trades em moeda (Currency), na mesma moeda da conta de destino.</label><p class="muted">Confira no NinjaTrader como Profit foi calculado. No modo líquido, o diário preserva o líquido e registra as taxas sem descontá-las duas vezes. A data usada é a do fechamento no fuso do arquivo; não há conversão de moeda nem mudança de fuso.</p></div>
+          </div>
+        </div>
+        <div id="importDetection" class="section-note hidden" role="status" aria-live="polite"></div>
         <div id="csvPreview" style="margin-top:12px"></div>
         <div class="actions"><button id="importCsvButton" class="btn primary" disabled>Confirmar importação</button></div>
       </section>
@@ -507,6 +516,7 @@
 </div>
 
 <script type="module">
+import {parseCsv,readCsvFile,isNinjaReport,prepareNinjaImport,excludeImportedNinja} from "./modules/ninja-import.js?v=20261105";
 import { renderTradeEditor, parseTradeEdit } from "./modules/trade-edit.js?v=20261007";
 import { createExecutionTools } from "./modules/execution-tools.js?v=20261007-mission";
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
@@ -647,7 +657,7 @@ async function openTradeDetail(id,trigger,force=false){
   d.classList.remove("hidden");trigger.setAttribute("aria-expanded","true");
   const cs=comments.filter(x=>String(x.trade_id)===String(id));
   d.innerHTML='<div class="detail-grid">'+[
-    ["Conta",accountById(t.account_id)?.name],["Data",fmtDate(t.trade_date)],["Ativo",t.symbol],["Direção",t.side],["Quantidade",t.quantity],["P&L bruto",money(t.pnl,accountCurrency(t.account_id))],["Taxas",money(t.fees,accountCurrency(t.account_id))],["Entrada",t.entry_price],["Saída",t.exit_price],["Risco inicial",t.initial_risk!=null?money(t.initial_risk,accountCurrency(t.account_id)):null],["R:R",t.rr!=null?t.rr+"R":null],["MFE",t.mfe],["MAE",t.mae],["Tempo",t.duration_minutes!=null?t.duration_minutes+" min":null],["Emocional",t.emotion],["Saída",t.exit_reason],["Origem",t.source]
+    ["Conta",accountById(t.account_id)?.name],["Data",fmtDate(t.trade_date)],["Ativo",t.symbol],["Direção",t.side],["Quantidade",t.quantity],["P&L bruto",money(t.pnl,accountCurrency(t.account_id))],["Taxas",money(t.fees,accountCurrency(t.account_id))],["Entrada",t.entry_price],["Saída",t.exit_price],["Risco inicial",t.initial_risk!=null?money(t.initial_risk,accountCurrency(t.account_id)):null],["R:R",t.rr!=null?t.rr+"R":null],["MFE",t.mfe],["MAE",t.mae],["Tempo",t.duration_minutes!=null?t.duration_minutes+" min":null],["Emocional",t.emotion],["Saída",t.exit_reason],["Origem",t.raw_data?._franco_import?.platform==="ninjatrader"?"NinjaTrader":t.source]
   ].map(x=>'<div class="detail-item"><div class="detail-k">'+x[0]+'</div><div class="detail-v">'+esc(x[1]??"—")+'</div></div>').join("")+'</div>'+
   (t.notes?'<div class="section-note" style="margin-top:10px;white-space:pre-wrap">'+esc(t.notes)+'</div>':'')+
   '<div class="screens" data-trade-prints></div>'+
@@ -1004,24 +1014,68 @@ $("savePayoutButton").addEventListener("click",async()=>{
   if(error){showMessage("Não foi possível registrar o saque.","error");return}$("payoutAmount").value="";$("payoutNotes").value="";await loadData();showMessage("Saque registrado.");
 });
 
-function detectDelimiter(text){const line=(text.split(/\r?\n/)[0]||"");return (line.match(/;/g)||[]).length>(line.match(/,/g)||[]).length?";":","}
-function parseCsv(text){const d=detectDelimiter(text),rows=[];let row=[],cell="",q=false;for(let i=0;i<text.length;i++){const ch=text[i],n=text[i+1];if(ch==='"'&&q&&n==='"'){cell+='"';i++;continue}if(ch==='"'){q=!q;continue}if(ch===d&&!q){row.push(cell);cell="";continue}if((ch==="\n"||ch==="\r")&&!q){if(ch==="\r"&&n==="\n")i++;row.push(cell);cell="";if(row.some(x=>x.trim()!==""))rows.push(row);row=[];continue}cell+=ch}if(cell||row.length){row.push(cell);rows.push(row)}if(rows.length<2)return[];const h=rows[0].map(x=>x.trim());return rows.slice(1).map(r=>Object.fromEntries(h.map((x,i)=>[x,(r[i]??"").trim()])))}
 function nh(s){return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]/g,"")}
 function pick(row,aliases){const map=Object.fromEntries(Object.entries(row).map(([k,v])=>[nh(k),v]));for(const a of aliases){if(map[nh(a)]!==undefined&&map[nh(a)]!=="")return map[nh(a)]}return""}
 function parseNumber(v){let s=String(v??"").trim().replace(/[$R€£\s]/g,"");if(!s)return null;if(s.includes(",")&&s.includes(".")){if(s.lastIndexOf(",")>s.lastIndexOf("."))s=s.replace(/\./g,"").replace(",",".");else s=s.replace(/,/g,"")}else if(s.includes(","))s=s.replace(",",".");s=s.replace(/[^0-9.+-]/g,"");const n=Number(s);return Number.isFinite(n)?n:null}
 function parseDate(v){const s=String(v||"").trim();if(!s)return null;let m=s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);if(m)return m[1]+"-"+m[2].padStart(2,"0")+"-"+m[3].padStart(2,"0");m=s.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})/);if(m){let y=m[3];if(y.length===2)y="20"+y;return y+"-"+m[2].padStart(2,"0")+"-"+m[1].padStart(2,"0")}const d=new Date(s);return Number.isNaN(d.getTime())?null:d.toISOString().slice(0,10)}
 const IMPORT_PROFILES={
  tradovate:{date:["date","trade date","exit time","closed time"],symbol:["symbol","contract","instrument"],side:["side","direction","buy/sell"],quantity:["qty","quantity","contracts"],entry:["entry price","avg entry price","buy price"],exit:["exit price","avg exit price","sell price"],pnl:["pnl","p&l","profit/loss","net pnl","realized pnl"],fees:["fees","commission","commissions"]},
- ninjatrader:{date:["exit time","entry time","date"],symbol:["instrument","symbol"],side:["market pos.","market position","side"],quantity:["qty","quantity"],entry:["entry price","entry"],exit:["exit price","exit"],pnl:["profit","cum. net profit","net profit"],fees:["commission","fees"]},
+ ninjatrader:{date:["exit time","entry time","date"],symbol:["instrument","symbol"],side:["market pos.","market position","side"],quantity:["qty","quantity"],entry:["entry price","entry"],exit:["exit price","exit"],pnl:["profit"],fees:["commission","fees"]},
  thinkorswim:{date:["exec time","date","time"],symbol:["symbol"],side:["side","action"],quantity:["qty","quantity"],entry:["price","entry price"],exit:["exit price"],pnl:["p/l","pnl","profit/loss"],fees:["commission","fees"]},
  tradingview:{date:["exit time","entry time","date"],symbol:["symbol","ticker"],side:["type","side","direction"],quantity:["contracts","qty","quantity"],entry:["entry price"],exit:["exit price"],pnl:["net p&l","net pnl","profit"],fees:["commission paid","commission","fees"]},
  generic:{date:["date","data","trade date","closed date","exit date"],symbol:["symbol","ticker","ativo","instrument","contract"],side:["side","direction","lado","tipo"],quantity:["quantity","qty","contracts","contratos","size"],entry:["entry","entry price","preco entrada","avg entry"],exit:["exit","exit price","preco saida","avg exit"],pnl:["pnl","p&l","profit","profit loss","resultado","net pnl"],fees:["fees","commission","commissions","taxas"]}
 };
-function detectImportProfile(rows){if(!rows.length)return"generic";const keys=Object.keys(rows[0]).map(nh),scores={};for(const [name,p] of Object.entries(IMPORT_PROFILES))scores[name]=Object.values(p).flat().reduce((s,a)=>s+(keys.includes(nh(a))?1:0),0);return Object.entries(scores).sort((a,b)=>b[1]-a[1])[0]?.[0]||"generic"}
+function detectImportProfile(rows){if(isNinjaReport(rows))return"ninjatrader";if(!rows.length)return"generic";const keys=Object.keys(rows[0]).map(nh),scores={};for(const [name,p] of Object.entries(IMPORT_PROFILES))scores[name]=Object.values(p).flat().reduce((s,a)=>s+(keys.includes(nh(a))?1:0),0);return Object.entries(scores).sort((a,b)=>b[1]-a[1])[0]?.[0]||"generic"}
 function normalizeCsvTrade(row,profileName){const p=IMPORT_PROFILES[profileName]||IMPORT_PROFILES.generic,date=parseDate(pick(row,p.date)),symbol=pick(row,p.symbol).toUpperCase();let side=pick(row,p.side).toLowerCase();side=(side.includes("short")||side.includes("sell")||side.includes("vend"))?"short":"long";return{student_id:currentUser.id,account_id:Number($("importAccount").value),trade_date:date,symbol,side,quantity:parseNumber(pick(row,p.quantity)),entry_price:parseNumber(pick(row,p.entry)),exit_price:parseNumber(pick(row,p.exit)),pnl:parseNumber(pick(row,p.pnl))||0,fees:parseNumber(pick(row,p.fees))||0,source:profileName==="thinkorswim"?"thinkorswim":"csv",raw_data:row}}
-$("csvFile").addEventListener("change",async()=>{const file=$("csvFile").files[0];if(!file){csvRows=[];$("csvPreview").innerHTML="";$("importDetection").classList.add("hidden");$("importCsvButton").disabled=true;return}const parsed=parseCsv(await file.text()),sel=$("importProfile").value,det=sel==="auto"?detectImportProfile(parsed):sel;csvRows=parsed.map(r=>normalizeCsvTrade(r,det)).filter(r=>r.trade_date&&r.symbol);$("importDetection").textContent="Formato usado: "+det+" · "+csvRows.length+" trades válidos encontrados. Revise a prévia antes de confirmar.";$("importDetection").classList.remove("hidden");$("csvPreview").innerHTML='<div class="table-wrap"><table><thead><tr><th>Data</th><th>Ativo</th><th>Lado</th><th>Qtd.</th><th>P&L</th></tr></thead><tbody>'+csvRows.slice(0,30).map(r=>'<tr><td>'+esc(r.trade_date)+'</td><td>'+esc(r.symbol)+'</td><td>'+esc(r.side)+'</td><td>'+esc(r.quantity??"—")+'</td><td>'+money(r.pnl)+'</td></tr>').join("")+'</tbody></table></div>';$("importCsvButton").disabled=!csvRows.length||!$("importAccount").value});
-$("importProfile").addEventListener("change",()=>{if($("csvFile").files[0])$("csvFile").dispatchEvent(new Event("change"))});$("importAccount").addEventListener("change",()=>$("importCsvButton").disabled=!csvRows.length||!$("importAccount").value);
-$("importCsvButton").addEventListener("click",async()=>{if(!csvRows.length||!$("importAccount").value)return;const payload=csvRows.map(r=>({...r,account_id:Number($("importAccount").value)}));const {error}=await supabase.from("student_trades").insert(payload);if(error){console.error(error);showMessage("Não foi possível importar.","error");return}csvRows=[];$("csvFile").value="";$("csvPreview").innerHTML="";$("importDetection").classList.add("hidden");$("importCsvButton").disabled=true;await loadData();setScreen("journal");showMessage("Trades importados.");});
+let importGeneration=0,importBusy=false,previewProfile='',cachedCsvFile=null,cachedCsvText='';
+const importControlIds=['csvFile','importProfile','importAccount','importTimezone','ninjaDateOrder','ninjaNumberLocale','ninjaPnlMode','ninjaCurrencyConfirm'];
+function setImportBusy(busy){importBusy=busy;importControlIds.forEach(id=>$(id).disabled=busy);$('importCsvButton').disabled=busy||!csvRows.length||!$('importAccount').value;}
+async function existingNinjaIds(rows,accountId){
+ const found=[];for(let i=0;i<rows.length;i+=50){const {data,error}=await supabase.from('student_trades').select('external_id').eq('student_id',currentUser.id).eq('account_id',accountId).in('external_id',rows.slice(i,i+50).map(row=>row.external_id));if(error)throw Error('Não foi possível conferir as operações já importadas. Tente novamente antes de confirmar.');found.push(...(data||[]).map(row=>row.external_id));}return found;
+}
+async function refreshCsvPreview(){
+ if(importBusy)return;const generation=++importGeneration;csvRows=[];previewProfile='';$('csvPreview').innerHTML='';$('importCsvButton').disabled=true;
+ const file=$('csvFile').files[0],selected=$('importProfile').value;
+ $('ninjaImportOptions').classList.toggle('hidden',selected!=='ninjatrader');
+ if(!file){$('importDetection').classList.add('hidden');return}
+ $('importDetection').classList.remove('hidden');$('importDetection').textContent='Lendo arquivo e conferindo operações...';
+ try{
+  const text=file===cachedCsvFile?cachedCsvText:await readCsvFile(file);if(generation!==importGeneration)return;cachedCsvFile=file;cachedCsvText=text;
+  const parsed=parseCsv(text),detected=selected==='auto'?detectImportProfile(parsed):selected;previewProfile=detected;
+  $('ninjaImportOptions').classList.toggle('hidden',detected!=='ninjatrader');
+  let result,rows,duplicates=0;const accountId=Number($('importAccount').value),account=accounts.find(a=>String(a.id)===String(accountId)&&a.active);
+  if(detected==='ninjatrader'){
+   result=await prepareNinjaImport(parsed,{studentId:currentUser.id,accountId,dateOrder:$('ninjaDateOrder').value,numberLocale:$('ninjaNumberLocale').value,pnlMode:$('ninjaPnlMode').value,timeZone:$('importTimezone').value,currencyConfirmed:$('ninjaCurrencyConfirm').checked});
+   rows=result.rows;if(account){const dedup=excludeImportedNinja(rows,await existingNinjaIds(rows,accountId));rows=dedup.rows;duplicates=dedup.duplicates;}
+  }else rows=parsed.map(row=>normalizeCsvTrade(row,detected)).filter(row=>row.trade_date&&row.symbol);
+  if(generation!==importGeneration)return;csvRows=rows;
+  const currency=account?.currency||'USD',total=rows.reduce((sum,t)=>sum+Number(t.pnl)-Number(t.fees),0);
+  let summary='Formato: '+(detected==='ninjatrader'?'NinjaTrader Desktop':detected)+' · '+rows.length+' operações prontas para importar.';
+  if(result)summary+=' Conta no arquivo: '+result.sourceAccount+'. '+duplicates+' já importadas; '+result.rejected.length+' linhas inválidas. Líquido a importar: '+money(total,currency)+'. '+result.warnings.join(' ');
+  if(!account)summary+=' Selecione uma conta de destino ativa para confirmar.';
+  $('importDetection').textContent=summary;
+  const columns=result?'<th>Entrada</th><th>Saída</th><th>Bruto</th><th>Taxas</th><th>Líquido</th>':'<th>P&L</th>';
+  $('csvPreview').innerHTML='<div class="table-wrap"><table><thead><tr><th>Fechamento</th><th>Ativo</th><th>Lado</th><th>Qtd.</th>'+columns+'</tr></thead><tbody>'+rows.slice(0,30).map(t=>'<tr><td>'+esc(t.trade_date)+'</td><td>'+esc(t.symbol)+'</td><td>'+esc(t.side)+'</td><td>'+esc(t.quantity??'—')+'</td>'+(result?'<td>'+esc(t.entry_price)+'</td><td>'+esc(t.exit_price)+'</td><td>'+money(t.pnl,currency)+'</td><td>'+money(t.fees,currency)+'</td><td>'+money(t.pnl-t.fees,currency)+'</td>':'<td>'+money(t.pnl,currency)+'</td>')+'</tr>').join('')+'</tbody></table></div>'+(rows.length>30?'<p class="muted">Prévia das primeiras 30 operações. A confirmação inclui todas as '+rows.length+' operações válidas.</p>':'')+(result?.rejected.length?'<details class="section-note"><summary>Linhas que não serão importadas ('+result.rejected.length+')</summary>'+result.rejected.slice(0,20).map(item=>'<p>Linha '+item.line+': '+esc(item.reason)+'</p>').join('')+'</details>':'');
+  $('importCsvButton').disabled=!rows.length||!account||mentorView;
+ }catch(error){if(generation!==importGeneration)return;csvRows=[];$('importDetection').textContent=error.message||'Não foi possível ler o arquivo CSV.';}
+}
+importControlIds.forEach(id=>$(id).addEventListener('change',refreshCsvPreview));
+$('importCsvButton').addEventListener('click',async()=>{
+ if(importBusy||mentorView||currentUser?.id!==diaryStudentId||!csvRows.length)return;
+ const accountId=Number($('importAccount').value);if(!accounts.some(a=>String(a.id)===String(accountId)&&a.active)){showMessage('Selecione uma conta ativa.','error');return}
+ const selectedProfile=previewProfile;let rows=csvRows.map(row=>({...row,student_id:currentUser.id,account_id:accountId}));setImportBusy(true);
+ try{
+  if(selectedProfile==='ninjatrader')rows=excludeImportedNinja(rows,await existingNinjaIds(rows,accountId)).rows;
+  if(!rows.length){await refreshAfterImport();showMessage('Essas operações já estão importadas.');return}
+  // Um único insert mantém o lote atômico: erros não deixam uma importação pela metade.
+  const {error}=await supabase.from('student_trades').insert(rows);if(error)throw Error('Não foi possível importar. O lote não foi salvo; confira a conta e tente novamente.');
+  csvRows=[];cachedCsvFile=null;cachedCsvText='';$('csvFile').value='';$('csvPreview').innerHTML='';$('importDetection').classList.add('hidden');
+  await loadData();setScreen('journal');showMessage(rows.length+' trades importados.');
+ }catch(error){showMessage(error.message||'Não foi possível importar.','error')}
+ finally{setImportBusy(false)}
+});
+async function refreshAfterImport(){setImportBusy(false);await refreshCsvPreview();}
+
 
 $("calendarPrev").addEventListener("click",()=>{calendarCursor=new Date(calendarCursor.getFullYear(),calendarCursor.getMonth()-1,1);renderCalendar()});$("calendarNext").addEventListener("click",()=>{calendarCursor=new Date(calendarCursor.getFullYear(),calendarCursor.getMonth()+1,1);renderCalendar()});
 ["globalAccountFilter","globalPeriodFilter","globalSetupFilter"].forEach(id=>$(id).addEventListener("change",rerenderAll));
