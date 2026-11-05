@@ -2133,13 +2133,13 @@
             id="newStudentSessions"
             type="number"
             min="1"
-            max="13"
+            max="200"
             step="1"
             value="12"
           >
 
           <div class="hint">
-            Escolha de 1 a 13 sessões. Ex.: 6 para uma mentoria especial.
+            Escolha de 1 a 200 sessões. A partir de 14, diário e revisões ficam liberados até a gravação da última aula.
           </div>
 
         </div>
@@ -2410,7 +2410,7 @@
             🔒 Ambos os formatos são liberados quando as gravações das 8 primeiras
             aulas estiverem disponíveis. A aba com imagem e explicação encerra
             automaticamente quando a gravação da última sessão contratada do
-            mentorado (12ª ou 13ª) for cadastrada. Os vídeos permanecem disponíveis
+            mentorado for cadastrada. Em contratos de 14 ou mais sessões, diário e ambas as revisões seguem a gravação da última aula. Nos demais contratos, os vídeos permanecem disponíveis
             enquanto o acesso geral estiver ativo.
           </div>
         </div>
@@ -3067,6 +3067,13 @@
           </div>
 
 
+          <div class="field full">
+            <label for="studentSessionTotal">Total de sessões contratadas</label>
+            <input id="studentSessionTotal" type="number" min="1" max="200" step="1">
+            <div class="hint" id="studentSessionAccessRule">Para 14 ou mais sessões, o diário e as revisões ficam liberados até a gravação da última sessão contratada.</div>
+            <button id="extendStudentSessionsButton" class="secondary-button" type="button" style="margin-top:10px">Salvar quantidade de sessões</button>
+          </div>
+
           <div class="field">
 
             <label for="studentStart">
@@ -3434,6 +3441,7 @@
 
 
 <script type="module">
+import {parseSessionTotal} from "../assets/mentorship-extension.js?v=20261105";
 import {financialTotals,installmentTotal,nextContractTotal} from "../assets/financial-totals.js?v=20261105";
 import {loadReviewEngagement,dispatchReviewNotices} from "../assets/review-engagement.js?v=20261013-email";
 
@@ -4658,11 +4666,11 @@ createStudentButton
           numeroSessoes
         ) ||
         numeroSessoes < 1 ||
-        numeroSessoes > 13
+        numeroSessoes > 200
       ) {
 
         showMessage(
-          "Informe uma quantidade de sessões entre 1 e 13.",
+          "Informe uma quantidade de sessões entre 1 e 200.",
           "error"
         );
 
@@ -7807,7 +7815,7 @@ function getFilteredStudents() {
           return (
             profile.status === "ativo" &&
             (
-              days === null ||
+              profileRecordingExtensionOpen(profile) || days === null ||
               days >= 0
             )
           );
@@ -7821,7 +7829,7 @@ function getFilteredStudents() {
 
           return (
             profile.status === "ativo" &&
-            days !== null &&
+            !profileRecordingExtensionOpen(profile) && days !== null &&
             days >= 0 &&
             days <= 30
           );
@@ -7836,7 +7844,7 @@ function getFilteredStudents() {
           return (
             profile.status !== "ativo" ||
             (
-              days !== null &&
+              !profileRecordingExtensionOpen(profile) && days !== null &&
               days < 0
             )
           );
@@ -8005,7 +8013,7 @@ function renderStudentSelect() {
 
 
     const accessExpired =
-      days !== null &&
+      !profileRecordingExtensionOpen(profile) && days !== null &&
       days < 0;
 
 
@@ -8015,7 +8023,7 @@ function renderStudentSelect() {
 
 
     const expiring =
-      active &&
+      active && !profileRecordingExtensionOpen(profile) &&
       days !== null &&
       days <= 30;
 
@@ -8762,7 +8770,30 @@ async function selectStudent(
 }
 
 
+function profileRecordingExtensionOpen(profile){
+ if(profile?.status!=='ativo')return false;
+ const linked=allStudentSessions.filter(row=>row.student_id===profile.id);
+ const total=Math.max(Number(getStudentFinancial(profile)?.financial.quantidade_sessoes||0),...linked.map(row=>Number(allSessions.find(session=>String(session.id)===String(row.session_id))?.numero||0)),1);
+ return total>=14 && !linked.some(row=>Number(allSessions.find(session=>String(session.id)===String(row.session_id))?.numero)===total&&String(row.youtube_url||'').trim());
+}
+
+function selectedStudentSessionTotal(){
+ const linked=studentSessions.map(item=>Number(allSessions.find(session=>String(session.id)===String(item.session_id))?.numero||0));
+ return Math.max(Number(getStudentFinancial(selectedStudent)?.financial.quantidade_sessoes||0),...linked,1);
+}
+async function extendSelectedStudentSessions(){
+ if(!selectedStudent)return;const button=$('extendStudentSessionsButton');let total;
+ try{total=parseSessionTotal($('studentSessionTotal').value,selectedStudentSessionTotal())}catch(error){showMessage(error.message,'error');return}
+ button.disabled=true;
+ try{const {error}=await supabase.rpc('extend_mentorship_sessions',{target_student:selectedStudent.id,total_sessions:total});if(error)throw error;await refreshData();showMessage('Mentoria atualizada para '+total+' sessões.')}catch(error){showMessage(error.message||'Não foi possível ampliar as sessões.','error')}finally{button.disabled=false}
+}
+
 function renderStudentData() {
+
+  const contractedTotal=selectedStudentSessionTotal();
+  $('studentSessionTotal').value=contractedTotal;
+  $('studentSessionTotal').min=contractedTotal;
+  $('studentSessionAccessRule').textContent=contractedTotal>=14?'Diário e revisões liberados até a gravação da sessão '+contractedTotal+'. Preencher apenas a data não encerra o acesso.':'Ao ampliar para 14 ou mais sessões, diário e revisões serão liberados até a gravação da última aula.';
 
   studentName.textContent =
     selectedStudent.nome ||
@@ -8783,7 +8814,7 @@ function renderStudentData() {
   const accessIsActive =
     selectedStudent.status === "ativo" &&
     (
-      remainingDays === null ||
+      profileRecordingExtensionOpen(selectedStudent) || remainingDays === null ||
       remainingDays >= 0
     );
 
@@ -9637,7 +9668,7 @@ async function saveStudentFinancial() {
             null,
 
           quantidade_sessoes:
-            studentSessions.length ||
+            selectedStudentSessionTotal() ||
             existing?.financial?.quantidade_sessoes ||
             12,
 
@@ -10372,7 +10403,7 @@ function openNewSession() {
     const session of
     allSessions.filter(
       item =>
-        !used.has(
+        Number(item.numero)<=selectedStudentSessionTotal() && !used.has(
           Number(item.id)
         )
     )
@@ -11087,6 +11118,8 @@ studentFinancialTotal.addEventListener('change',()=>{
   syncFinancialEditorTotal();
 });
 studentFinancialCurrency.addEventListener('change',renderFinancialEditorSummary);
+
+$('extendStudentSessionsButton').addEventListener('click',extendSelectedStudentSessions);
 
 openStudentFinancialEditor.addEventListener(
   "click",

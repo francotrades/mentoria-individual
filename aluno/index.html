@@ -1958,7 +1958,7 @@
         <div class="trade-tab-note">
           As análises com imagem ficam disponíveis quando as gravações das
           8 primeiras aulas estiverem disponíveis e permanecem até a gravação
-          da última sessão da sua mentoria ser cadastrada.
+          da última sessão da sua mentoria ser cadastrada. Em mentorias com 14 ou mais aulas, diário e ambas as revisões ficam liberados até a gravação da última aula contratada.
         </div>
 
         <div
@@ -2441,6 +2441,8 @@ const diaryTradeLink =
 const logoutButton =
   $("logoutButton");
 
+
+let mentorshipExtensionState = null;
 
 let currentUser =
   null;
@@ -4018,6 +4020,10 @@ function renderLockedTradeContent(
 }
 
 
+function renderExtendedContentClosed(host){
+ host.innerHTML='<div class="trade-reviews-locked"><strong>Extensão da mentoria concluída</strong><p>A gravação da última sessão contratada já foi cadastrada. O acesso às revisões e ao diário deste ciclo foi encerrado.</p></div>';
+}
+
 function renderTradeAnalysisClosed() {
 
   tradeAnalysisList.innerHTML =
@@ -4290,7 +4296,10 @@ async function loadTradeAnalysisReviews() {
       [];
 
 
-    if (
+    if (mentorshipExtensionState?.extended && mentorshipExtensionState.final_recorded) {
+      renderExtendedContentClosed(tradeAnalysisList);
+    }
+    else if (
       recordedCount < 8
     ) {
 
@@ -4564,10 +4573,8 @@ async function loadTradeReviews() {
       [];
 
 
-    renderLockedTradeContent(
-      tradeReviewsList,
-      recordedCount
-    );
+    if(mentorshipExtensionState?.extended && mentorshipExtensionState.final_recorded)renderExtendedContentClosed(tradeReviewsList);
+    else renderLockedTradeContent(tradeReviewsList,recordedCount);
 
     return;
 
@@ -4991,6 +4998,10 @@ async function updateDiaryTradeAccessButton() {
     return;
   }
 
+  if(!allowed && mentorshipExtensionState?.extended && mentorshipExtensionState.final_recorded){
+    diaryTradeLink.classList.remove('hidden');diaryTradeLink.classList.add('is-locked');diaryTradeLink.removeAttribute('href');diaryTradeLink.setAttribute('aria-disabled','true');diaryTradeLink.textContent='Diário de Trade · ciclo concluído';diaryTradeLink.title='A gravação da última sessão contratada já foi cadastrada.';return;
+  }
+
   /*
     Se o rollout global estiver desligado, o botão só aparece
     para quem recebeu liberação individual do mentor.
@@ -5175,6 +5186,10 @@ async function loadDashboard() {
   }
 
 
+  const extensionResult=await supabase.rpc("get_mentorship_extension_state");
+  mentorshipExtensionState=extensionResult.error?null:extensionResult.data;
+  const extensionAccess=mentorshipExtensionState?.recording_access===true;
+
   const daysRemaining =
     calculateDaysRemaining(
       profile.data_expiracao
@@ -5182,7 +5197,7 @@ async function loadDashboard() {
 
 
   if (
-    daysRemaining !== null &&
+    !extensionAccess && daysRemaining !== null &&
     daysRemaining < 0
   ) {
 
@@ -5241,18 +5256,15 @@ async function loadDashboard() {
     );
 
 
-  expirationDateElement.textContent =
-    formatDate(
-      profile.data_expiracao
-    );
+  expirationDateElement.textContent = extensionAccess ? "Até a gravação da última sessão" : formatDate(profile.data_expiracao);
 
 
   daysRemainingElement.textContent =
-    daysRemaining ?? "-";
+    extensionAccess ? "Por gravação" : (daysRemaining ?? "-");
 
 
   if (
-    daysRemaining !== null &&
+    !extensionAccess && daysRemaining !== null &&
     daysRemaining <= 30
   ) {
 

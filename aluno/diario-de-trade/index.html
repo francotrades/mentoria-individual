@@ -516,6 +516,7 @@
 </div>
 
 <script type="module">
+import {recordingExtensionAccess} from "../../assets/mentorship-extension.js?v=20261105";
 import {parseCsv,readCsvFile,isNinjaReport,prepareNinjaImport,excludeImportedNinja} from "./modules/ninja-import.js?v=20261105";
 import { renderTradeEditor, parseTradeEdit } from "./modules/trade-edit.js?v=20261007";
 import { createExecutionTools } from "./modules/execution-tools.js?v=20261007-mission";
@@ -1141,7 +1142,7 @@ async function init(){
     if(studentError||!student){$("loading").textContent="Mentorado não encontrado ou indisponível. Volte ao painel do mentor.";return;}
     mentorView=true;profile=student;configureMentorView(student);
   }else{
-    const expired=p.data_expiracao&&p.data_expiracao<today();if(p.status!=="ativo"||expired){await supabase.auth.signOut();window.location.href="../../login/?reason="+(expired||p.status==="expirado"?"expired":"inactive");return;}
+    const extensionAccess=await recordingExtensionAccess(supabase);const expired=!extensionAccess&&p.data_expiracao&&p.data_expiracao<today();if(p.status!=="ativo"||expired){await supabase.auth.signOut();window.location.href="../../login/?reason="+(expired||p.status==="expirado"?"expired":"inactive");return;}
     const {data:diaryAllowed,error:diaryAccessError}=await supabase.rpc("can_access_student_trade_journal",{target_student:currentUser.id});
     if(diaryAccessError){console.error("Acesso ao Diário de Trade não verificado:",diaryAccessError);}
     if(diaryAllowed!==true){window.location.href="../";return;}

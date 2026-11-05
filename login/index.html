@@ -400,6 +400,7 @@
 
 
 <script type="module">
+import {recordingExtensionAccess} from "../assets/mentorship-extension.js?v=20261105";
 import {mentorLoginDestination} from "../assets/mentor-trade-link.js?v=20261015";
 import {loginReviewSuffix} from "../assets/review-engagement.js?v=20261013";
 
@@ -673,14 +674,16 @@ async function redirectUser(
   }
 
 
+  const extensionAccess=profile.status==="ativo" && await recordingExtensionAccess(supabase);
+
   /* ALUNO EXPIRADO */
 
   if (
     profile.status ===
       "expirado" ||
-    dateExpired(
+    (!extensionAccess && dateExpired(
       profile.data_expiracao
-    )
+    ))
   ) {
 
     await supabase.auth

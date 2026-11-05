@@ -351,6 +351,7 @@
 
 
 <script type="module">
+import {recordingExtensionAccess} from "../assets/mentorship-extension.js?v=20261105";
 
 import {
   createClient
@@ -1011,12 +1012,10 @@ form.addEventListener(
         }
 
 
+        const extensionAccess=profile.status==="ativo" && await recordingExtensionAccess(supabase);
         if (
-          profile.status ===
-            "expirado" ||
-          dateExpired(
-            profile.data_expiracao
-          )
+          profile.status === "expirado" ||
+          (!extensionAccess && dateExpired(profile.data_expiracao))
         ) {
 
           await supabase.auth
