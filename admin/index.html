@@ -2844,7 +2844,7 @@
               </div>
 
               <div class="financial-editor-description">
-                Edite contrato, moeda, parcelas, vencimentos e status de pagamento.
+                Edite contrato, moeda, parcelas, vencimentos e status de pagamento. Ao salvar uma parcela como paga, o recibo será enviado por email ao mentorado. <a href="financeiro/">Consulte o envio e reenvie recibos no Financeiro.</a>
               </div>
             </div>
 
@@ -9321,7 +9321,7 @@ function addFinancialPaymentRow(
           type="number"
           min="1"
           step="1"
-          value="${payment.numero_parcela || studentFinancialPayments.children.length + 1}"
+          value="${payment.numero_parcela || Math.max(0, ...Array.from(studentFinancialPayments.querySelectorAll(".financial-payment-number"), input => Number(input.value) || 0)) + 1}"
         >
       </div>
 
@@ -9362,6 +9362,10 @@ function addFinancialPaymentRow(
       </button>
     `;
 
+
+  row.dataset.paymentId = payment.id || "";
+  row.dataset.installment = payment.numero_parcela || "";
+  if (payment.id) row.querySelector(".financial-payment-number").readOnly = true;
 
   row.dataset.paidDate =
     payment.data_pagamento ||
@@ -9592,8 +9596,9 @@ async function saveStudentFinancial() {
 
 
     paymentRows.push({
+      id: row.dataset.paymentId || null,
       numero_parcela:
-        index + 1,
+        Number(row.querySelector('.financial-payment-number').value),
       valor:
         value,
       vencimento:
@@ -9715,62 +9720,10 @@ async function saveStudentFinancial() {
   }
 
 
-  const {
-    error: deletePaymentsError
-  } =
-    await supabase
-      .from(
-        "mentorship_payments"
-      )
-      .delete()
-      .eq(
-        "mentorship_id",
-        financial.id
-      );
-
-
-  if (deletePaymentsError) {
-
-    console.error(
-      deletePaymentsError
-    );
-
-
-    saveStudentFinancialButton.disabled =
-      false;
-
-
-    saveStudentFinancialButton.textContent =
-      "Salvar financeiro";
-
-
-    showMessage(
-      "O contrato foi salvo, mas não foi possível atualizar as parcelas.",
-      "error"
-    );
-
-    return;
-
-  }
-
-
-  const {
-    error: insertPaymentsError
-  } =
-    await supabase
-      .from(
-        "mentorship_payments"
-      )
-      .insert(
-        paymentRows.map(
-          payment => ({
-            mentorship_id:
-              financial.id,
-            ...payment
-          })
-        )
-      );
-
+  const {error: insertPaymentsError} = await supabase.rpc('save_mentorship_installments', {
+    target_contract: financial.id,
+    installments: paymentRows
+  });
 
   saveStudentFinancialButton.disabled =
     false;
@@ -9788,7 +9741,7 @@ async function saveStudentFinancial() {
 
 
     showMessage(
-      "Contrato salvo, mas houve erro ao recriar as parcelas.",
+      "Contrato salvo, mas não foi possível salvar as parcelas. Confira a numeração e mantenha as parcelas pagas no histórico.",
       "error"
     );
 
