@@ -497,6 +497,26 @@ Deno.serve(async (request) => {
       }
     }
 
+    const { data: loginReady, error: loginError } =
+      await supabase.rpc("payment_reminder_login_ready", {
+        contract_id: financial.id,
+        recipient_email: financial.email,
+      });
+
+    if (loginError) {
+      console.error("Payment reminder login check failed:", loginError.code);
+      errors.push({
+        payment_id: payment.id,
+        error: "Could not verify the student's login setup",
+      });
+      continue;
+    }
+
+    if (loginReady !== true) {
+      skipped++;
+      continue;
+    }
+
     const firstName =
       String(financial.nome ?? "")
         .trim()
