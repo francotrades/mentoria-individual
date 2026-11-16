@@ -185,7 +185,7 @@ function emailHtml(
         </a>
 
         <p style="color:#7f8a84;font-size:12px;line-height:1.6;margin:22px 0 0;">
-          A chave PIX, o QR Code e o PIX Copia e Cola estão disponíveis na sua Área do Aluno.
+          As instruções de pagamento da sua parcela estão disponíveis na Área do Aluno.
           Esta mensagem é apenas um lembrete automático. Caso o pagamento já tenha sido realizado, pode desconsiderá-la.
         </p>
       </div>

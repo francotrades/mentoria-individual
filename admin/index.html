@@ -1479,6 +1479,14 @@
       margin: 0;
     }
 
+    .financial-payment-usdc-field {
+      grid-column: 1 / -1;
+    }
+
+    .financial-payments-editor:not(.with-usdc) .financial-payment-usdc-field {
+      display: none;
+    }
+
     .financial-payment-row label {
       font-size: 9px;
     }
@@ -2898,6 +2906,12 @@
             ></textarea>
           </div>
 
+
+          <div class="field">
+            <label for="studentUsdcBaseAddress">Pagamento em USDC pela rede Base (opcional)</label>
+            <input id="studentUsdcBaseAddress" type="text" maxlength="42" placeholder="0x…" autocomplete="off" spellcheck="false">
+            <p class="financial-editor-description">Cole o endereço público de recebimento para mostrar o QR de USDC na Área do Aluno. Deixe em branco para exibir PIX.</p>
+          </div>
 
           <div
             id="studentFinancialPayments"
@@ -7192,6 +7206,7 @@ async function loadBaseData() {
             email,
             valor_total,
             moeda,
+            usdc_base_address,
             observacoes,
             quantidade_sessoes,
             sessoes_concluidas_importadas,
@@ -7207,7 +7222,8 @@ async function loadBaseData() {
             valor,
             vencimento,
             paga,
-            data_pagamento
+            data_pagamento,
+            usdc_amount
           `)
 
       ]);
@@ -9363,6 +9379,12 @@ function addFinancialPaymentRow(
       >
         Remover
       </button>
+
+      <label class="field financial-payment-usdc-field">
+        Valor combinado em USDC (opcional)
+        <input class="financial-payment-usdc" type="number" min="0.000001" step="0.000001"
+          value="${escapeHTML(payment.usdc_amount ?? "")}">
+      </label>
     `;
 
 
@@ -9411,6 +9433,8 @@ function openFinancialEditor() {
       selectedStudent
     );
 
+  $("studentUsdcBaseAddress").value = financialData?.financial.usdc_base_address ?? "";
+  $("studentUsdcBaseAddress").dispatchEvent(new Event("input"));
 
   studentFinancialPayments.innerHTML =
     "";
@@ -9501,6 +9525,12 @@ async function saveStudentFinancial() {
 
 
   syncFinancialEditorTotal();
+
+  const baseAddress = String($("studentUsdcBaseAddress").value ?? "").trim();
+  if (baseAddress && (!/^0x[0-9A-Fa-f]{40}$/.test(baseAddress) || /^0x0{40}$/.test(baseAddress))) {
+    showMessage("Cole um endereço de recebimento válido da rede Base, começando com 0x.", "error");
+    return;
+  }
 
   const totalValue =
     Number(
@@ -9598,8 +9628,16 @@ async function saveStudentFinancial() {
     }
 
 
+    const usdcInput = row.querySelector(".financial-payment-usdc");
+    const usdcAmount = baseAddress ? usdcInput.value : "";
+    if (usdcAmount && (!/^\d{1,10}(?:\.\d{1,6})?$/.test(usdcAmount) || Number(usdcAmount) <= 0)) {
+      showMessage("Revise o valor em USDC. Use um valor positivo com até seis casas decimais.", "error");
+      return;
+    }
+
     paymentRows.push({
       id: row.dataset.paymentId || null,
+      usdc_amount: usdcAmount || null,
       numero_parcela:
         Number(row.querySelector('.financial-payment-number').value),
       valor:
@@ -9725,7 +9763,8 @@ async function saveStudentFinancial() {
 
   const {error: insertPaymentsError} = await supabase.rpc('save_mentorship_installments', {
     target_contract: financial.id,
-    installments: paymentRows
+    installments: paymentRows,
+    base_address: baseAddress || null
   });
 
   saveStudentFinancialButton.disabled =
@@ -11074,6 +11113,9 @@ studentFinancialTotal.addEventListener('change',()=>{
   syncFinancialEditorTotal();
 });
 studentFinancialCurrency.addEventListener('change',renderFinancialEditorSummary);
+$("studentUsdcBaseAddress").addEventListener("input", event => {
+  studentFinancialPayments.classList.toggle("with-usdc", Boolean(event.target.value.trim()));
+});
 
 $('extendStudentSessionsButton').addEventListener('click',extendSelectedStudentSessions);
 

@@ -2132,6 +2132,21 @@
 
         </div>
 
+        <div id="paymentUsdcBox" class="pix-box hidden">
+          <div class="pix-name">Pagar com USDC</div>
+          <p><strong>Rede Base (mainnet)</strong></p>
+          <p id="paymentUsdcAmount"></p>
+          <p class="pix-key" id="paymentUsdcAddress"></p>
+          <button id="copyUsdcAddressButton" class="copy-pix-button" type="button">Copiar endereço</button>
+          <div id="paymentUsdcQrWrap" class="qr-wrap">
+            <div class="qr-card">
+              <canvas id="paymentUsdcQr" width="156" height="156"
+                role="img" aria-label="QR Code do endereço de recebimento de USDC na rede Base"></canvas>
+            </div>
+          </div>
+          <p class="qr-note">Selecione USDC e Base na carteira ou corretora. O QR contém o endereço de recebimento. Confira também o valor antes de enviar.</p>
+        </div>
+
       </div>
 
     </section>
@@ -2768,6 +2783,7 @@ function localDateISO(
 
 async function loadPaymentArea() {
 
+  $("paymentUsdcBox").classList.add("hidden");
   paymentPanel.classList
     .add(
       "hidden"
@@ -2790,7 +2806,7 @@ async function loadPaymentArea() {
           "mentorship_financials"
         )
         .select(
-          "id, valor_total, moeda"
+          "id, valor_total, moeda, usdc_base_address"
         )
         .eq(
           "profile_id",
@@ -2820,7 +2836,7 @@ async function loadPaymentArea() {
             "mentorship_payments"
           )
           .select(
-            "numero_parcela, valor, vencimento, paga, data_pagamento"
+            "numero_parcela, valor, vencimento, paga, data_pagamento, usdc_amount"
           )
           .eq(
             "mentorship_id",
@@ -2950,10 +2966,7 @@ async function loadPaymentArea() {
       "Sua próxima parcela";
 
 
-    paymentPixBox.classList
-      .remove(
-        "hidden"
-      );
+    paymentPixBox.classList.toggle("hidden", Boolean(financial.usdc_base_address));
 
 
     paymentGrid.classList
@@ -3043,6 +3056,12 @@ async function loadPaymentArea() {
     }
 
 
+    if (financial.usdc_base_address) {
+      await renderUsdcPayment(financial.usdc_base_address, pending.usdc_amount);
+      paymentPanel.classList.remove("hidden");
+      return;
+    }
+
     pixName.textContent =
       settings?.pix_name ||
       "Franco Trades";
@@ -3119,6 +3138,21 @@ async function loadPaymentArea() {
 
 }
 
+
+async function renderUsdcPayment(address, amount) {
+  $("paymentUsdcAddress").textContent = address;
+  $("paymentUsdcAmount").textContent = amount
+    ? "Valor combinado: " + new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 6 }).format(amount) + " USDC"
+    : "Confirme com o mentor quanto enviar em USDC.";
+  $("paymentUsdcQrWrap").classList.add("hidden");
+  try {
+    await QRCode.toCanvas($("paymentUsdcQr"), address, { width: 156, margin: 4 });
+    $("paymentUsdcQrWrap").classList.remove("hidden");
+  } catch (error) {
+    console.error("QR de USDC indisponível:", error);
+  }
+  $("paymentUsdcBox").classList.remove("hidden");
+}
 
 function calculateDaysRemaining(
   expirationDate
@@ -5580,6 +5614,15 @@ setupStudentCollapsibleSection(
   "francotrades-aluno-revisoes"
 );
 
+
+$("copyUsdcAddressButton").addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText($("paymentUsdcAddress").textContent);
+    showMessage("Endereço de USDC copiado.");
+  } catch {
+    showMessage("Não foi possível copiar automaticamente.", "error");
+  }
+});
 
 copyPixButton.addEventListener(
   "click",
