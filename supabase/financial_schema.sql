@@ -7,7 +7,7 @@ create table if not exists public.mentorship_financials (
   nome text not null,
   email text not null,
   valor_total numeric(12,2) not null default 0,
-  moeda text not null default 'BRL' check (moeda in ('BRL','USD')),
+  moeda text not null default 'BRL' check (moeda in ('BRL','USD','EUR')),
   observacoes text,
   quantidade_sessoes integer not null default 12,
   sessoes_concluidas_importadas integer not null default 0,

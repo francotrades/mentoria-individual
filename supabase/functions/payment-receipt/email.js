@@ -1,6 +1,6 @@
 export function receiptEmail(receipt){
  const esc=v=>String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;');
- if(!/^[0-9a-f-]{36}$/i.test(receipt.id)||!/^\d{4}-\d{2}-\d{2}$/.test(receipt.paid_date)||!['BRL','USD'].includes(receipt.currency)||!Number.isFinite(Number(receipt.amount))||Number(receipt.amount)<0||!Number.isInteger(receipt.installment)||receipt.installment<1)throw Error('Invalid receipt');
+ if(!/^[0-9a-f-]{36}$/i.test(receipt.id)||!/^\d{4}-\d{2}-\d{2}$/.test(receipt.paid_date)||!['BRL','USD','EUR'].includes(receipt.currency)||!Number.isFinite(Number(receipt.amount))||Number(receipt.amount)<0||!Number.isInteger(receipt.installment)||receipt.installment<1)throw Error('Invalid receipt');
  const to=String(receipt.recipient_email||'').trim();if(!/^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/.test(to))throw Error('Invalid recipient');
  const amount=new Intl.NumberFormat('pt-BR',{style:'currency',currency:receipt.currency}).format(Number(receipt.amount));
  const date=receipt.paid_date.split('-').reverse().join('/');

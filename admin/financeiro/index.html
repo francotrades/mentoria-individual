@@ -32,7 +32,7 @@ header{min-height:72px;display:flex;align-items:center;justify-content:space-bet
 <div class="stat"><div class="label">A receber</div><div id="outstanding" class="value yellow">R$ 0,00</div></div>
 <div class="stat"><div class="label">Mentorias</div><div id="count" class="value">0</div></div>
 </div></section>
-<section class="panel"><div class="goal-top"><span>Meta de faturamento</span><strong id="goalText">R$ 0,00 de R$ 120.000,00</strong></div><div class="bar"><div id="goalFill" class="fill"></div></div><div id="rate" class="rate">USD/BRL: carregando...</div></section>
+<section class="panel"><div class="goal-top"><span>Meta de faturamento</span><strong id="goalText">R$ 0,00 de R$ 120.000,00</strong></div><div class="bar"><div id="goalFill" class="fill"></div></div><div id="rate" class="rate">Cotações: carregando...</div></section>
 <section class="panel"><div id="list" class="list"></div></section>
 </div>
 </main>
@@ -43,20 +43,45 @@ import{createClient}from"https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+e
 const supabase=createClient("https://vfnltuecpnuixemxvwvk.supabase.co","sb_publishable_nxgAFL2foBN8CuKMT5_2qQ_uDlaJ4Xc");
 const $=id=>document.getElementById(id);
 let receipts=[],receiptLoadFailed=false;
-let financials=[],payments=[],settings=null,rate=null,expanded=new Set();
+let financials=[],payments=[],settings=null,exchangeRates={},expanded=new Set();
 function esc(v){return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
 function money(v,c="BRL"){return new Intl.NumberFormat(c==="BRL"?"pt-BR":"en-US",{style:"currency",currency:c}).format(Number(v||0))}
 function date(v){return v?new Date(v+"T12:00:00").toLocaleDateString("pt-BR"):"-"}
 function today(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
 async function verify(){const{data:{session}}=await supabase.auth.getSession();if(!session){location.href="../../login/";return false}const{data:p}=await supabase.from("profiles").select("role").eq("id",session.user.id).single();if(p?.role!=="admin"){location.href="../../aluno/";return false}return true}
-async function fx(){try{const r=await fetch("https://api.frankfurter.app/latest?from=USD&to=BRL");const j=await r.json();rate=Number(j?.rates?.BRL)||null}catch{rate=null}}
-function brl(v,c){return c==="USD"?(rate?Number(v||0)*rate:0):Number(v||0)}
+async function fx() {
+  try {
+    const response = await fetch("https://api.frankfurter.dev/v1/latest?base=BRL&symbols=USD,EUR", {
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!response.ok) return;
+    const { rates } = await response.json();
+    for (const currency of ["USD", "EUR"]) {
+      const quote = Number(rates?.[currency]);
+      if (Number.isFinite(quote) && quote > 0) exchangeRates[currency] = 1 / quote;
+    }
+  } catch {
+    // Os contratos continuam visíveis nas moedas originais.
+  }
+}
+function brl(value, currency) {
+  const rate = currency === "BRL" ? 1 : exchangeRates[currency];
+  return rate ? Number(value || 0) * rate : 0;
+}
+function exchangeRateSummary() {
+  return ["USD", "EUR"].map(currency => {
+    const rate = exchangeRates[currency];
+    return rate
+      ? currency + "/BRL: " + rate.toFixed(4) + " (cotação diária)"
+      : currency + "/BRL indisponível. Valores em " + currency + " fora dos totais em reais.";
+  }).join(" · ");
+}
 async function load(){const receiptResult=await supabase.from("payment_receipts").select("id,mentorship_id,installment,amount,currency,paid_date,status,sent_at").order("created_at",{ascending:false});receipts=receiptResult.data||[];receiptLoadFailed=!!receiptResult.error;const[a,b,d]=await Promise.all([supabase.from("mentorship_financials").select("*").order("nome"),supabase.from("mentorship_payments").select("*").order("numero_parcela"),supabase.from("mentorship_settings").select("*").eq("id",1).maybeSingle()]);if(a.error||b.error||d.error)throw new Error("Erro ao carregar dados financeiros");financials=a.data||[];payments=b.data||[];settings=d.data||{meta_faturamento_brl:120000}}
 function totals(){let contracted=0,received=0,outstanding=0;for(const m of financials){const summary=financialTotals(m.valor_total,payments.filter(p=>p.mentorship_id===m.id));contracted+=brl(summary.contracted,m.moeda);received+=brl(summary.received,m.moeda);outstanding+=brl(summary.outstanding,m.moeda)}return{contracted,received,outstanding}}
 async function toggle(id,paid){const{error}=await supabase.from("mentorship_payments").update({paga:paid,data_pagamento:paid?today():null,updated_at:new Date().toISOString()}).eq("id",id);if(error){alert("Não foi possível atualizar a parcela.");return}await load();render()}
 function receiptMarkup(p,m){if(!p.paga)return '';const r=receiptFor(p,receipts,m.moeda),busy=['queued','processing'].includes(r?.status);return '<div class="receipt"><span>'+esc(receiptLoadFailed?'Não foi possível carregar o status do recibo':receiptLabel(r))+'</span><button class="receipt-send" data-payment="'+p.id+'" '+(busy||receiptLoadFailed?'disabled':'')+'>'+(r?.sent_at||r?.status==='uncertain'?'Reenviar recibo':'Enviar recibo')+'</button></div>'}
 async function resendReceipt(button){const p=payments.find(p=>String(p.id)===button.dataset.payment),m=financials.find(m=>m.id===p?.mentorship_id),r=p&&receiptFor(p,receipts,m?.moeda);if(!p||!m)return;if(!confirm((r?.status==='uncertain'?'O envio anterior ficou sem confirmação. Confira seu email enviado antes de prosseguir. ':'')+'Enviar recibo da parcela '+p.numero_parcela+' de '+money(p.valor,m.moeda)+' para '+m.email+'?'))return;button.disabled=true;try{await requestReceipt(supabase,p.id);await load();render();}catch(error){alert(error.message);button.disabled=false;}}
-function render(){const t=totals(),goal=Number(settings?.meta_faturamento_brl||120000);$("contracted").textContent=money(t.contracted);$("received").textContent=money(t.received);$("outstanding").textContent=money(t.outstanding);$("count").textContent=financials.length;$("goalText").textContent=money(t.contracted)+" de "+money(goal);$("goalFill").style.width=(goal?Math.min(100,Math.round(t.contracted/goal*100)):0)+"%";$("rate").textContent=rate?"USD/BRL: "+rate.toFixed(4)+" · cotação diária":"USD/BRL indisponível · valores em USD não entram na conversão";$("list").innerHTML="";if(!financials.length){$("list").innerHTML='<div class="empty">Nenhum dado financeiro cadastrado ainda.</div>';return}
+function render(){const t=totals(),goal=Number(settings?.meta_faturamento_brl||120000);$("contracted").textContent=money(t.contracted);$("received").textContent=money(t.received);$("outstanding").textContent=money(t.outstanding);$("count").textContent=financials.length;$("goalText").textContent=money(t.contracted)+" de "+money(goal);$("goalFill").style.width=(goal?Math.min(100,Math.round(t.contracted/goal*100)):0)+"%";$("rate").textContent=exchangeRateSummary();$("list").innerHTML="";if(!financials.length){$("list").innerHTML='<div class="empty">Nenhum dado financeiro cadastrado ainda.</div>';return}
 for(const m of financials){const ps=payments.filter(p=>p.mentorship_id===m.id).sort((a,b)=>a.numero_parcela-b.numero_parcela),summary=financialTotals(m.valor_total,ps),paid=summary.received,rem=summary.outstanding,open=expanded.has(m.id),card=document.createElement("div");card.className="card";card.innerHTML='<button class="head" type="button"><div><div class="name">'+esc(m.nome)+'</div><div class="meta">'+esc(m.email)+' · '+(m.quantidade_sessoes||0)+' sessões · '+(m.sessoes_concluidas_importadas||0)+' concluídas</div></div><div class="vals"><div><span>Contrato</span><strong>'+money(summary.contracted,m.moeda)+'</strong></div><div><span>Recebido</span><strong>'+money(paid,m.moeda)+'</strong></div><div><span>Saldo</span><strong>'+money(rem,m.moeda)+'</strong></div></div></button>'+(open?'<div class="details">'+(m.observacoes?'<div class="notes">'+esc(m.observacoes)+'</div>':'')+'<div class="payments">'+(ps.length?ps.map(p=>'<div class="payment"><input class="paycheck" data-id="'+p.id+'" type="checkbox" '+(p.paga?'checked':'')+'><div><div class="ptitle">Parcela '+p.numero_parcela+'</div><div class="pdate">Vencimento: '+date(p.vencimento)+(p.paga&&p.data_pagamento?' · Pago em '+date(p.data_pagamento):'')+'</div></div><div class="pvalue">'+money(p.valor,m.moeda)+'</div><div class="pill '+(p.paga?'paid':'pending')+'">'+(p.paga?'Pago':'Pendente')+'</div>'+receiptMarkup(p,m)+'</div>').join(""):'<div class="empty">Nenhuma parcela cadastrada.</div>')+'</div></div>':'');card.querySelector(".head").onclick=()=>{open?expanded.delete(m.id):expanded.add(m.id);render()};card.querySelectorAll(".paycheck").forEach(cb=>cb.onchange=async()=>{cb.disabled=true;await toggle(Number(cb.dataset.id),cb.checked)});card.querySelectorAll(".receipt-send").forEach(button=>button.onclick=()=>resendReceipt(button));$("list").appendChild(card)}}
 $("refreshReceipts").onclick=async()=>{try{await load();render()}catch{alert("Não foi possível atualizar o status.")}};
 $("logout").onclick=async()=>{await supabase.auth.signOut();location.href="../../login/"};
