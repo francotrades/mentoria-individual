@@ -1264,6 +1264,24 @@
       margin-bottom: 7px;
     }
 
+    .crypto-payment-details {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 24px;
+      margin-bottom: 12px;
+    }
+
+    .crypto-payment-detail {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .crypto-payment-detail img {
+      flex: none;
+      display: block;
+    }
+
     .pix-key {
       color: var(--muted);
       font-size: 11px;
@@ -2133,8 +2151,16 @@
         </div>
 
         <div id="paymentUsdcBox" class="pix-box hidden">
-          <div class="pix-name">Pagar com USDC</div>
-          <p><strong>Rede Base (mainnet)</strong></p>
+          <div class="crypto-payment-details">
+            <div class="crypto-payment-detail">
+              <img src="../assets/usdc-token.svg" width="32" height="32" alt="">
+              <span>Moeda <strong>USDC</strong></span>
+            </div>
+            <div class="crypto-payment-detail">
+              <img src="../assets/base-symbol.svg" width="26" height="26" alt="">
+              <span>Rede <strong>Base (mainnet)</strong></span>
+            </div>
+          </div>
           <p id="paymentUsdcAmount"></p>
           <p class="pix-key" id="paymentUsdcAddress"></p>
           <button id="copyUsdcAddressButton" class="copy-pix-button" type="button">Copiar endereço</button>
