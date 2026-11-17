@@ -54,3 +54,6 @@ A aba Revisões de trades mostra uma bolinha laranja enquanto existir uma revis�
 Aplicar supabase/trade_review_reads.sql antes de publicar esta funcionalidade. A tabela separa a abertura explícita do leitor da métrica antiga de título visível. O histórico é por aluno, com RLS de leitura própria e inserção apenas para conteúdo elegível. Há cache separado por conta no navegador para manter o estado em caso de falha de rede. Não é feito retroativo de abertura baseado apenas em título visível.
 
 Verificação de isolamento no PostgreSQL: PGLITE_MODULE=/caminho/pglite/dist/index.js node tests/helpers/review-reads-postgres.mjs.
+
+
+Os cartões da biblioteca mostram o estado individual do estudo: Não vista (laranja), Já aberta e Concluída. Abrir o leitor atualiza o cartão imediatamente. O filtro Seu estudo permite selecionar Não vistas, Já abertas, Não concluídas ou Concluídas. O filtro Não vistas segue a mesma regra do lembrete da aba e considera somente conteúdo disponível para o aluno.

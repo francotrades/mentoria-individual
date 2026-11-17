@@ -1,15 +1,22 @@
 const escape = value => String(value ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
 export const normalizeSearch = value => String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
 export const reviewKey = item => item.type + '-' + item.id;
-export function unopenedReviews(items, opened, progress) {
-  return items.filter(item => !opened.has(reviewKey(item)) && progress.get(item.type + ':' + item.id) !== true);
+export function reviewState(item, opened, progress) {
+  if (progress.get(item.type + ':' + item.id) === true) return 'completed';
+  return opened.has(reviewKey(item)) ? 'opened' : 'unopened';
 }
-export function filterReviews(items, filters, progress) {
+const reviewStateLabels = {unopened: 'Não vista', opened: 'Já aberta', completed: 'Concluída'};
+export function unopenedReviews(items, opened, progress) {
+  return items.filter(item => reviewState(item, opened, progress) === 'unopened');
+}
+export function filterReviews(items, filters, progress, opened = new Set()) {
   const words = normalizeSearch(filters.search).split(/\s+/).filter(Boolean);
   return items.filter(item => (!filters.format || item.type === filters.format)
     && (!filters.instrument || (item.instrumento || '') === filters.instrument)
     && (!filters.topic || (item.tema || '') === filters.topic)
-    && (!filters.status || (progress.get(item.type + ':' + item.id) === true) === (filters.status === 'completed'))
+    && (!filters.status || (filters.status === 'pending'
+      ? reviewState(item, opened, progress) !== 'completed'
+      : reviewState(item, opened, progress) === filters.status))
     && words.every(word => normalizeSearch([item.titulo, item.explicacao, item.descricao, item.instrumento, item.tema].join(' ')).includes(word)));
 }
 export function youtubeVideoId(value) {
@@ -99,7 +106,7 @@ export function mountStudentStudy(options) {
     return [...data.analysis.map(item => ({...item, type: 'analysis'})), ...data.videos.map(item => ({...item, type: 'video'}))]
       .sort((a, b) => (Date.parse(b.published_at) || 0) - (Date.parse(a.published_at) || 0) || Number(b.id) - Number(a.id));
   };
-  const filtered = () => filterReviews(items(), filters, getData().reviewProgress);
+  const filtered = () => filterReviews(items(), filters, getData().reviewProgress, openedReferences());
   const done = item => getData().reviewProgress.get(item.type + ':' + item.id) === true;
   const isNew = item => previousVisit !== null && Date.parse(item.published_at) > previousVisit;
   const image = async path => {
@@ -111,7 +118,7 @@ export function mountStudentStudy(options) {
   root.innerHTML = '<div class="study-library-heading"><p>Encontre uma operação pelo contexto que você quer estudar.</p><button type="button" class="study-text-button" data-clear>Limpar filtros</button></div>'
     + '<div class="study-filters"><label class="study-search">Buscar revisões<input type="search" placeholder="Ex.: gestão de risco, Nasdaq, rompimento…" autocomplete="off" data-filter="search"></label>'
     + '<label>Formato<select aria-label="Formato" data-filter="format"><option value="">Todos os formatos</option><option value="analysis">Imagem e explicação</option><option value="video">Vídeo comentado</option></select></label>'
-    + '<label>Seu estudo<select aria-label="Seu estudo" data-filter="status"><option value="">Todas as revisões</option><option value="pending">Ainda não estudei</option><option value="completed">Concluídas</option></select></label>'
+    + '<label>Seu estudo<select aria-label="Seu estudo" data-filter="status"><option value="">Todas as revisões</option><option value="unopened">Não vistas</option><option value="opened">Já abertas</option><option value="pending">Não concluídas</option><option value="completed">Concluídas</option></select></label>'
     + '<label>Ativo<select aria-label="Ativo" data-filter="instrument"><option value="">Todos os ativos</option></select></label>'
     + '<label>Tema<select aria-label="Tema" data-filter="topic"><option value="">Todos os temas</option></select></label></div>'
     + '<p class="study-results" aria-live="polite"></p><div class="study-grid"></div><button class="study-button study-more" type="button">Mostrar mais revisões</button>';
@@ -124,7 +131,15 @@ export function mountStudentStudy(options) {
   const close = () => dialog.close();
   dialog.querySelector('[data-close]').addEventListener('click', close);
   dialog.addEventListener('click', event => { if (event.target === dialog && (event.clientX < dialog.getBoundingClientRect().left || event.clientX > dialog.getBoundingClientRect().right || event.clientY < dialog.getBoundingClientRect().top || event.clientY > dialog.getBoundingClientRect().bottom)) close(); });
-  dialog.addEventListener('close', () => { current = null; imageVersion++; detail.replaceChildren(); document.body.classList.remove('study-dialog-open'); if (lastTrigger?.isConnected && lastTrigger !== document.body && lastTrigger.getClientRects().length) lastTrigger.focus(); else navigation?.querySelector('[aria-current]')?.focus(); });
+  dialog.addEventListener('close', () => {
+    current = null; imageVersion++; detail.replaceChildren();
+    document.body.classList.remove('study-dialog-open');
+    const reference = lastTrigger?.getAttribute('data-open');
+    const restore = lastTrigger?.isConnected ? lastTrigger : reference
+      ? root.querySelector('[data-open="' + CSS.escape(reference) + '"]') : null;
+    if (restore && restore !== document.body && restore.getClientRects().length) restore.focus();
+    else navigation?.querySelector('[aria-current]')?.focus();
+  });
   const showDialog = () => { if (!dialog.open) { lastTrigger = document.activeElement; dialog.showModal(); document.body.classList.add('study-dialog-open'); } };
   function updateOptions() {
     for (const [key, field, label] of [['instrument', 'instrumento', 'Todos os ativos'], ['topic', 'tema', 'Todos os temas']]) {
@@ -141,12 +156,14 @@ export function mountStudentStudy(options) {
     results.textContent = selected.length + (selected.length === 1 ? ' revisão encontrada' : ' revisões encontradas');
     for (const item of visible) {
       const card = document.createElement('article'); card.className = 'study-card' + (done(item) ? ' is-completed' : '');
+      const state = reviewState(item, openedReferences(), getData().reviewProgress);
+      card.dataset.reviewState = state;
       card.innerHTML = '<button type="button" class="study-card-open" data-open="' + escape(reviewKey(item)) + '">'
         + '<span class="study-thumbnail" aria-hidden="true">' + (item.type === 'video' ? '▶' : '↗') + '</span>'
-        + '<span class="study-card-body"><span class="study-card-meta">' + (item.type === 'video' ? 'VÍDEO COMENTADO' : 'IMAGEM + EXPLICAÇÃO') + (isNew(item) ? '<span class="study-new">Novo</span>' : '') + '</span>'
+        + '<span class="study-card-body"><span class="study-card-meta">' + (item.type === 'video' ? 'VÍDEO COMENTADO' : 'IMAGEM + EXPLICAÇÃO') + '<span class="study-review-status is-' + state + '">' + reviewStateLabels[state] + '</span></span>'
         + '<span class="trade-review-title study-card-title">' + escape(item.titulo) + '</span>'
         + '<span class="study-tags">' + [item.instrumento, item.tema].filter(Boolean).map(tag => '<span>' + escape(tag) + '</span>').join('') + '</span>'
-        + '<span class="study-card-footer">' + escape(dateLabel(item.published_at)) + '<span>' + (done(item) ? '✓ Concluída' : 'Abrir estudo →') + '</span></span></span></button>';
+        + '<span class="study-card-footer">' + escape(dateLabel(item.published_at)) + '<span>Abrir estudo →</span></span></span></button>';
       grid.append(card); watchCard?.(card, item.type, item.id);
       if (item.type === 'analysis' && item.image_path) image(item.image_path).then(url => {
         if (version !== renderVersion || !card.isConnected || !safeLink(url)) return;
@@ -184,6 +201,7 @@ export function mountStudentStudy(options) {
       + '<div class="study-detail-actions"><button class="study-button" type="button" data-complete>' + (done(item) ? '✓ Concluída · desfazer' : 'Marcar como estudada') + '</button><p class="study-action-status" aria-live="polite"></p></div>'
       + '<nav class="study-detail-nav" aria-label="Navegar pelas revisões"><button type="button" class="study-button secondary" data-previous ' + (index <= 0 ? 'disabled' : '') + '>← Anterior</button><button type="button" class="study-button secondary" data-next ' + (index < 0 || index >= selected.length - 1 ? 'disabled' : '') + '>Próxima →</button></nav>';
     rememberOpened(item);
+    renderCards();
     const media = detail.querySelector('[data-media]');
     if (item.type === 'video') renderVideo(media, item.youtube_url, item.titulo);
     else if (item.image_path) {
