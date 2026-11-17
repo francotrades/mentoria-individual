@@ -2528,6 +2528,8 @@
           </div>
 
 
+          <div class="field"><label for="tradeAnalysisInstrument">Ativo (opcional)</label><input id="tradeAnalysisInstrument" type="text" maxlength="60" list="reviewInstruments" placeholder="Ex.: Nasdaq, ES, ações"></div>
+          <div class="field"><label for="tradeAnalysisTopic">Tema (opcional)</label><input id="tradeAnalysisTopic" type="text" maxlength="80" list="reviewTopics" placeholder="Ex.: Gestão de risco"></div>
           <div class="field full">
             <label for="tradeAnalysisExplanation">
               Explicação do trade
@@ -2622,6 +2624,8 @@
           </div>
 
 
+          <div class="field"><label for="tradeReviewInstrument">Ativo (opcional)</label><input id="tradeReviewInstrument" type="text" maxlength="60" list="reviewInstruments" placeholder="Ex.: Nasdaq, ES, ações"></div>
+          <div class="field"><label for="tradeReviewTopic">Tema (opcional)</label><input id="tradeReviewTopic" type="text" maxlength="80" list="reviewTopics" placeholder="Ex.: Gestão de risco"></div>
           <div class="field full">
             <label for="tradeReviewDescription">
               Descrição
@@ -2685,6 +2689,7 @@
     </section>
 
 
+    <datalist id="reviewInstruments"><option value="Nasdaq"><option value="S&P 500"><option value="Ações"><option value="Opções"></datalist><datalist id="reviewTopics"><option value="Leitura de contexto"><option value="Entrada"><option value="Gestão de risco"><option value="Condução"><option value="Saída"></datalist>
     <section class="panel" id="reviewEngagementPanel"><div class="panel-title">Revisões · avisos e acompanhamento</div><p id="reviewNoticeStatus">Cada nova revisão em texto ou vídeo gera um e-mail para os alunos com acesso àquele formato. A liberação é conferida novamente antes do envio. Editar uma revisão não gera outro aviso.</p><button class="secondary-button" type="button" id="dispatchReviewNoticesButton">Enviar e-mails pendentes</button><button class="secondary-button" type="button" id="refreshReviewEngagementButton">Atualizar acompanhamento</button><div id="reviewEngagementStats">Carregando acompanhamento...</div></section>
 
     <section
@@ -3464,7 +3469,7 @@ import {loadReviewEngagement,dispatchReviewNotices} from "../assets/review-engag
 
 import {
   createClient
-} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/+esm";
 
 
 const SUPABASE_URL =
@@ -5730,6 +5735,9 @@ async function handleTradeAnalysisPaste(
 
 
 function resetTradeAnalysisForm() {
+  document.getElementById("tradeAnalysisInstrument").value = "";
+  document.getElementById("tradeAnalysisTopic").value = "";
+
 
   editingTradeAnalysisReviewId =
     null;
@@ -5959,7 +5967,9 @@ async function loadTradeAnalysisReviews() {
         explicacao,
         image_path,
         ativo,
-        published_at
+        published_at,
+        instrumento,
+        tema
       `)
       .order(
         "published_at",
@@ -6188,6 +6198,8 @@ async function saveTradeAnalysisReview() {
 
 
     const payload = {
+    instrumento: document.getElementById("tradeAnalysisInstrument").value.trim() || null,
+    tema: document.getElementById("tradeAnalysisTopic").value.trim() || null,
       titulo:
         title,
       explicacao:
@@ -6350,6 +6362,9 @@ function editTradeAnalysisReview(
     item.id;
 
 
+  document.getElementById("tradeAnalysisInstrument").value = item.instrumento || "";
+  document.getElementById("tradeAnalysisTopic").value = item.tema || "";
+
   tradeAnalysisTitle.value =
     item.titulo ||
     "";
@@ -6499,6 +6514,9 @@ async function deleteTradeAnalysisReview(
 
 
 function resetTradeReviewForm() {
+  document.getElementById("tradeReviewInstrument").value = "";
+  document.getElementById("tradeReviewTopic").value = "";
+
 
   editingTradeReviewId =
     null;
@@ -6648,7 +6666,9 @@ async function loadTradeReviews() {
         descricao,
         youtube_url,
         ativo,
-        published_at
+        published_at,
+        instrumento,
+        tema
       `)
       .order(
         "published_at",
@@ -6728,6 +6748,8 @@ async function saveTradeReview() {
 
 
   const payload = {
+    instrumento: document.getElementById("tradeReviewInstrument").value.trim() || null,
+    tema: document.getElementById("tradeReviewTopic").value.trim() || null,
     titulo: title,
     youtube_url: url,
     descricao:
@@ -6827,6 +6849,9 @@ function editTradeReview(
 
   editingTradeReviewId =
     item.id;
+
+  document.getElementById("tradeReviewInstrument").value = item.instrumento || "";
+  document.getElementById("tradeReviewTopic").value = item.tema || "";
 
   tradeReviewTitle.value =
     item.titulo ||

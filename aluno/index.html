@@ -1611,6 +1611,7 @@
     }
 
   </style>
+<link rel="stylesheet" href="../assets/student-study.css?v=20261117">
 </head>
 
 
@@ -1708,6 +1709,8 @@
          PROGRESSO
     ======================================= -->
 
+    <nav class="study-navigation" aria-label="Sua área de estudo"><a href="#studyHome">Início</a><a href="#studentSessionsSection">Minhas sessões</a><a href="#tradeReviewsSection">Revisões de trades</a></nav>
+    <section id="studyHome" class="study-home" aria-label="Seu próximo passo"></section>
     <section class="panel progress-panel">
 
       <div class="progress-header">
@@ -1902,7 +1905,7 @@
 
     <section
       id="tradeReviewsSection"
-      class="trade-reviews-section student-collapsible-section"
+      class="trade-reviews-section student-collapsible-section study-enabled"
     >
 
       <div class="section-heading student-section-heading">
@@ -1928,6 +1931,7 @@
 
       <div id="tradeReviewsSectionBody">
 
+      <div id="reviewLibraryRoot"></div>
       <div class="trade-reviews-intro">
         <p>
           Aqui você encontra estudos de operações em dois formatos:
@@ -2269,19 +2273,7 @@
 
     <div class="youtube-note">
 
-      🔒
-      <strong>
-        Gravações protegidas.
-      </strong>
-
-      Ao clicar em
-      <strong>
-        Assistir gravação
-      </strong>,
-      o vídeo será aberto no YouTube.
-
-      Utilize a conta Google autorizada para sua
-      mentoria para ter acesso ao conteúdo.
+      🔒 <strong>Vídeos da mentoria.</strong> Se a gravação pedir autorização ou não abrir no player, use o botão para abrir no YouTube e entre com a conta Google autorizada para sua mentoria.
 
     </div>
 
@@ -2292,12 +2284,13 @@
 
 
 <script type="module">
+import {mountStudentStudy} from "../assets/student-study.js?v=20261117";
 import {loginReviewSuffix,watchReviewCard,openLinkedReview} from "../assets/review-engagement.js?v=20261013";
 
 import {
   createClient
 } from
-  "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+  "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/+esm";
 
 import QRCode from
   "https://cdn.jsdelivr.net/npm/qrcode@1.5.4/+esm";
@@ -2510,6 +2503,35 @@ let progressMap =
 /* ==========================================
    UTILIDADES
 ========================================== */
+
+
+const study = mountStudentStudy({
+  root: document.getElementById("reviewLibraryRoot"),
+  home: document.getElementById("studyHome"),
+  sessionsRoot: sessionsList,
+  reviewsSection: tradeReviewsSection,
+  getData: () => ({
+    userId: currentUser?.id,
+    analysis: tradeAnalysisReviews,
+    videos: tradeReviews,
+    sessions: currentSessions,
+    reviewProgress: tradeReviewProgressMap,
+    sessionProgress: progressMap
+  }),
+  completeReview: toggleTradeReviewProgress,
+  completeSession: toggleSessionProgress,
+  signedImage: signedStudentTradeImage,
+  liveAvailable: isLiveLinkAvailable,
+  watchCard: (card, type, id) => watchReviewCard(card, type, id, supabase, () => currentUser),
+  loadMaterials: async sessionId => {
+    const {data, error} = await supabase.from("materials")
+      .select("id,nome,url,tipo")
+      .eq("student_id", currentUser.id)
+      .eq("session_id", sessionId);
+    if (error) throw error;
+    return data || [];
+  }
+});
 
 function formatDate(
   value
@@ -3637,7 +3659,7 @@ function updateProgressUI() {
 
 
   progressText.textContent =
-    `${completed} de ${total} sessões concluídas`;
+    `${completed} de ${total} sessões revisadas`;
 
 
   progressFill.style.width =
@@ -3655,9 +3677,9 @@ function updateProgressUI() {
   progressRemaining.textContent =
     remaining === 1
       ?
-      "1 sessão restante"
+      "1 sessão para revisar"
       :
-      `${remaining} sessões restantes`;
+      `${remaining} sessões para revisar`;
 
 
   updateNextSession();
@@ -4143,167 +4165,10 @@ async function signedStudentTradeImage(
 
 
 async function renderTradeAnalysisReviews() {
-
-  tradeAnalysisList.innerHTML =
-    "";
-
-
-  if (
-    tradeAnalysisReviews.length ===
-    0
-  ) {
-
-    tradeAnalysisList.innerHTML =
-      `
-        <div class="empty">
-          Nenhuma análise com imagem foi publicada ainda.
-          Novos estudos aparecerão aqui automaticamente.
-        </div>
-      `;
-
-    updateReviewProgressUI();
-
-    return;
-
-  }
-
-
-  for (
-    const item of
-    tradeAnalysisReviews
-  ) {
-
-    const signedUrl =
-      await signedStudentTradeImage(
-        item.image_path
-      );
-
-
-    const completed =
-      tradeReviewProgressMap.get(
-        reviewProgressKey(
-          "analysis",
-          item.id
-        )
-      ) ===
-      true;
-
-
-    const card =
-      document.createElement(
-        "article"
-      );
-
-
-    card.className =
-      "trade-analysis-card" +
-      (
-        completed
-          ?
-          " completed"
-          :
-          ""
-      );
-
-
-    const publishedDate =
-      item.published_at
-        ?
-        new Date(
-          item.published_at
-        ).toLocaleDateString(
-          "pt-BR"
-        )
-        :
-        "";
-
-
-    const explanation =
-      escapeHTML(
-        item.explicacao ||
-        ""
-      )
-        .replace(
-          /\n/g,
-          "<br>"
-        );
-
-
-    card.innerHTML =
-      `
-        ${
-          signedUrl
-            ?
-            `
-              <a
-                class="trade-analysis-image-link"
-                href="${escapeHTML(signedUrl)}"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <img
-                  class="trade-analysis-image"
-                  src="${escapeHTML(signedUrl)}"
-                  alt="Imagem da análise ${escapeHTML(item.titulo)}"
-                  loading="lazy"
-                >
-              </a>
-            `
-            :
-            ""
-        }
-
-        <div class="trade-analysis-body">
-          <div class="trade-review-kicker">
-            Revisão de operação
-          </div>
-
-          <div class="trade-review-title">
-            ${escapeHTML(item.titulo)}
-          </div>
-
-          ${
-            publishedDate
-              ?
-              `
-                <div class="trade-review-meta">
-                  Publicado em ${publishedDate}
-                </div>
-              `
-              :
-              ""
-          }
-
-          <div class="trade-analysis-text">
-            ${explanation}
-          </div>
-
-          <div class="trade-review-complete-row">
-            <button
-              type="button"
-              class="complete-button ${completed ? "completed" : ""}"
-              data-review-progress-type="analysis"
-              data-review-progress-id="${item.id}"
-            >
-              ${completed ? "✓ Revisão concluída" : "Marcar revisão como concluída"}
-            </button>
-          </div>
-        </div>
-      `;
-
-
-    tradeAnalysisList.appendChild(
-      card
-    );
-    watchReviewCard(card,"analysis",item.id,supabase,()=>currentUser);
-
-  }
-
-
+  tradeAnalysisList.replaceChildren();
+  study.refreshReviews();
   updateReviewProgressUI();
-
 }
-
 
 async function loadTradeAnalysisReviews() {
 
@@ -4395,7 +4260,9 @@ async function loadTradeAnalysisReviews() {
         titulo,
         explicacao,
         image_path,
-        published_at
+        published_at,
+        instrumento,
+        tema
       `)
       .eq(
         "ativo",
@@ -4441,146 +4308,10 @@ async function loadTradeAnalysisReviews() {
 
 
 function renderTradeReviews() {
-
-  tradeReviewsList.innerHTML =
-    "";
-
-
-  if (
-    tradeReviews.length ===
-    0
-  ) {
-
-    tradeReviewsList.innerHTML =
-      `
-        <div class="empty">
-          Nenhuma revisão em vídeo foi publicada ainda.
-          Novos estudos aparecerão aqui automaticamente.
-        </div>
-      `;
-
-    updateReviewProgressUI();
-
-    return;
-
-  }
-
-
-  for (
-    const item of
-    tradeReviews
-  ) {
-
-    const completed =
-      tradeReviewProgressMap.get(
-        reviewProgressKey(
-          "video",
-          item.id
-        )
-      ) ===
-      true;
-
-
-    const card =
-      document.createElement(
-        "article"
-      );
-
-    card.className =
-      "trade-review-card" +
-      (
-        completed
-          ?
-          " completed"
-          :
-          ""
-      );
-
-
-    const publishedDate =
-      item.published_at
-        ?
-        new Date(
-          item.published_at
-        ).toLocaleDateString(
-          "pt-BR"
-        )
-        :
-        "";
-
-
-    card.innerHTML =
-      `
-        <div>
-          <div class="trade-review-kicker">
-            Revisão em vídeo
-          </div>
-
-          <div class="trade-review-title">
-            ${escapeHTML(item.titulo)}
-          </div>
-
-          ${
-            publishedDate
-              ?
-              `
-                <div class="trade-review-meta">
-                  Publicado em ${publishedDate}
-                </div>
-              `
-              :
-              ""
-          }
-
-          ${
-            item.descricao
-              ?
-              `
-                <div class="trade-review-description">
-                  ${escapeHTML(item.descricao)}
-                </div>
-              `
-              :
-              ""
-          }
-        </div>
-
-        <div>
-          <a
-            class="watch-button"
-            href="${escapeHTML(item.youtube_url)}"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            ▶ Assistir revisão
-          </a>
-
-          <div class="trade-review-complete-row">
-            <button
-              type="button"
-              class="complete-button ${completed ? "completed" : ""}"
-              data-review-progress-type="video"
-              data-review-progress-id="${item.id}"
-            >
-              ${completed ? "✓ Revisão concluída" : "Marcar como concluída"}
-            </button>
-          </div>
-        </div>
-      `;
-
-
-    tradeReviewsList.appendChild(
-      card
-    );
-    watchReviewCard(card,"video",item.id,supabase,()=>currentUser);
-
-  }
-
-
+  tradeReviewsList.replaceChildren();
+  study.refreshReviews();
   updateReviewProgressUI();
-
 }
-
 
 async function loadTradeReviews() {
 
@@ -4654,7 +4385,9 @@ async function loadTradeReviews() {
         titulo,
         descricao,
         youtube_url,
-        published_at
+        published_at,
+        instrumento,
+        tema
       `)
       .eq(
         "ativo",
@@ -4985,6 +4718,8 @@ function renderSessions() {
 
   }
 
+
+  study.refreshSessions();
 
   const transitions = currentSessions.map(getLiveLinkWindow).filter(Boolean)
     .flatMap(window => [window.opensAt, window.closesAt])
@@ -5543,7 +5278,8 @@ async function loadDashboard() {
 
   content.classList
     .remove("hidden");
-  openLinkedReview(setStudentTradeReviewTab,tradeReviewsSection,tradeReviewsSectionBody);
+  study.ready();
+  await study.openLinkedReview();
 
 }
 

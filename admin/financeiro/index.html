@@ -39,7 +39,7 @@ header{min-height:72px;display:flex;align-items:center;justify-content:space-bet
 <script type="module">
 import{receiptFor,receiptLabel,requestReceipt}from"../../assets/payment-receipts.js?v=20261106";
 import{financialTotals}from"../../assets/financial-totals.js?v=20261105";
-import{createClient}from"https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+import{createClient}from"https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/+esm";
 const supabase=createClient("https://vfnltuecpnuixemxvwvk.supabase.co","sb_publishable_nxgAFL2foBN8CuKMT5_2qQ_uDlaJ4Xc");
 const $=id=>document.getElementById(id);
 let receipts=[],receiptLoadFailed=false;
