@@ -44,7 +44,7 @@ As ferramentas de banco não alteram as configurações do serviço Auth. Confer
 
 Referências: https://supabase.com/docs/guides/platform/going-into-prod#security e https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection.
 
-Favoritos, anotações pessoais, retomada por segundo do vídeo e otimização geral de índices ficam para uma etapa posterior.
+Retomada por segundo do vídeo e otimização geral de índices ficam para uma etapa posterior.
 
 
 ## Lembrete de revisões não abertas
@@ -57,3 +57,16 @@ Verificação de isolamento no PostgreSQL: PGLITE_MODULE=/caminho/pglite/dist/in
 
 
 Os cartões da biblioteca mostram o estado individual do estudo: Não vista (laranja), Já aberta e Concluída. Abrir o leitor atualiza o cartão imediatamente. O filtro Seu estudo permite selecionar Não vistas, Já abertas, Não concluídas ou Concluídas. O filtro Não vistas segue a mesma regra do lembrete da aba e considera somente conteúdo disponível para o aluno.
+
+
+## Favoritos e anotações pessoais
+
+A estrela no cartão ou no leitor guarda um estudo nos favoritos, sem abri-lo nem alterar o progresso. O filtro Somente favoritos reúne as revisões guardadas. Minhas sessões também possui estrelas e o filtro Somente sessões favoritas.
+
+No leitor de revisão ou sessão, Seu espaço de estudo oferece Minhas anotações com até 10.000 caracteres. O botão Salvar anotação grava no servidor, por aluno; salvar o campo vazio remove o texto. As anotações de uma sessão não se misturam às de uma revisão, mesmo quando os identificadores numéricos coincidem.
+
+Um rascunho permanece ao fechar e reabrir o leitor na mesma página. Sair ou atualizar a página com alterações não salvas pode pedir confirmação do navegador; o rascunho não é salvo permanentemente no dispositivo. Favoritos e anotações salvos são recuperados da conta em outros dispositivos. Nenhuma anotação é exibida no painel do mentor.
+
+Aplicar supabase/student_study_preferences.sql antes de publicar esta funcionalidade. A tabela tem RLS por dono, e os salvamentos verificam o acesso ao conteúdo. A rotina de salvamento usa SECURITY INVOKER e aplica alterações independentes por campo para evitar que uma mudança de favorito sobrescreva uma anotação. Conteúdo indisponível não aparece nos filtros de favoritos. Uma falha ao carregar os dados pessoais bloqueia a edição até atualizar a página, evitando substituir uma anotação anterior por um campo vazio.
+
+Teste de banco: PGLITE_MODULE=/caminho/pglite/dist/index.js node tests/helpers/study-preferences-postgres.mjs. O teste de navegador também cobre favoritos, anotações de revisões/sessões, rascunhos, erro de gravação, isolamento de contas e respostas fora de ordem.

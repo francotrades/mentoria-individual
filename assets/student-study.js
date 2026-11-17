@@ -1,3 +1,4 @@
+import {createPersonalStudy} from './student-personal-study.js?v=20261117e';
 const escape = value => String(value ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
 export const normalizeSearch = value => String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
 export const reviewKey = item => item.type + '-' + item.id;
@@ -9,11 +10,12 @@ const reviewStateLabels = {unopened: 'Não vista', opened: 'Já aberta', complet
 export function unopenedReviews(items, opened, progress) {
   return items.filter(item => reviewState(item, opened, progress) === 'unopened');
 }
-export function filterReviews(items, filters, progress, opened = new Set()) {
+export function filterReviews(items, filters, progress, opened = new Set(), preferences = new Map()) {
   const words = normalizeSearch(filters.search).split(/\s+/).filter(Boolean);
   return items.filter(item => (!filters.format || item.type === filters.format)
     && (!filters.instrument || (item.instrumento || '') === filters.instrument)
     && (!filters.topic || (item.tema || '') === filters.topic)
+    && (!filters.favorites || preferences.get(reviewKey(item))?.favorited === true)
     && (!filters.status || (filters.status === 'pending'
       ? reviewState(item, opened, progress) !== 'completed'
       : reviewState(item, opened, progress) === filters.status))
@@ -42,8 +44,8 @@ const dateLabel = value => value ? new Date(value).toLocaleDateString('pt-BR', {
 const external = (url, label) => safeLink(url) ? '<a class="study-button secondary" href="' + escape(safeLink(url)) + '" target="_blank" rel="noopener noreferrer">' + escape(label) + ' ↗</a>' : '';
 
 export function mountStudentStudy(options) {
-  const {root, home, sessionsRoot, reviewsSection, getData, completeReview, completeSession, signedImage, liveAvailable, watchCard, loadMaterials, recordReviewRead} = options;
-  const filters = {search: '', format: '', status: '', instrument: '', topic: ''};
+  const {root, home, sessionsRoot, reviewsSection, getData, completeReview, completeSession, signedImage, liveAvailable, watchCard, loadMaterials, recordReviewRead, savePreference, onError} = options;
+  const filters = {search: '', format: '', status: '', instrument: '', topic: '', favorites: false};
   let limit = 12, ready = false, current = null, lastTrigger = null, renderVersion = 0, imageVersion = 0;
   const imageCache = new Map();
   const storageKey = suffix => 'francotrades:study:' + getData().userId + ':' + suffix;
@@ -60,6 +62,14 @@ export function mountStudentStudy(options) {
   const openedHere = new Set();
   const pendingReads = new Set();
   const openedReferences = () => new Set([...openedHere, ...(getData().reviewReads || [])]);
+  let sessionFavoritesOnly = false;
+  const personal = createPersonalStudy({
+    getPreferences: () => getData().preferences || new Map(),
+    getPreferencesReady: () => getData().preferencesLoaded !== false,
+    savePreference,
+    onChange: () => { if (ready) { renderCards(); updateSessionPreferences(); } },
+    onError
+  });
   function updateUnreadReminder() {
     if (!ready || !reviewLink) return;
     const count = unopenedReviews(items(), openedReferences(), getData().reviewProgress).length;
@@ -106,7 +116,7 @@ export function mountStudentStudy(options) {
     return [...data.analysis.map(item => ({...item, type: 'analysis'})), ...data.videos.map(item => ({...item, type: 'video'}))]
       .sort((a, b) => (Date.parse(b.published_at) || 0) - (Date.parse(a.published_at) || 0) || Number(b.id) - Number(a.id));
   };
-  const filtered = () => filterReviews(items(), filters, getData().reviewProgress, openedReferences());
+  const filtered = () => filterReviews(items(), filters, getData().reviewProgress, openedReferences(), getData().preferences);
   const done = item => getData().reviewProgress.get(item.type + ':' + item.id) === true;
   const isNew = item => previousVisit !== null && Date.parse(item.published_at) > previousVisit;
   const image = async path => {
@@ -121,8 +131,20 @@ export function mountStudentStudy(options) {
     + '<label>Seu estudo<select aria-label="Seu estudo" data-filter="status"><option value="">Todas as revisões</option><option value="unopened">Não vistas</option><option value="opened">Já abertas</option><option value="pending">Não concluídas</option><option value="completed">Concluídas</option></select></label>'
     + '<label>Ativo<select aria-label="Ativo" data-filter="instrument"><option value="">Todos os ativos</option></select></label>'
     + '<label>Tema<select aria-label="Tema" data-filter="topic"><option value="">Todos os temas</option></select></label></div>'
+    + '<label class="study-favorites-filter"><input type="checkbox" data-filter="favorites">Somente favoritos</label>'
     + '<p class="study-results" aria-live="polite"></p><div class="study-grid"></div><button class="study-button study-more" type="button">Mostrar mais revisões</button>';
   const grid = root.querySelector('.study-grid'), results = root.querySelector('.study-results'), more = root.querySelector('.study-more');
+  const sessionCollection = document.createElement('label');
+  sessionCollection.className = 'study-favorites-filter';
+  sessionCollection.innerHTML = '<input type="checkbox">Somente sessões favoritas';
+  sessionsRoot.before(sessionCollection);
+  const sessionCollectionEmpty = document.createElement('p');
+  sessionCollectionEmpty.className = 'study-empty'; sessionCollectionEmpty.hidden = true;
+  sessionCollectionEmpty.textContent = 'Você ainda não tem sessões favoritas. Use a estrela de uma sessão para guardá-la aqui.';
+  sessionsRoot.after(sessionCollectionEmpty);
+  sessionCollection.querySelector('input').addEventListener('change', event => {
+    sessionFavoritesOnly = event.target.checked; updateSessionPreferences();
+  });
   const dialog = document.createElement('dialog');
   dialog.className = 'study-dialog'; dialog.setAttribute('aria-labelledby', 'studyDialogTitle');
   dialog.innerHTML = '<div class="study-dialog-toolbar"><span data-kind></span><button class="study-text-button" type="button" data-close aria-label="Fechar conteúdo">Fechar ✕</button></div><div data-detail></div>';
@@ -163,7 +185,9 @@ export function mountStudentStudy(options) {
         + '<span class="study-card-body"><span class="study-card-meta">' + (item.type === 'video' ? 'VÍDEO COMENTADO' : 'IMAGEM + EXPLICAÇÃO') + '<span class="study-review-status is-' + state + '">' + reviewStateLabels[state] + '</span></span>'
         + '<span class="trade-review-title study-card-title">' + escape(item.titulo) + '</span>'
         + '<span class="study-tags">' + [item.instrumento, item.tema].filter(Boolean).map(tag => '<span>' + escape(tag) + '</span>').join('') + '</span>'
-        + '<span class="study-card-footer">' + escape(dateLabel(item.published_at)) + '<span>Abrir estudo →</span></span></span></button>';
+        + (personal.entry(item.type, item.id).notes.trim() ? '<span class="study-personal-hint">Com anotações</span>' : '')
+        + '<span class="study-card-footer">' + escape(dateLabel(item.published_at)) + '<span>Abrir estudo →</span></span></span></button>'
+        + personal.favoriteMarkup(item.type, item.id, true);
       grid.append(card); watchCard?.(card, item.type, item.id);
       if (item.type === 'analysis' && item.image_path) image(item.image_path).then(url => {
         if (version !== renderVersion || !card.isConnected || !safeLink(url)) return;
@@ -198,10 +222,12 @@ export function mountStudentStudy(options) {
     const selected = filtered(), index = selected.findIndex(candidate => reviewKey(candidate) === key);
     detail.innerHTML = '<h2 id="studyDialogTitle">' + escape(item.titulo) + '</h2><p class="study-detail-meta">' + escape([dateLabel(item.published_at), item.instrumento, item.tema].filter(Boolean).join(' · ')) + '</p><div data-media></div>'
       + '<div class="study-explanation">' + escape(item.explicacao || item.descricao || '').replaceAll('\n', '<br>') + '</div>'
+      + '<section class="study-personal-panel" data-personal-editor></section>'
       + '<div class="study-detail-actions"><button class="study-button" type="button" data-complete>' + (done(item) ? '✓ Concluída · desfazer' : 'Marcar como estudada') + '</button><p class="study-action-status" aria-live="polite"></p></div>'
       + '<nav class="study-detail-nav" aria-label="Navegar pelas revisões"><button type="button" class="study-button secondary" data-previous ' + (index <= 0 ? 'disabled' : '') + '>← Anterior</button><button type="button" class="study-button secondary" data-next ' + (index < 0 || index >= selected.length - 1 ? 'disabled' : '') + '>Próxima →</button></nav>';
     rememberOpened(item);
     renderCards();
+    personal.mountEditor(detail.querySelector('[data-personal-editor]'), item.type, item.id);
     const media = detail.querySelector('[data-media]');
     if (item.type === 'video') renderVideo(media, item.youtube_url, item.titulo);
     else if (item.image_path) {
@@ -245,7 +271,9 @@ export function mountStudentStudy(options) {
       + (item.sessions?.descricao ? '<h3>Sobre esta sessão</h3><p class="study-explanation">' + escape(item.sessions.descricao) + '</p>' : '')
       + (item.observacoes ? '<h3>Observações do mentor</h3><p class="study-explanation">' + escape(item.observacoes) + '</p>' : '')
       + '<h3>Materiais da sessão</h3><div data-materials aria-live="polite">Carregando materiais…</div>'
+      + '<section class="study-personal-panel" data-personal-editor></section>'
       + '<div class="study-detail-actions"><button class="study-button" type="button" data-session-complete>' + (getData().sessionProgress.get(item.session_id) ? '✓ Revisada · desfazer' : 'Marcar revisão da sessão como concluída') + '</button><p class="study-action-status" aria-live="polite"></p></div>';
+    personal.mountEditor(detail.querySelector('[data-personal-editor]'), 'session', item.id);
     if (item.youtube_url) renderVideo(detail.querySelector('[data-media]'), item.youtube_url, titleOfSession(item));
     else detail.querySelector('[data-media]').innerHTML = '<p class="study-empty">' + escape(sessionStage(item)) + '. A gravação aparecerá aqui quando for publicada.</p>';
     detail.querySelector('[data-session-complete]').addEventListener('click', async event => {
@@ -269,22 +297,62 @@ export function mountStudentStudy(options) {
     const data = getData();
     sessionsRoot.querySelectorAll('.session-card').forEach((card, index) => {
       const item = data.sessions[index]; if (!item) return;
+      card.dataset.studySession = item.id;
       card.querySelector('.status-pill').textContent = data.sessionProgress.get(item.session_id) ? 'Revisada' : 'Não revisada';
       const stage = document.createElement('span'); stage.className = 'study-session-stage'; stage.textContent = sessionStage(item); card.querySelector('.session-topline').append(stage);
       const button = document.createElement('button'); button.className = 'study-button'; button.type = 'button'; button.dataset.session = item.id; button.textContent = 'Abrir sessão →';
       card.querySelector('.session-actions').prepend(button);
     });
+    updateSessionPreferences();
   }
-  const navigate = event => {
+  function updateSessionPreferences() {
+    let visible = 0;
+    sessionsRoot.querySelectorAll('.session-card').forEach(card => {
+      const id = card.dataset.studySession;
+      if (!id) return;
+      let favorite = card.querySelector('.study-session-favorite');
+      if (!favorite) {
+        favorite = document.createElement('span'); favorite.className = 'study-session-favorite';
+        card.querySelector('.session-actions').append(favorite);
+      }
+      favorite.innerHTML = personal.favoriteMarkup('session', id, true);
+      card.querySelector('.study-session-note-hint')?.remove();
+      if (personal.entry('session', id).notes.trim()) {
+        const hint = document.createElement('span'); hint.className = 'study-personal-hint study-session-note-hint';
+        hint.textContent = ' · Com anotações'; card.querySelector('.session-meta').append(hint);
+      }
+      card.hidden = sessionFavoritesOnly && personal.entry('session', id).favorited !== true;
+      if (!card.hidden) visible++;
+    });
+    sessionCollectionEmpty.hidden = !sessionFavoritesOnly || visible > 0 || getData().sessions.length === 0;
+  }
+  const navigate = async event => {
+    const favorite = event.target.closest('[data-study-favorite]');
+    if (favorite) {
+      const reference = favorite.dataset.studyFavorite;
+      const match = /^(analysis|video|session)-([1-9]\d*)$/.exec(reference);
+      if (match) {
+        const hadFocus = document.activeElement === favorite;
+        await personal.toggleFavorite(match[1], Number(match[2]));
+        if (hadFocus && !dialog.open) {
+          const replacement = document.querySelector('[data-study-favorite="' + CSS.escape(reference) + '"]');
+          if (replacement?.getClientRects().length) replacement.focus();
+          else if (match[1] === 'session') sessionCollection.querySelector('input').focus();
+          else root.querySelector('[data-filter="favorites"]').focus();
+        }
+      }
+      return;
+    }
     const review = event.target.closest('[data-open]'), session = event.target.closest('[data-session]');
     if (review) openReview(review.dataset.open);
     if (session) openSession(session.dataset.session);
   };
   root.addEventListener('click', navigate); home.addEventListener('click', navigate); sessionsRoot.addEventListener('click', navigate);
-  root.querySelectorAll('[data-filter]').forEach(control => control.addEventListener(control.type === 'search' ? 'input' : 'change', () => { filters[control.dataset.filter] = control.value; limit = 12; renderCards(); }));
+  root.querySelectorAll('[data-filter]').forEach(control => control.addEventListener(control.type === 'search' ? 'input' : 'change', () => { filters[control.dataset.filter] = control.type === 'checkbox' ? control.checked : control.value; limit = 12; renderCards(); }));
   root.querySelector('[data-clear]').addEventListener('click', () => {
     for (const key of Object.keys(filters)) filters[key] = '';
-    root.querySelectorAll('[data-filter]').forEach(control => { control.value = ''; }); limit = 12; renderCards();
+    filters.favorites = false;
+    root.querySelectorAll('[data-filter]').forEach(control => { if (control.type === 'checkbox') control.checked = false; else control.value = ''; }); limit = 12; renderCards();
   });
   more.addEventListener('click', () => { limit += 12; renderCards(); });
   document.addEventListener('click', event => {
@@ -302,6 +370,8 @@ export function mountStudentStudy(options) {
     refreshSessions() { enhanceSessions(); if (ready) renderHome(); },
     ready() {
       ready = true;
+      root.querySelector('[data-filter="favorites"]').disabled = getData().preferencesLoaded === false;
+      sessionCollection.querySelector('input').disabled = getData().preferencesLoaded === false;
       try {
         const saved = JSON.parse(read('opened-reviews') || '[]');
         if (Array.isArray(saved)) for (const reference of saved) {
@@ -310,6 +380,7 @@ export function mountStudentStudy(options) {
       } catch {}
       const storedVisit = Number(read('last-visit')); previousVisit = Number.isFinite(storedVisit) && storedVisit > 0 ? storedVisit : null;
       updateOptions(); renderCards(); renderHome();
+      updateSessionPreferences();
       updateUnreadReminder();
       showView(location.hash.slice(1));
     },

@@ -1611,7 +1611,7 @@
     }
 
   </style>
-<link rel="stylesheet" href="../assets/student-study.css?v=20261117d">
+<link rel="stylesheet" href="../assets/student-study.css?v=20261117e">
 </head>
 
 
@@ -2284,7 +2284,7 @@
 
 
 <script type="module">
-import {mountStudentStudy} from "../assets/student-study.js?v=20261117d";
+import {mountStudentStudy} from "../assets/student-study.js?v=20261117e";
 import {loginReviewSuffix,watchReviewCard,openLinkedReview} from "../assets/review-engagement.js?v=20261013";
 
 import {
@@ -2496,6 +2496,8 @@ let tradeReviewProgressMap =
   new Map();
 
 let tradeReviewReads = new Set();
+let studyPreferences = new Map();
+let studyPreferencesLoaded = false;
 
 let progressMap =
   new Map();
@@ -2518,9 +2520,27 @@ const study = mountStudentStudy({
     sessions: currentSessions,
     reviewProgress: tradeReviewProgressMap,
     reviewReads: tradeReviewReads,
+    preferences: studyPreferences,
+    preferencesLoaded: studyPreferencesLoaded,
     sessionProgress: progressMap
   }),
   completeReview: toggleTradeReviewProgress,
+  onError: text => showMessage(text, "error"),
+  savePreference: async (type, id, patch) => {
+    if (!studyPreferencesLoaded) throw new Error("Atualize a página para carregar seus dados de estudo");
+    const parameters = {target_kind: type, target_id: id};
+    if (typeof patch.favorited === "boolean") parameters.favorite_value = patch.favorited;
+    if (typeof patch.notes === "string") parameters.note_value = patch.notes;
+    const {data, error} = await supabase.rpc("save_student_study_preference", parameters);
+    if (error || !data || typeof data !== "object") throw error || new Error("Não foi possível salvar");
+    const key = type + "-" + id;
+    const previous = studyPreferences.get(key);
+    const updated = previous ? {...previous} : {...data};
+    if (typeof patch.favorited === "boolean") updated.favorited = data.favorited;
+    if (typeof patch.notes === "string") updated.notes = data.notes;
+    updated.updated_at = data.updated_at;
+    studyPreferences.set(key, updated);
+  },
   recordReviewRead: async (type, id) => {
     const {error} = await supabase.from("trade_review_reads").upsert({
       student_id: currentUser.id,
@@ -5280,6 +5300,14 @@ async function loadDashboard() {
         .select("review_type,review_id")
         .eq("student_id", currentUser.id);
       if (!error) tradeReviewReads = new Set((data || []).map(item => item.review_type + "-" + item.review_id));
+    })(),
+    (async () => {
+      const {data, error} = await supabase.from("student_study_preferences")
+        .select("content_type,content_id,favorited,notes,updated_at")
+        .eq("student_id", currentUser.id);
+      studyPreferencesLoaded = !error;
+      if (!error) studyPreferences = new Map((data || []).map(item => [item.content_type + "-" + item.content_id, item]));
+      else showMessage("Não foi possível carregar seus favoritos e anotações. Tente atualizar a página.", "error");
     })()
   ]);
 

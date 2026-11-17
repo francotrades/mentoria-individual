@@ -10,15 +10,16 @@ function createClient() {
   const videos=[{id:1,titulo:'Condução de uma operação',descricao:'Como administrar o risco após a entrada.',youtube_url:'https://www.youtube.com/watch?v=abcdefghijk',instrumento:'Nasdaq',tema:'Condução',published_at:'2026-11-17T12:00:00Z'}];
   const sessions=Array.from({length:12},(_,i)=>({id:i+1,session_id:i+1,sessions:{numero:i+1,titulo:['Diagnóstico do operacional','Estrutura e contexto','Gestão de risco'][i%3],descricao:'Conecte a leitura técnica às decisões da operação.'},titulo_personalizado:null,youtube_url:i<8?'https://youtu.be/abcdefghijk':null,teams_url:'https://meet.google.com/aaa-bbbb-ccc',teams_url_added_at:'2026-11-17T09:00:00Z',data_sessao:i<8?'2026-11-10':i===8?'2026-11-18':null,session_time:'14:00:00',observacoes:'Revisar a definição do risco antes de entrar.',liberada:true}));
   const user={id:new URLSearchParams(location.search).has('fixtureOtherStudent')?'fixture-other':'fixture-student'};
+  const preferences=JSON.parse(sessionStorage.getItem('fixture-preferences:'+user.id)||'[]');
   const readRows=JSON.parse(sessionStorage.getItem('fixture-reads:'+user.id)||'null') || (new URLSearchParams(location.search).has('fixtureSingleUnread')?reviews.map(item=>({review_type:'analysis',review_id:item.id})):[]);
-  const dataFor=name=>({profiles:[{nome:'Aluno Demonstração',email:'aluno@example.test',role:'aluno',status:'ativo',data_inicio:'2026-09-01',data_expiracao:'2027-09-01'}],student_sessions:sessions,student_progress:sessionProgress,trade_analysis_reviews:new URLSearchParams(location.search).has("fixtureNoReviews")?[]:reviews,trade_reviews:new URLSearchParams(location.search).has("fixtureNoReviews")?[]:videos,trade_review_reads:readRows,trade_review_progress:reviewProgress,materials:[{id:1,nome:'Roteiro de revisão',url:'https://example.test/material.pdf',tipo:'pdf'}],mentorship_financials:[],mentorship_settings:[],trade_journal_access_overrides:[]}[name]||[]);
+  const dataFor=name=>({profiles:[{nome:'Aluno Demonstração',email:'aluno@example.test',role:'aluno',status:'ativo',data_inicio:'2026-09-01',data_expiracao:'2027-09-01'}],student_sessions:sessions,student_progress:sessionProgress,trade_analysis_reviews:new URLSearchParams(location.search).has("fixtureNoReviews")?[]:reviews,trade_reviews:new URLSearchParams(location.search).has("fixtureNoReviews")?[]:videos,trade_review_reads:readRows,student_study_preferences:preferences,trade_review_progress:reviewProgress,materials:[{id:1,nome:'Roteiro de revisão',url:'https://example.test/material.pdf',tipo:'pdf'}],mentorship_financials:[],mentorship_settings:[],trade_journal_access_overrides:[]}[name]||[]);
   function from(name) {
     const chain={
       select(){return chain},eq(){return chain},order(){return chain},limit(){return chain},
       update(record){if(name==='student_progress')Object.assign(sessionProgress[0],record);return chain},
       single:async()=>({data:dataFor(name)[0]||null,error:null}),
       maybeSingle:async()=>({data:dataFor(name)[0]||null,error:null}),
-      then(resolve,reject){return Promise.resolve({data:dataFor(name),error:null}).then(resolve,reject)},
+      then(resolve,reject){return Promise.resolve(name==='student_study_preferences'&&new URLSearchParams(location.search).has('fixturePreferenceLoadFailure')?{data:null,error:{message:'Falha simulada'}}:{data:dataFor(name),error:null}).then(resolve,reject)},
       async upsert(record){
         if(name==='trade_review_reads'){if(!readRows.some(row=>row.review_type===record.review_type&&row.review_id===record.review_id))readRows.push({...record});sessionStorage.setItem('fixture-reads:'+user.id,JSON.stringify(readRows));return {error:null};}
         const rows=name==='trade_review_progress'?reviewProgress:name==='student_progress'?sessionProgress:null;
@@ -28,7 +29,20 @@ function createClient() {
     };return chain
   }
   return {from,auth:{getSession:async()=>({data:{session:{user}}}),signOut:async()=>({error:null})},
-    rpc:async(name)=>({data:name==='get_mentorship_extension_state'?{extended:false,total_sessions:12,final_recorded:false,recording_access:false}:true,error:null}),
+    rpc:async(name,args)=>{
+      if(name==='save_student_study_preference'){
+        if(window.__fixtureSaveFailure)return {data:null,error:{message:'Falha simulada'}};
+        let target=preferences.find(row=>row.content_type===args.target_kind&&String(row.content_id)===String(args.target_id));
+        if(!target){target={content_type:args.target_kind,content_id:args.target_id,favorited:false,notes:''};preferences.push(target)}
+        if(typeof args.favorite_value==='boolean')target.favorited=args.favorite_value;
+        if(typeof args.note_value==='string')target.notes=args.note_value;
+        target.updated_at=new Date().toISOString();sessionStorage.setItem('fixture-preferences:'+user.id,JSON.stringify(preferences));
+        const snapshot={...target};
+        if(typeof args.favorite_value==='boolean'&&window.__fixtureDelayFavoriteResponse)await new Promise(resolve=>setTimeout(resolve,180));
+        return {data:snapshot,error:null};
+      }
+      return {data:name==='get_mentorship_extension_state'?{extended:false,total_sessions:12,final_recorded:false,recording_access:false}:true,error:null};
+    },
     storage:{from:()=>({createSignedUrl:async()=>({data:{signedUrl:'https://fixture-images.test/chart.svg'},error:null})})}
   };
 }
@@ -142,6 +156,98 @@ assert.equal(await page.locator('.study-unread-dot').getAttribute('hidden'),'','
 await page.goto(base+'/aluno/?fixtureOtherStudent=1');
 await page.locator('#content:not(.hidden)').waitFor();
 assert.equal(await page.locator('.study-unread-dot').getAttribute('hidden'),null,'Another account has its own reminder');
+
+await page.goto(base+'/aluno/?fixturePersonalStudy=1');
+await page.locator('#content:not(.hidden)').waitFor();
+await page.locator('.study-navigation a[href="#tradeReviewsSection"]').click();
+await page.locator('#reviewLibraryRoot [data-study-favorite="video-1"]').click();
+await page.waitForFunction(()=>document.querySelector('#reviewLibraryRoot [data-study-favorite="video-1"]')?.getAttribute('aria-pressed')==='true');
+assert.equal(await page.locator('dialog[open]').count(),0,'Favoriting a card does not open the reader');
+await page.getByLabel('Somente favoritos',{exact:true}).check();
+assert.equal(await page.locator('.study-card').count(),1);
+await page.locator('.study-card-open').click();
+await page.getByLabel('Minhas anotações',{exact:true}).fill('Aprendizado privado <img src=x onerror=alert(1)>');
+assert.equal(await page.locator('.study-personal-panel img').count(),0);
+await page.getByRole('button',{name:'Salvar anotação',exact:true}).click();
+await page.getByText('Anotação salva.',{exact:true}).waitFor();
+await page.locator('dialog [data-study-favorite="video-1"]').click();
+await page.waitForFunction(()=>document.querySelector('dialog [data-study-favorite="video-1"]')?.getAttribute('aria-pressed')==='false');
+assert.equal(await page.getByLabel('Minhas anotações',{exact:true}).inputValue(),'Aprendizado privado <img src=x onerror=alert(1)>');
+await page.keyboard.press('Escape');
+assert.equal(await page.locator('.study-card').count(),0);
+await page.getByRole('button',{name:'Limpar filtros'}).click();
+await page.getByLabel('Formato',{exact:true}).selectOption('video');
+await page.locator('.study-card-open').click();
+await page.getByLabel('Minhas anotações',{exact:true}).fill('Rascunho da revisão');
+await page.keyboard.press('Escape');
+await page.locator('.study-card-open').click();
+assert.equal(await page.getByLabel('Minhas anotações',{exact:true}).inputValue(),'Rascunho da revisão','Unsaved drafts remain when reopening in the same page');
+await page.evaluate(()=>window.__fixtureSaveFailure=true);
+await page.getByRole('button',{name:'Salvar anotação',exact:true}).click();
+await page.getByText('Não foi possível salvar. Seu rascunho foi mantido. Tente novamente.',{exact:true}).waitFor();
+assert.equal(await page.getByLabel('Minhas anotações',{exact:true}).inputValue(),'Rascunho da revisão');
+await page.evaluate(()=>window.__fixtureSaveFailure=false);
+await page.getByRole('button',{name:'Salvar anotação',exact:true}).click();
+await page.getByText('Anotação salva.',{exact:true}).waitFor();
+await page.getByLabel('Minhas anotações',{exact:true}).fill('Salvar enquanto favorita');
+await page.evaluate(()=>window.__fixtureDelayFavoriteResponse=true);
+await page.locator('dialog [data-study-favorite="video-1"]').click();
+await page.getByRole('button',{name:'Salvar anotação',exact:true}).click();
+await page.getByText('Anotação salva.',{exact:true}).waitFor();
+await page.waitForFunction(()=>document.querySelector('dialog [data-study-favorite="video-1"]')?.getAttribute('aria-pressed')==='true');
+await page.keyboard.press('Escape');
+await page.locator('.study-card-open').click();
+assert.equal(await page.getByLabel('Minhas anotações',{exact:true}).inputValue(),'Salvar enquanto favorita','Delayed favorite responses cannot overwrite a newer note');
+await page.keyboard.press('Escape');
+await page.reload();
+await page.locator('#content:not(.hidden)').waitFor();
+await page.getByLabel('Formato',{exact:true}).selectOption('video');
+await page.locator('.study-card-open').click();
+assert.equal(await page.getByLabel('Minhas anotações',{exact:true}).inputValue(),'Salvar enquanto favorita');
+assert.equal(await page.locator('dialog [data-study-favorite="video-1"]').getAttribute('aria-pressed'),'true');
+await page.keyboard.press('Escape');
+await page.locator('.study-navigation a[href="#studentSessionsSection"]').click();
+assert.equal(await page.locator('#studentSessionsSection [data-study-favorite="session-1"]').isDisabled(),false);
+await page.getByLabel('Somente sessões favoritas',{exact:true}).check();
+assert.equal(await page.locator('.session-card:visible').count(),0);
+await page.getByLabel('Somente sessões favoritas',{exact:true}).uncheck();
+await page.locator('#studentSessionsSection [data-study-favorite="session-1"]').click();
+await page.waitForFunction(()=>document.querySelector('#studentSessionsSection [data-study-favorite="session-1"]')?.getAttribute('aria-pressed')==='true');
+await page.getByLabel('Somente sessões favoritas',{exact:true}).check();
+assert.equal(await page.locator('.session-card:visible').count(),1);
+await page.locator('.session-card:visible [data-session]').click();
+assert.equal(await page.getByLabel('Minhas anotações',{exact:true}).inputValue(),'');
+await page.getByLabel('Minhas anotações',{exact:true}).fill('Anotação exclusiva da sessão');
+await page.getByRole('button',{name:'Salvar anotação',exact:true}).click();
+await page.getByText('Anotação salva.',{exact:true}).waitFor();
+await page.keyboard.press('Escape');
+await page.reload();
+await page.locator('#content:not(.hidden)').waitFor();
+assert.equal(await page.locator('#studentSessionsSection [data-study-favorite="session-1"]').getAttribute('aria-pressed'),'true');
+assert.equal(await page.locator('#studentSessionsSection [data-study-favorite="session-1"]').isDisabled(),false);
+await page.locator('#studentSessionsSection [data-session]').first().click();
+assert.equal(await page.getByLabel('Minhas anotações',{exact:true}).inputValue(),'Anotação exclusiva da sessão');
+await page.keyboard.press('Escape');
+
+await page.goto(base+'/aluno/?fixtureOtherStudent=1');
+await page.locator('#content:not(.hidden)').waitFor();
+await page.locator('.study-navigation a[href="#tradeReviewsSection"]').click();
+await page.getByLabel('Formato',{exact:true}).selectOption('video');
+await page.locator('.study-card-open').click();
+assert.equal(await page.getByLabel('Minhas anotações',{exact:true}).inputValue(),'','Notes are isolated between accounts');
+assert.equal(await page.locator('dialog [data-study-favorite="video-1"]').getAttribute('aria-pressed'),'false');
+await page.keyboard.press('Escape');
+
+await page.goto(base+'/aluno/?fixturePreferenceLoadFailure=1');
+await page.locator('#content:not(.hidden)').waitFor();
+await page.locator('.study-navigation a[href="#tradeReviewsSection"]').click();
+assert.equal(await page.getByLabel('Somente favoritos',{exact:true}).isDisabled(),true);
+assert.equal(await page.locator('#reviewLibraryRoot [data-study-favorite]').first().isDisabled(),true);
+await page.getByLabel('Formato',{exact:true}).selectOption('video');
+await page.locator('.study-card-open').click();
+assert.equal(await page.locator('.study-personal-panel textarea').count(),0,'Failed initial loading cannot present an empty editor over an existing note');
+await page.getByText('Não foi possível carregar seus favoritos e anotações. Atualize a página para tentar novamente.',{exact:true}).waitFor();
+await page.keyboard.press('Escape');
 await page.goto(base+'/aluno/?fixtureNoReviews=1');
 await page.locator('#content:not(.hidden)').waitFor();
 assert.equal(await page.locator('.study-unread-dot').getAttribute('hidden'),'','No accessible reviews means no reminder');

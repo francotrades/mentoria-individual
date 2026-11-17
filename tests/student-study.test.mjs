@@ -28,6 +28,14 @@ test('Review states and filters separate unopened, opened and explicitly complet
   progress.set('video:2',false);
   assert.equal(reviewState(entries[1],opened,progress),'opened');
 });
+test('Favorite filtering combines with existing study filters and keeps review formats separate', () => {
+  const preferences = new Map([['analysis-1',{favorited:true}],['video-2',{favorited:false}],['session-3',{favorited:true}]]);
+  const progress = new Map([['analysis:1',true]]);
+  assert.deepEqual(filterReviews(entries,{favorites:true},progress,new Set(),preferences).map(item=>item.id),[1]);
+  assert.deepEqual(filterReviews(entries,{favorites:true,status:'unopened'},progress,new Set(),preferences),[]);
+  assert.deepEqual(filterReviews(entries,{favorites:true,format:'video'},progress,new Set(),preferences),[]);
+  assert.equal(filterReviews(entries,{favorites:false},progress,new Set(),preferences).length,3);
+});
 test('Study search combines accent-insensitive words, filters and per-format progress without losing old studies', () => {
   const progress = new Map([['analysis:1', true], ['video:2', false]]);
   assert.deepEqual(filterReviews(entries, {search:'gestao NASDAQ'}, progress).map(x=>x.id), [1]);
