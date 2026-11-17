@@ -1611,7 +1611,7 @@
     }
 
   </style>
-<link rel="stylesheet" href="../assets/student-study.css?v=20261117b">
+<link rel="stylesheet" href="../assets/student-study.css?v=20261117c">
 </head>
 
 
@@ -2284,7 +2284,7 @@
 
 
 <script type="module">
-import {mountStudentStudy} from "../assets/student-study.js?v=20261117";
+import {mountStudentStudy} from "../assets/student-study.js?v=20261117c";
 import {loginReviewSuffix,watchReviewCard,openLinkedReview} from "../assets/review-engagement.js?v=20261013";
 
 import {
@@ -2495,6 +2495,7 @@ let tradeAnalysisReviews =
 let tradeReviewProgressMap =
   new Map();
 
+let tradeReviewReads = new Set();
 
 let progressMap =
   new Map();
@@ -2516,9 +2517,19 @@ const study = mountStudentStudy({
     videos: tradeReviews,
     sessions: currentSessions,
     reviewProgress: tradeReviewProgressMap,
+    reviewReads: tradeReviewReads,
     sessionProgress: progressMap
   }),
   completeReview: toggleTradeReviewProgress,
+  recordReviewRead: async (type, id) => {
+    const {error} = await supabase.from("trade_review_reads").upsert({
+      student_id: currentUser.id,
+      review_type: type,
+      review_id: id
+    }, {onConflict: "student_id,review_type,review_id", ignoreDuplicates: true});
+    if (error) throw error;
+    tradeReviewReads.add(type + "-" + id);
+  },
   completeSession: toggleSessionProgress,
   signedImage: signedStudentTradeImage,
   liveAvailable: isLiveLinkAvailable,
@@ -5263,7 +5274,13 @@ async function loadDashboard() {
 
   await Promise.all([
     loadTradeAnalysisReviews(),
-    loadTradeReviews()
+    loadTradeReviews(),
+    (async () => {
+      const {data, error} = await supabase.from("trade_review_reads")
+        .select("review_type,review_id")
+        .eq("student_id", currentUser.id);
+      if (!error) tradeReviewReads = new Set((data || []).map(item => item.review_type + "-" + item.review_id));
+    })()
   ]);
 
 

@@ -1,11 +1,19 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {filterReviews, youtubeVideoId, safeLink, sessionStage} from '../assets/student-study.js';
+import {filterReviews, youtubeVideoId, safeLink, sessionStage, unopenedReviews} from '../assets/student-study.js';
 const entries = [
   {id: 1, type: 'analysis', titulo: 'Condução no índice', explicacao: 'Gestão de risco na abertura', instrumento: 'Nasdaq', tema: 'Condução'},
   {id: 2, type: 'video', titulo: 'Rompimento', descricao: 'Contexto do dia', instrumento: 'S&P 500', tema: 'Entrada'},
   {id: 3, type: 'analysis', titulo: 'Análise antiga sem classificação'}
 ];
+test('Reminder excludes opened and completed studies, keeps formats distinct and considers only accessible items', () => {
+  const progress = new Map([['analysis:1', true]]);
+  assert.deepEqual(unopenedReviews(entries,new Set(['video-2','analysis-999']),progress).map(item=>item.id),[3]);
+  assert.equal(unopenedReviews([],new Set(),progress).length,0);
+  const sameId = [{id:1,type:'analysis'},{id:1,type:'video'}];
+  assert.deepEqual(unopenedReviews(sameId,new Set(['analysis-1']),new Map()).map(item=>item.type),['video']);
+  assert.equal(unopenedReviews(entries,new Set(),new Map()).length,3);
+});
 test('Study search combines accent-insensitive words, filters and per-format progress without losing old studies', () => {
   const progress = new Map([['analysis:1', true], ['video:2', false]]);
   assert.deepEqual(filterReviews(entries, {search:'gestao NASDAQ'}, progress).map(x=>x.id), [1]);

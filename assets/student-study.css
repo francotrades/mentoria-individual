@@ -30,3 +30,22 @@
     padding: 24px;
   }
 }
+
+
+.study-navigation a {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+.study-unread-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  flex: 0 0 8px;
+  border-radius: 50%;
+  background: #ff963f;
+  box-shadow: 0 0 0 3px rgba(255, 150, 63, 0.12);
+}
+.study-unread-dot[hidden] {
+  display: none;
+}

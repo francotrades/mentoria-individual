@@ -1,6 +1,9 @@
 const escape = value => String(value ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
 export const normalizeSearch = value => String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
 export const reviewKey = item => item.type + '-' + item.id;
+export function unopenedReviews(items, opened, progress) {
+  return items.filter(item => !opened.has(reviewKey(item)) && progress.get(item.type + ':' + item.id) !== true);
+}
 export function filterReviews(items, filters, progress) {
   const words = normalizeSearch(filters.search).split(/\s+/).filter(Boolean);
   return items.filter(item => (!filters.format || item.type === filters.format)
@@ -32,7 +35,7 @@ const dateLabel = value => value ? new Date(value).toLocaleDateString('pt-BR', {
 const external = (url, label) => safeLink(url) ? '<a class="study-button secondary" href="' + escape(safeLink(url)) + '" target="_blank" rel="noopener noreferrer">' + escape(label) + ' ↗</a>' : '';
 
 export function mountStudentStudy(options) {
-  const {root, home, sessionsRoot, reviewsSection, getData, completeReview, completeSession, signedImage, liveAvailable, watchCard, loadMaterials} = options;
+  const {root, home, sessionsRoot, reviewsSection, getData, completeReview, completeSession, signedImage, liveAvailable, watchCard, loadMaterials, recordReviewRead} = options;
   const filters = {search: '', format: '', status: '', instrument: '', topic: ''};
   let limit = 12, ready = false, current = null, lastTrigger = null, renderVersion = 0, imageVersion = 0;
   const imageCache = new Map();
@@ -41,6 +44,35 @@ export function mountStudentStudy(options) {
   const write = (suffix, value) => { try { if (getData().userId) localStorage.setItem(storageKey(suffix), value); } catch {} };
   let previousVisit = null;
   const navigation = document.querySelector('.study-navigation');
+  const reviewLink = navigation?.querySelector('a[href="#tradeReviewsSection"]');
+  const reminder = document.createElement('span');
+  reminder.className = 'study-unread-dot';
+  reminder.hidden = true;
+  reminder.setAttribute('aria-hidden', 'true');
+  reviewLink?.append(reminder);
+  const openedHere = new Set();
+  const pendingReads = new Set();
+  const openedReferences = () => new Set([...openedHere, ...(getData().reviewReads || [])]);
+  function updateUnreadReminder() {
+    if (!ready || !reviewLink) return;
+    const count = unopenedReviews(items(), openedReferences(), getData().reviewProgress).length;
+    const message = count === 1 ? '1 revisão ainda não aberta' : count + ' revisões ainda não abertas';
+    reminder.hidden = count === 0;
+    reviewLink.title = count ? message : 'Todas as revisões disponíveis já foram abertas';
+    reviewLink.setAttribute('aria-label', 'Revisões de trades' + (count ? ' — ' + message : ''));
+  }
+  function rememberOpened(item) {
+    const key = reviewKey(item);
+    openedHere.add(key);
+    write('opened-reviews', JSON.stringify([...openedReferences()]));
+    updateUnreadReminder();
+    if (!getData().reviewReads?.has(key) && !pendingReads.has(key) && recordReviewRead) {
+      pendingReads.add(key);
+      Promise.resolve().then(() => recordReviewRead(item.type, item.id)).catch(() => {
+        // The account-scoped browser cache retains the reminder state offline.
+      }).finally(() => pendingReads.delete(key));
+    }
+  }
   const panels = {
     studyHome: [home, document.querySelector('#content > .hero'), document.querySelector('.progress-panel'), document.querySelector('.access-panel'), document.getElementById('paymentPanel')],
     studentSessionsSection: [sessionsRoot.closest('section')],
@@ -151,6 +183,7 @@ export function mountStudentStudy(options) {
       + '<div class="study-explanation">' + escape(item.explicacao || item.descricao || '').replaceAll('\n', '<br>') + '</div>'
       + '<div class="study-detail-actions"><button class="study-button" type="button" data-complete>' + (done(item) ? '✓ Concluída · desfazer' : 'Marcar como estudada') + '</button><p class="study-action-status" aria-live="polite"></p></div>'
       + '<nav class="study-detail-nav" aria-label="Navegar pelas revisões"><button type="button" class="study-button secondary" data-previous ' + (index <= 0 ? 'disabled' : '') + '>← Anterior</button><button type="button" class="study-button secondary" data-next ' + (index < 0 || index >= selected.length - 1 ? 'disabled' : '') + '>Próxima →</button></nav>';
+    rememberOpened(item);
     const media = detail.querySelector('[data-media]');
     if (item.type === 'video') renderVideo(media, item.youtube_url, item.titulo);
     else if (item.image_path) {
@@ -247,12 +280,19 @@ export function mountStudentStudy(options) {
   document.addEventListener('visibilitychange', () => { if (ready && document.visibilityState === 'hidden') write('last-visit', String(Date.now())); });
   window.addEventListener('pagehide', () => { if (ready) write('last-visit', String(Date.now())); });
   return {
-    refreshReviews() { if (!ready) return; updateOptions(); renderCards(); renderHome(); },
+    refreshReviews() { if (!ready) return; updateOptions(); renderCards(); renderHome(); updateUnreadReminder(); },
     refreshSessions() { enhanceSessions(); if (ready) renderHome(); },
     ready() {
       ready = true;
+      try {
+        const saved = JSON.parse(read('opened-reviews') || '[]');
+        if (Array.isArray(saved)) for (const reference of saved) {
+          if (typeof reference === 'string' && /^(analysis|video)-[1-9]\d*$/.test(reference)) openedHere.add(reference);
+        }
+      } catch {}
       const storedVisit = Number(read('last-visit')); previousVisit = Number.isFinite(storedVisit) && storedVisit > 0 ? storedVisit : null;
       updateOptions(); renderCards(); renderHome();
+      updateUnreadReminder();
       showView(location.hash.slice(1));
     },
     async openLinkedReview() {

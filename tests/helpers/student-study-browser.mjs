@@ -9,8 +9,9 @@ function createClient() {
   const reviews=Array.from({length:16},(_,i)=>({id:i+1,titulo:i===0?'<img src=x onerror=alert(1)>':i%2?'Gestão de risco na abertura':'Leitura do contexto no Nasdaq',explicacao:'Contexto: região de suporte.\nEntrada com risco definido.\nAprendizado: aguardar a confirmação.',image_path:'fixture-'+i+'.png',instrumento:i%2?'Nasdaq':'S&P 500',tema:i%2?'Gestão de risco':'Leitura de contexto',ativo:true,published_at:new Date(Date.UTC(2026,10,17-i,12)).toISOString()}));
   const videos=[{id:1,titulo:'Condução de uma operação',descricao:'Como administrar o risco após a entrada.',youtube_url:'https://www.youtube.com/watch?v=abcdefghijk',instrumento:'Nasdaq',tema:'Condução',published_at:'2026-11-17T12:00:00Z'}];
   const sessions=Array.from({length:12},(_,i)=>({id:i+1,session_id:i+1,sessions:{numero:i+1,titulo:['Diagnóstico do operacional','Estrutura e contexto','Gestão de risco'][i%3],descricao:'Conecte a leitura técnica às decisões da operação.'},titulo_personalizado:null,youtube_url:i<8?'https://youtu.be/abcdefghijk':null,teams_url:'https://meet.google.com/aaa-bbbb-ccc',teams_url_added_at:'2026-11-17T09:00:00Z',data_sessao:i<8?'2026-11-10':i===8?'2026-11-18':null,session_time:'14:00:00',observacoes:'Revisar a definição do risco antes de entrar.',liberada:true}));
-  const user={id:'fixture-student'};
-  const dataFor=name=>({profiles:[{nome:'Aluno Demonstração',email:'aluno@example.test',role:'aluno',status:'ativo',data_inicio:'2026-09-01',data_expiracao:'2027-09-01'}],student_sessions:sessions,student_progress:sessionProgress,trade_analysis_reviews:reviews,trade_reviews:videos,trade_review_progress:reviewProgress,materials:[{id:1,nome:'Roteiro de revisão',url:'https://example.test/material.pdf',tipo:'pdf'}],mentorship_financials:[],mentorship_settings:[],trade_journal_access_overrides:[]}[name]||[]);
+  const user={id:new URLSearchParams(location.search).has('fixtureOtherStudent')?'fixture-other':'fixture-student'};
+  const readRows=JSON.parse(sessionStorage.getItem('fixture-reads:'+user.id)||'null') || (new URLSearchParams(location.search).has('fixtureSingleUnread')?reviews.map(item=>({review_type:'analysis',review_id:item.id})):[]);
+  const dataFor=name=>({profiles:[{nome:'Aluno Demonstração',email:'aluno@example.test',role:'aluno',status:'ativo',data_inicio:'2026-09-01',data_expiracao:'2027-09-01'}],student_sessions:sessions,student_progress:sessionProgress,trade_analysis_reviews:new URLSearchParams(location.search).has("fixtureNoReviews")?[]:reviews,trade_reviews:new URLSearchParams(location.search).has("fixtureNoReviews")?[]:videos,trade_review_reads:readRows,trade_review_progress:reviewProgress,materials:[{id:1,nome:'Roteiro de revisão',url:'https://example.test/material.pdf',tipo:'pdf'}],mentorship_financials:[],mentorship_settings:[],trade_journal_access_overrides:[]}[name]||[]);
   function from(name) {
     const chain={
       select(){return chain},eq(){return chain},order(){return chain},limit(){return chain},
@@ -19,6 +20,7 @@ function createClient() {
       maybeSingle:async()=>({data:dataFor(name)[0]||null,error:null}),
       then(resolve,reject){return Promise.resolve({data:dataFor(name),error:null}).then(resolve,reject)},
       async upsert(record){
+        if(name==='trade_review_reads'){if(!readRows.some(row=>row.review_type===record.review_type&&row.review_id===record.review_id))readRows.push({...record});sessionStorage.setItem('fixture-reads:'+user.id,JSON.stringify(readRows));return {error:null};}
         const rows=name==='trade_review_progress'?reviewProgress:name==='student_progress'?sessionProgress:null;
         if(rows){const prior=rows.find(row=>name==='trade_review_progress'?row.review_id===record.review_id&&row.review_type===record.review_type:row.session_id===record.session_id);if(prior)Object.assign(prior,record);else rows.push({...record});}
         return {data:null,error:null}
@@ -99,6 +101,33 @@ assert.equal(await page.locator('dialog').evaluate(el=>el.scrollWidth<=el.client
 await page.keyboard.press('Escape');
 await page.goto(base+'/aluno/?review=video-1');
 await page.locator('dialog[open] iframe').waitFor();
+
+await page.keyboard.press('Escape');
+await page.evaluate(()=>{localStorage.removeItem('francotrades:study:fixture-student:opened-reviews');sessionStorage.removeItem('fixture-reads:fixture-student')});
+await page.goto(base+'/aluno/?fixtureSingleUnread=1');
+await page.locator('#content:not(.hidden)').waitFor();
+assert.match(await page.locator('.study-navigation a[href="#tradeReviewsSection"]').getAttribute('aria-label'),/1 revisão ainda não aberta/);
+assert.equal(await page.locator('.study-unread-dot').getAttribute('hidden'),null);
+await page.locator('.study-navigation a[href="#tradeReviewsSection"]').click();
+await page.waitForTimeout(1700);
+assert.equal(await page.locator('.study-unread-dot').getAttribute('hidden'),null,'Entering the library and viewing titles must not clear the reminder');
+await page.getByLabel('Formato',{exact:true}).selectOption('video');
+await page.locator('.study-card-open').click();
+await page.locator('dialog[open] iframe').waitFor();
+assert.equal(await page.locator('.study-unread-dot').getAttribute('hidden'),'','Opening the last unseen study clears the dot');
+assert.match(await page.locator('#reviewProgressText').textContent(),/1 de 17/,'Opening a review never marks it completed');
+await page.waitForFunction(()=>JSON.parse(sessionStorage.getItem('fixture-reads:fixture-student')||'[]').some(row=>row.review_type==='video'));
+await page.keyboard.press('Escape');
+await page.evaluate(()=>localStorage.removeItem('francotrades:study:fixture-student:opened-reviews'));
+await page.reload();
+await page.locator('#content:not(.hidden)').waitFor();
+assert.equal(await page.locator('.study-unread-dot').getAttribute('hidden'),'','Persisted account reads are used without the browser cache');
+await page.goto(base+'/aluno/?fixtureOtherStudent=1');
+await page.locator('#content:not(.hidden)').waitFor();
+assert.equal(await page.locator('.study-unread-dot').getAttribute('hidden'),null,'Another account has its own reminder');
+await page.goto(base+'/aluno/?fixtureNoReviews=1');
+await page.locator('#content:not(.hidden)').waitFor();
+assert.equal(await page.locator('.study-unread-dot').getAttribute('hidden'),'','No accessible reviews means no reminder');
 assert.deepEqual(errors,[]);
 console.log('Browser: actual student page, 390/1440px, filters, pagination, progress callbacks, image zoom, video, session materials, deep links and escaped titles passed');
 await browser.close();

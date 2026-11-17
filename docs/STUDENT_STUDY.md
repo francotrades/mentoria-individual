@@ -45,3 +45,12 @@ As ferramentas de banco não alteram as configurações do serviço Auth. Confer
 Referências: https://supabase.com/docs/guides/platform/going-into-prod#security e https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection.
 
 Favoritos, anotações pessoais, retomada por segundo do vídeo e otimização geral de índices ficam para uma etapa posterior.
+
+
+## Lembrete de revisões não abertas
+
+A aba Revisões de trades mostra uma bolinha laranja enquanto existir uma revisão disponível que o aluno ainda não abriu. Entrar na aba, visualizar um cartão ou mudar filtros não remove o lembrete. Abrir o leitor de uma revisão registra a abertura, sem alterar a conclusão. Revisões já marcadas como concluídas também não geram o lembrete.
+
+Aplicar supabase/trade_review_reads.sql antes de publicar esta funcionalidade. A tabela separa a abertura explícita do leitor da métrica antiga de título visível. O histórico é por aluno, com RLS de leitura própria e inserção apenas para conteúdo elegível. Há cache separado por conta no navegador para manter o estado em caso de falha de rede. Não é feito retroativo de abertura baseado apenas em título visível.
+
+Verificação de isolamento no PostgreSQL: PGLITE_MODULE=/caminho/pglite/dist/index.js node tests/helpers/review-reads-postgres.mjs.
