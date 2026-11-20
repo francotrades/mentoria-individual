@@ -39,6 +39,12 @@ export function sessionStage(item, today = new Date().toLocaleDateString('en-CA'
   if (item.data_sessao && item.data_sessao >= today) return 'Sessão agendada';
   return item.data_sessao ? 'Gravação em breve' : 'Aguardando agendamento';
 }
+export function nextMentorship(sessions, now = Date.now()) {
+  return sessions.filter(item => item.data_sessao && item.session_time && item.liberada !== false)
+    .map(item => ({item, start: Date.parse(item.data_sessao + 'T' + String(item.session_time).slice(0,5) + ':00-03:00')}))
+    .filter(({start}) => Number.isFinite(start) && start + 150 * 60000 > now)
+    .sort((a,b) => a.start-b.start)[0]?.item || null;
+}
 const titleOfSession = item => item.titulo_personalizado || item.sessions?.titulo || 'Sessão ' + (item.sessions?.numero || item.session_id);
 const dateLabel = value => value ? new Date(value).toLocaleDateString('pt-BR', {timeZone: 'America/Sao_Paulo'}) : '';
 const external = (url, label) => safeLink(url) ? '<a class="study-button secondary" href="' + escape(safeLink(url)) + '" target="_blank" rel="noopener noreferrer">' + escape(label) + ' ↗</a>' : '';
@@ -204,14 +210,19 @@ export function mountStudentStudy(options) {
   function renderHome() {
     const data = getData(), latest = items().filter(item => !done(item)).slice(0, 3);
     const last = items().find(item => reviewKey(item) === read('last-review'));
-    const today = new Date().toLocaleDateString('en-CA', {timeZone: 'America/Sao_Paulo'});
-    const next = data.sessions.filter(item => item.data_sessao >= today && !item.youtube_url).sort((a, b) => (a.data_sessao + (a.session_time || '')).localeCompare(b.data_sessao + (b.session_time || '')))[0];
+    const next = nextMentorship(data.sessions);
     home.innerHTML = '<div class="study-home-heading"><div><span class="section-kicker">Seu próximo passo</span><h2>Vamos ao estudo.</h2></div><a class="study-text-button" href="#tradeReviewsSection">Ver biblioteca →</a></div><div class="study-home-grid">'
-      + '<article><span class="study-card-meta">PRÓXIMA SESSÃO</span><h3>' + escape(next ? titleOfSession(next) : 'Seu acompanhamento') + '</h3><p>' + (next ? escape(next.data_sessao.split('-').reverse().join('/') + (next.session_time ? ' às ' + next.session_time.slice(0, 5) + ' · Brasília' : '')) : 'Consulte as gravações e as observações dos seus encontros.') + '</p>'
-      + (next ? '<button class="study-button secondary" type="button" data-session="' + next.id + '">Ver sessão →</button>' : '<a class="study-button secondary" href="#studentSessionsSection">Minhas sessões →</a>') + '</article>'
+      + '<article><span class="study-card-meta">PRÓXIMA MENTORIA</span><h3>' + escape(next ? titleOfSession(next) : 'Seu acompanhamento') + '</h3><p>' + (next ? escape(next.data_sessao.split('-').reverse().join('/') + (next.session_time ? ' às ' + next.session_time.slice(0, 5) + ' · Brasília' : '')) : 'Consulte as gravações e as observações dos seus encontros.') + '</p>'
+      + (next ? '<div class="study-upcoming-actions"><button class="study-button secondary" type="button" data-session="' + next.id + '">Ver sessão →</button>' + liveButton(next) + '</div>' : '<a class="study-button secondary" href="#studentSessionsSection">Minhas sessões →</a>') + '</article>'
       + '<article><span class="study-card-meta">' + (last ? 'CONTINUAR ESTUDANDO' : 'PARA REVISAR') + '</span><h3>' + escape(last?.titulo || latest[0]?.titulo || 'Seu espaço de estudo') + '</h3><p>' + (last ? 'Volte ao último estudo que você abriu.' : 'Acompanhe os estudos liberados para a sua mentoria.') + '</p>'
       + (last || latest[0] ? '<button class="study-button" type="button" data-open="' + escape(reviewKey(last || latest[0])) + '">Abrir revisão →</button>' : '<a class="study-button" href="#tradeReviewsSection">Ver revisões →</a>') + '</article></div>'
       + (latest.length ? '<div class="study-home-latest"><h3>Revisões para estudar</h3>' + latest.map(item => '<button type="button" data-open="' + escape(reviewKey(item)) + '"><span>' + escape(item.titulo) + '</span><span>' + (isNew(item) ? 'Novo · ' : '') + (item.type === 'video' ? 'Vídeo' : 'Imagem e explicação') + ' ↗</span></button>').join('') + '</div>' : '');
+  }
+  function liveButton(item) {
+    if (!safeLink(item.teams_url)) return '';
+    return liveAvailable(item)
+      ? external(item.teams_url, 'Entrar ao vivo')
+      : '<button type="button" class="study-button secondary" disabled title="A entrada abre 30 minutos antes do horário da sessão">Entrar ao vivo · em breve</button>';
   }
   async function openReview(key) {
     const item = items().find(candidate => reviewKey(candidate) === key); if (!item) return false;
@@ -267,7 +278,7 @@ export function mountStudentStudy(options) {
     current = {kind: 'session', key: String(id)}; showDialog(); const version = ++imageVersion;
     dialog.querySelector('[data-kind]').textContent = 'Sua sessão · ' + sessionStage(item);
     detail.innerHTML = '<h2 id="studyDialogTitle">' + escape(titleOfSession(item)) + '</h2><p class="study-detail-meta">' + escape(item.data_sessao ? item.data_sessao.split('-').reverse().join('/') + (item.session_time ? ' às ' + item.session_time.slice(0, 5) + ' · Brasília' : '') : 'Data a combinar') + '</p><div data-media></div>'
-      + (liveAvailable(item) ? external(item.teams_url, 'Entrar na aula ao vivo') : '')
+      + '<div data-session-live>' + liveButton(item) + '</div>'
       + (item.sessions?.descricao ? '<h3>Sobre esta sessão</h3><p class="study-explanation">' + escape(item.sessions.descricao) + '</p>' : '')
       + (item.observacoes ? '<h3>Observações do mentor</h3><p class="study-explanation">' + escape(item.observacoes) + '</p>' : '')
       + '<h3>Materiais da sessão</h3><div data-materials aria-live="polite">Carregando materiais…</div>'
@@ -302,8 +313,26 @@ export function mountStudentStudy(options) {
       const stage = document.createElement('span'); stage.className = 'study-session-stage'; stage.textContent = sessionStage(item); card.querySelector('.session-topline').append(stage);
       const button = document.createElement('button'); button.className = 'study-button'; button.type = 'button'; button.dataset.session = item.id; button.textContent = 'Abrir sessão →';
       card.querySelector('.session-actions').prepend(button);
+      if (safeLink(item.teams_url) && !liveAvailable(item)) {
+        const pending = document.createElement('button');
+        pending.type = 'button'; pending.disabled = true; pending.className = 'study-button secondary';
+        pending.textContent = 'Entrar ao vivo · em breve';
+        pending.title = 'A entrada abre 30 minutos antes do horário da sessão';
+        card.querySelector('.session-actions').append(pending);
+      }
     });
     updateSessionPreferences();
+    if (current?.kind === 'session') {
+      const currentSession = data.sessions.find(item => String(item.id) === current.key);
+      const live = detail.querySelector('[data-session-live]');
+      if (live) live.innerHTML = currentSession ? liveButton(currentSession) : '';
+      if (currentSession) {
+        detail.querySelector('#studyDialogTitle').textContent = titleOfSession(currentSession);
+        detail.querySelector('.study-detail-meta').textContent = currentSession.data_sessao
+          ? currentSession.data_sessao.split('-').reverse().join('/') + (currentSession.session_time ? ' às ' + currentSession.session_time.slice(0,5) + ' · Brasília' : '')
+          : 'Data a combinar';
+      }
+    }
   }
   function updateSessionPreferences() {
     let visible = 0;

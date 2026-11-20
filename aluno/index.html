@@ -1611,7 +1611,7 @@
     }
 
   </style>
-<link rel="stylesheet" href="../assets/student-study.css?v=20261117e">
+<link rel="stylesheet" href="../assets/student-study.css?v=20261120">
 </head>
 
 
@@ -2284,7 +2284,7 @@
 
 
 <script type="module">
-import {mountStudentStudy} from "../assets/student-study.js?v=20261117e";
+import {mountStudentStudy} from "../assets/student-study.js?v=20261120";
 import {loginReviewSuffix,watchReviewCard,openLinkedReview} from "../assets/review-engagement.js?v=20261013";
 
 import {
@@ -4490,7 +4490,9 @@ function isLiveLinkAvailable(item) {
     Date.now() < window.closesAt.getTime();
 }
 
+let liveScheduleTimer;
 function renderSessions() {
+  clearTimeout(liveScheduleTimer);
 
   sessionsList.innerHTML =
     "";
@@ -4508,6 +4510,7 @@ function renderSessions() {
       `;
 
 
+    study.refreshSessions();
     return;
 
   }
@@ -4758,7 +4761,7 @@ function renderSessions() {
     .sort((a,b) => a.getTime() - b.getTime());
   if (transitions.length) {
     const delay = Math.min(86400000, Math.max(0, transitions[0].getTime() - Date.now() + 250));
-    setTimeout(() => { renderSessions(); updateNextSession(); }, delay);
+    liveScheduleTimer = setTimeout(() => { renderSessions(); updateNextSession(); }, delay);
   }
 
 }
@@ -5328,6 +5331,20 @@ async function loadDashboard() {
 
 }
 
+
+let refreshingSchedule = false;
+async function refreshStudentSchedule() {
+  if (!currentUser || refreshingSchedule || document.visibilityState !== "visible") return;
+  refreshingSchedule = true;
+  try {
+    const {data, error} = await supabase.from("student_sessions")
+      .select("id,student_id,session_id,youtube_url,teams_url,teams_url_added_at,data_sessao,session_time,observacoes,titulo_personalizado,liberada,sessions(numero,titulo,descricao)")
+      .eq("student_id", currentUser.id).eq("liberada", true).order("session_id", {ascending:true});
+    if (!error && data) {currentSessions = data; renderSessions(); updateProgressUI();}
+  } finally {refreshingSchedule = false;}
+}
+setInterval(refreshStudentSchedule, 60000);
+document.addEventListener("visibilitychange", () => {if (!content.classList.contains("hidden")) refreshStudentSchedule();});
 
 for (
   const button of

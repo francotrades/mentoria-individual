@@ -132,3 +132,5 @@
   .study-note-input { min-height: 170px; }
   .study-note-footer .study-button { width: 100%; }
 }
+
+.study-upcoming-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:auto}.study-upcoming-actions .study-button{margin-top:0}@media(max-width:640px){.study-upcoming-actions{width:100%}.study-upcoming-actions .study-button{width:100%}}

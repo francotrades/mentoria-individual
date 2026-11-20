@@ -8,7 +8,7 @@ function createClient() {
   const sessionProgress=[{session_id:1,concluida:true}],reviewProgress=[{review_type:'analysis',review_id:1,concluida:true}];
   const reviews=Array.from({length:16},(_,i)=>({id:i+1,titulo:i===0?'<img src=x onerror=alert(1)>':i%2?'Gestão de risco na abertura':'Leitura do contexto no Nasdaq',explicacao:'Contexto: região de suporte.\nEntrada com risco definido.\nAprendizado: aguardar a confirmação.',image_path:'fixture-'+i+'.png',instrumento:i%2?'Nasdaq':'S&P 500',tema:i%2?'Gestão de risco':'Leitura de contexto',ativo:true,published_at:new Date(Date.UTC(2026,10,17-i,12)).toISOString()}));
   const videos=[{id:1,titulo:'Condução de uma operação',descricao:'Como administrar o risco após a entrada.',youtube_url:'https://www.youtube.com/watch?v=abcdefghijk',instrumento:'Nasdaq',tema:'Condução',published_at:'2026-11-17T12:00:00Z'}];
-  const sessions=Array.from({length:12},(_,i)=>({id:i+1,session_id:i+1,sessions:{numero:i+1,titulo:['Diagnóstico do operacional','Estrutura e contexto','Gestão de risco'][i%3],descricao:'Conecte a leitura técnica às decisões da operação.'},titulo_personalizado:null,youtube_url:i<8?'https://youtu.be/abcdefghijk':null,teams_url:'https://meet.google.com/aaa-bbbb-ccc',teams_url_added_at:'2026-11-17T09:00:00Z',data_sessao:i<8?'2026-11-10':i===8?'2026-11-18':null,session_time:'14:00:00',observacoes:'Revisar a definição do risco antes de entrar.',liberada:true}));
+  const sessions=Array.from({length:12},(_,i)=>({id:i+1,session_id:i+1,sessions:{numero:i+1,titulo:['Diagnóstico do operacional','Estrutura e contexto','Gestão de risco'][i%3],descricao:'Conecte a leitura técnica às decisões da operação.'},titulo_personalizado:null,youtube_url:i<8?'https://youtu.be/abcdefghijk':null,teams_url:'https://meet.google.com/aaa-bbbb-ccc',teams_url_added_at:'2026-11-17T09:00:00Z',data_sessao:i<8?'2026-11-10':i===9?new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo'}).format(new Date(Date.now()+(new URLSearchParams(location.search).has('fixtureLiveSession')?0:86400000))):null,session_time:i===9&&new URLSearchParams(location.search).has('fixtureLiveSession')?new Intl.DateTimeFormat('en-GB',{timeZone:'America/Sao_Paulo',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date())+':00':'14:00:00',observacoes:'Revisar a definição do risco antes de entrar.',liberada:true}));
   const user={id:new URLSearchParams(location.search).has('fixtureOtherStudent')?'fixture-other':'fixture-student'};
   const preferences=JSON.parse(sessionStorage.getItem('fixture-preferences:'+user.id)||'[]');
   const readRows=JSON.parse(sessionStorage.getItem('fixture-reads:'+user.id)||'null') || (new URLSearchParams(location.search).has('fixtureSingleUnread')?reviews.map(item=>({review_type:'analysis',review_id:item.id})):[]);
@@ -248,6 +248,17 @@ await page.locator('.study-card-open').click();
 assert.equal(await page.locator('.study-personal-panel textarea').count(),0,'Failed initial loading cannot present an empty editor over an existing note');
 await page.getByText('Não foi possível carregar seus favoritos e anotações. Atualize a página para tentar novamente.',{exact:true}).waitFor();
 await page.keyboard.press('Escape');
+
+await page.goto(base+'/aluno/?fixtureSchedule=1');
+await page.locator('#content:not(.hidden)').waitFor();
+assert.equal(await page.locator('.study-home-grid [data-session]').getAttribute('data-session'),'10');
+assert.equal(await page.getByRole('button',{name:'Entrar ao vivo · em breve',exact:true}).isDisabled(),true);
+await page.goto(base+'/aluno/?fixtureLiveSession=1');
+await page.locator('#content:not(.hidden)').waitFor();
+const homeLive=await page.locator('#studyHome').getByRole('link',{name:'Entrar ao vivo ↗',exact:true}).getAttribute('href');
+assert.equal(homeLive,'https://meet.google.com/aaa-bbbb-ccc');
+await page.locator('.study-navigation a[href="#studentSessionsSection"]').click();
+assert.equal(await page.locator('[data-study-session="10"] .live-button').getAttribute('href'),homeLive);
 await page.goto(base+'/aluno/?fixtureNoReviews=1');
 await page.locator('#content:not(.hidden)').waitFor();
 assert.equal(await page.locator('.study-unread-dot').getAttribute('hidden'),'','No accessible reviews means no reminder');

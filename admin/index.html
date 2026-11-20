@@ -10603,7 +10603,17 @@ function openExistingSession(
 }
 
 
+let savingSession = false;
 async function saveSession() {
+  if (savingSession) return;
+  savingSession = true;
+  saveSessionButton.disabled = true;
+  try {
+
+  if (sessionTime.value && !sessionDate.value) {
+    showMessage("Informe a data da sessão junto com o horário.", "error");
+    return;
+  }
 
   const previousSession =
     editingStudentSessionId
@@ -10741,9 +10751,12 @@ async function saveSession() {
     ).trim();
 
 
-  const shouldNotifyLiveLink =
-    Boolean(currentTeamsUrl) &&
-    teamsUrlChanged;
+  const scheduleChanged = Boolean(payload.data_sessao && payload.session_time && payload.liberada) && (
+    !previousSession || Number(previousSession.session_id) !== payload.session_id || previousSession.data_sessao !== payload.data_sessao ||
+    String(previousSession.session_time || "").slice(0,5) !== String(payload.session_time).slice(0,5) ||
+    previousSession.liberada !== payload.liberada
+  );
+  const shouldNotifyLiveLink = Boolean(currentTeamsUrl) && teamsUrlChanged && !scheduleChanged;
 
 
   let notificationWarning =
@@ -10790,6 +10803,19 @@ async function saveSession() {
   }
 
 
+  if (savedSessionId && payload.data_sessao && payload.session_time && payload.liberada) {
+    try {
+      const {data, error} = await supabase.functions.invoke("session-schedule-notification", {
+        body: {student_session_id: Number(savedSessionId)}
+      });
+      if (error || !data?.configured || data.failed || data.needsCheck) {
+        notificationWarning += " A sessão foi salva, mas não foi possível confirmar o envio do aviso de agendamento.";
+      }
+    } catch {
+      notificationWarning += " A sessão foi salva; o aviso de agendamento permanece na fila para envio automático.";
+    }
+  }
+
   showMessage(
     notificationWarning
       ?
@@ -10817,6 +10843,10 @@ async function saveSession() {
 
   await refreshData();
 
+  } finally {
+    savingSession = false;
+    saveSessionButton.disabled = false;
+  }
 }
 
 
