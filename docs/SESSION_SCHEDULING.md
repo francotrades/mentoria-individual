@@ -8,6 +8,8 @@ A página inicial do aluno mostra Próxima mentoria, data, horário e botão Ver
 
 ## Envio
 
+Sem encontro agendado, o destaque mostra Seu acompanhamento, sem o rótulo Próxima mentoria. Quando a gravação da última sessão prevista para o aluno estiver liberada, mostra Encontros concluídos e mantém o acesso às gravações para revisão. Essa conclusão considera a quantidade prevista da mentoria, inclusive ampliações, e não depende do progresso de revisão do aluno. Sessões com gravação não aparecem como próximo encontro ao vivo.
+
 A função session-schedule-notification reutiliza GOOGLE_MAIL_WEBHOOK_URL, GOOGLE_MAIL_SECRET e REVIEW_NOTICE_WORKER_SECRET existentes. Nenhum segredo vai para o frontend ou repositório. O cron session-schedule-notifications verifica a fila a cada minuto, usando os registros já existentes no Vault. O painel tenta processar a confirmação logo após salvar; se a chamada falhar, o cron continua responsável pela fila.
 
 As mensagens apontam para a Área do Aluno, sem enviar links de reunião que podem ser substituídos. O servidor consulta o destinatário e o agendamento atuais antes de processar cada aviso. Perfis inativos, acessos expirados sem extensão, sessões passadas e não liberadas não recebem novos avisos.

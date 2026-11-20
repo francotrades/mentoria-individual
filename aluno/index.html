@@ -1611,7 +1611,7 @@
     }
 
   </style>
-<link rel="stylesheet" href="../assets/student-study.css?v=20261120">
+<link rel="stylesheet" href="../assets/student-study.css?v=20261120b">
 </head>
 
 
@@ -2284,7 +2284,7 @@
 
 
 <script type="module">
-import {mountStudentStudy} from "../assets/student-study.js?v=20261120";
+import {mountStudentStudy} from "../assets/student-study.js?v=20261120b";
 import {loginReviewSuffix,watchReviewCard,openLinkedReview} from "../assets/review-engagement.js?v=20261013";
 
 import {
@@ -2518,6 +2518,7 @@ const study = mountStudentStudy({
     analysis: tradeAnalysisReviews,
     videos: tradeReviews,
     sessions: currentSessions,
+    plannedSessions: mentorshipExtensionState?.total_sessions,
     reviewProgress: tradeReviewProgressMap,
     reviewReads: tradeReviewReads,
     preferences: studyPreferences,

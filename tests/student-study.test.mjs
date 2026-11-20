@@ -1,11 +1,30 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {filterReviews, youtubeVideoId, safeLink, sessionStage, unopenedReviews, reviewState} from '../assets/student-study.js';
+import {filterReviews, youtubeVideoId, safeLink, sessionStage, unopenedReviews, reviewState, mentorshipHomeState} from '../assets/student-study.js';
 const entries = [
   {id: 1, type: 'analysis', titulo: 'Condução no índice', explicacao: 'Gestão de risco na abertura', instrumento: 'Nasdaq', tema: 'Condução'},
   {id: 2, type: 'video', titulo: 'Rompimento', descricao: 'Contexto do dia', instrumento: 'S&P 500', tema: 'Entrada'},
   {id: 3, type: 'analysis', titulo: 'Análise antiga sem classificação'}
 ];
+test('Home distinguishes upcoming, unscheduled and final-recording states without depending on review progress', () => {
+  const now = Date.parse('2026-11-20T12:00:00-03:00');
+  const session = (number, patch = {}) => ({id: number, sessions: {numero: number}, liberada: true, ...patch});
+  const recorded = session(12, {youtube_url: 'https://youtu.be/abcdefghijk', data_sessao: '2026-11-20', session_time: '14:00:00'});
+  assert.equal(mentorshipHomeState([recorded], 12, now).label, 'ENCONTROS CONCLUÍDOS');
+  assert.equal(mentorshipHomeState([recorded], 12, now).next, null);
+  assert.equal(mentorshipHomeState([recorded], 16, now).label, 'SEU ACOMPANHAMENTO');
+  assert.equal(mentorshipHomeState([recorded, session(16, {youtube_url: 'https://video.test/'})], 16, now).label, 'ENCONTROS CONCLUÍDOS');
+  for (const sessions of [[], [session(1, {youtube_url: 'https://video.test/'})], [session(12, {youtube_url: '  '})], [{...recorded, liberada: false}]]) {
+    assert.equal(mentorshipHomeState(sessions, 12, now).label, 'SEU ACOMPANHAMENTO');
+  }
+  assert.equal(mentorshipHomeState([recorded], undefined, now).label, 'SEU ACOMPANHAMENTO');
+  const upcoming = session(13, {data_sessao: '2026-11-21', session_time: '15:30:00'});
+  const state = mentorshipHomeState([recorded, upcoming], 12, now);
+  assert.equal(state.label, 'PRÓXIMA MENTORIA');
+  assert.equal(state.next.id, 13);
+  assert.match(state.description, /21\/11\/2026 às 15:30 · Brasília/);
+  assert.equal(mentorshipHomeState([upcoming], 13, Date.parse('2026-11-21T18:00:00-03:00')).label, 'SEU ACOMPANHAMENTO');
+});
 test('Reminder excludes opened and completed studies, keeps formats distinct and considers only accessible items', () => {
   const progress = new Map([['analysis:1', true]]);
   assert.deepEqual(unopenedReviews(entries,new Set(['video-2','analysis-999']),progress).map(item=>item.id),[3]);

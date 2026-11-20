@@ -40,10 +40,21 @@ export function sessionStage(item, today = new Date().toLocaleDateString('en-CA'
   return item.data_sessao ? 'Gravação em breve' : 'Aguardando agendamento';
 }
 export function nextMentorship(sessions, now = Date.now()) {
-  return sessions.filter(item => item.data_sessao && item.session_time && item.liberada !== false)
+  return sessions.filter(item => item.data_sessao && item.session_time && item.liberada !== false && !item.youtube_url?.trim())
     .map(item => ({item, start: Date.parse(item.data_sessao + 'T' + String(item.session_time).slice(0,5) + ':00-03:00')}))
     .filter(({start}) => Number.isFinite(start) && start + 150 * 60000 > now)
     .sort((a,b) => a.start-b.start)[0]?.item || null;
+}
+export function mentorshipHomeState(sessions, plannedTotal, now = Date.now()) {
+  const total = Number(plannedTotal);
+  const finalNumber = Math.max(total, ...sessions.map(item => Number(item.sessions?.numero) || 0));
+  const completed = Number.isInteger(total) && total > 0 && sessions.some(item =>
+    Number(item.sessions?.numero) === finalNumber && item.liberada !== false && Boolean(item.youtube_url?.trim()));
+  if (completed) return {label: 'ENCONTROS CONCLUÍDOS', title: 'Encontros concluídos', description: 'Suas gravações continuam disponíveis para revisão.', next: null};
+  const next = nextMentorship(sessions, now);
+  return next
+    ? {label: 'PRÓXIMA MENTORIA', title: titleOfSession(next), description: next.data_sessao.split('-').reverse().join('/') + ' às ' + next.session_time.slice(0, 5) + ' · Brasília', next}
+    : {label: 'SEU ACOMPANHAMENTO', title: 'Seu acompanhamento', description: 'Consulte as gravações e as observações dos seus encontros.', next: null};
 }
 const titleOfSession = item => item.titulo_personalizado || item.sessions?.titulo || 'Sessão ' + (item.sessions?.numero || item.session_id);
 const dateLabel = value => value ? new Date(value).toLocaleDateString('pt-BR', {timeZone: 'America/Sao_Paulo'}) : '';
@@ -210,9 +221,10 @@ export function mountStudentStudy(options) {
   function renderHome() {
     const data = getData(), latest = items().filter(item => !done(item)).slice(0, 3);
     const last = items().find(item => reviewKey(item) === read('last-review'));
-    const next = nextMentorship(data.sessions);
+    const mentorship = mentorshipHomeState(data.sessions, data.plannedSessions);
+    const next = mentorship.next;
     home.innerHTML = '<div class="study-home-heading"><div><span class="section-kicker">Seu próximo passo</span><h2>Vamos ao estudo.</h2></div><a class="study-text-button" href="#tradeReviewsSection">Ver biblioteca →</a></div><div class="study-home-grid">'
-      + '<article><span class="study-card-meta">PRÓXIMA MENTORIA</span><h3>' + escape(next ? titleOfSession(next) : 'Seu acompanhamento') + '</h3><p>' + (next ? escape(next.data_sessao.split('-').reverse().join('/') + (next.session_time ? ' às ' + next.session_time.slice(0, 5) + ' · Brasília' : '')) : 'Consulte as gravações e as observações dos seus encontros.') + '</p>'
+      + '<article><span class="study-card-meta">' + escape(mentorship.label) + '</span><h3>' + escape(mentorship.title) + '</h3><p>' + escape(mentorship.description) + '</p>'
       + (next ? '<div class="study-upcoming-actions"><button class="study-button secondary" type="button" data-session="' + next.id + '">Ver sessão →</button>' + liveButton(next) + '</div>' : '<a class="study-button secondary" href="#studentSessionsSection">Minhas sessões →</a>') + '</article>'
       + '<article><span class="study-card-meta">' + (last ? 'CONTINUAR ESTUDANDO' : 'PARA REVISAR') + '</span><h3>' + escape(last?.titulo || latest[0]?.titulo || 'Seu espaço de estudo') + '</h3><p>' + (last ? 'Volte ao último estudo que você abriu.' : 'Acompanhe os estudos liberados para a sua mentoria.') + '</p>'
       + (last || latest[0] ? '<button class="study-button" type="button" data-open="' + escape(reviewKey(last || latest[0])) + '">Abrir revisão →</button>' : '<a class="study-button" href="#tradeReviewsSection">Ver revisões →</a>') + '</article></div>'
